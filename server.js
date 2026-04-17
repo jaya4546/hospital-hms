@@ -4,54 +4,64 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-
-// --- 1. MIDDLEWARE ---
-app.use(express.json());
 app.use(cors());
-
-// Serves files from the 'public' folder (dashboard.html must be inside 'public')
+app.use(express.json());
+// This line ensures Render finds your dashboard.html inside the public folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- 2. DATABASE CONNECTION ---
-// Using the stable connection string for SRR Hospital Database
+// CLOUD DATABASE CONNECTION (Replaces localhost)
 const mongoURI = "mongodb+srv://jayachander089:jayachander089@cluster0.p7qf8.mongodb.net/SRR_Hospital?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(mongoURI)
-    .then(() => console.log('✅ Connected to MongoDB Cloud'))
-    .catch(err => console.error('❌ MongoDB Connection Error:', err.message));
+    .then(() => console.log("✅ Cloud MongoDB Connected"))
+    .catch(err => console.error("❌ MongoDB Error:", err));
 
-// --- 3. PATIENT DATA MODEL ---
-const PatientSchema = new mongoose.Schema({
-    name: String,
-    ageSex: String,
-    complaints: String,
-    investigations: String,
-    prescription: String,
-    date: { type: Date, default: Date.now }
+const patientSchema = new mongoose.Schema({
+    opd_no: { type: String, required: true, unique: true },
+    name: String, age: String, sex: String, 
+    date: String, village: String, phone: String, 
+    weight: String, temp: String, bp: String, pulse: String, spo2: String,
+    complaints: String, investigations: String,
+    notes: String, // Added this to match your HTML
+    medicines: [{ drugName: String, duration: String, route: String, remarks: String }]
 });
-const Patient = mongoose.model('Patient', PatientSchema);
+const Patient = mongoose.model('Patient', patientSchema);
 
-// --- 4. THE HOME ROUTE ---
-// Automatically opens your dashboard when you visit the main link
+// This ensures the main link opens your dashboard automatically
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 
-// --- 5. API ROUTE TO SAVE DATA ---
-app.post('/api/patients', async (req, res) => {
+app.get('/get-patients', async (req, res) => {
+    try {
+        const patients = await Patient.find().sort({ _id: -1 });
+        res.json(patients);
+    } catch (err) { res.status(500).send(err); }
+});
+
+app.get('/get-patient/:opd', async (req, res) => {
+    try {
+        const patient = await Patient.findOne({ opd_no: req.params.opd });
+        res.json(patient);
+    } catch (err) { res.status(500).send(err); }
+});
+
+app.post('/register-patient', async (req, res) => {
     try {
         const newPatient = new Patient(req.body);
         await newPatient.save();
-        res.status(201).json({ message: "Patient Data Saved Successfully" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+        res.status(200).send({ message: "Saved" });
+    } catch (error) { res.status(500).send(error); }
 });
 
-// --- 6. START SERVER ---
-// Render will automatically assign a port, or use 5000 for local testing
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`🏥 SRR Hospital System is LIVE`);
+app.post('/update-full-patient', async (req, res) => {
+    try {
+        const { opd_no, ...updateData } = req.body;
+        await Patient.findOneAndUpdate({ opd_no: opd_no }, { $set: updateData });
+        res.status(200).send({ message: "Update Successful" });
+    } catch (err) { res.status(500).send(err); }
 });
+
+// Render assigns a dynamic port, so we use process.env.PORT
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
