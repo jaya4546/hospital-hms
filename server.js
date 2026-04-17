@@ -9,15 +9,16 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// This tells the server to serve your dashboard.html from the public folder
+// Serves files from the 'public' folder (dashboard.html must be inside 'public')
 app.use(express.static(path.join(__dirname, 'public')));
 
 // --- 2. DATABASE CONNECTION ---
-const mongoURI = "mongodb+srv://jayachander089:jayachander089@cluster0.p7qf8.mongodb.net/SRR_Hospital?retryWrites=true&w=majority";
+// Using the stable connection string for SRR Hospital Database
+const mongoURI = "mongodb+srv://jayachander089:jayachander089@cluster0.p7qf8.mongodb.net/SRR_Hospital?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(mongoURI)
     .then(() => console.log('✅ Connected to MongoDB Cloud'))
-    .catch(err => console.error('❌ MongoDB Error:', err));
+    .catch(err => console.error('❌ MongoDB Connection Error:', err.message));
 
 // --- 3. PATIENT DATA MODEL ---
 const PatientSchema = new mongoose.Schema({
@@ -31,7 +32,7 @@ const PatientSchema = new mongoose.Schema({
 const Patient = mongoose.model('Patient', PatientSchema);
 
 // --- 4. THE HOME ROUTE ---
-// This redirects the main link directly to your dashboard
+// Automatically opens your dashboard when you visit the main link
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
@@ -48,8 +49,9 @@ app.post('/api/patients', async (req, res) => {
 });
 
 // --- 6. START SERVER ---
+// Render will automatically assign a port, or use 5000 for local testing
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`🏥 SRR Hospital System is LIVE at port ${PORT}`);
+    console.log(`🏥 SRR Hospital System is LIVE`);
 });
