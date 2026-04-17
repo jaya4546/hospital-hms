@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>SRI RAJA RAJESHWARI HOSPITAL</title>
     <style>
-        /* All your original styling remains exactly the same */
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f0f2f5; padding-bottom: 50px; font-size: 16px; }
         header { display: flex; align-items: center; background: white; padding: 15px 40px; border-bottom: 4px solid #0047AB; }
         .logo img { height: 120px; margin-right: 25px; } 
@@ -32,28 +31,16 @@
         th { background: #0047AB; color: white; padding: 12px; text-align: left; }
         td { padding: 12px; border-bottom: 1px solid #ddd; }
         #print-area { display: none; }
-
         @media print {
             html, body { margin: 0 !important; padding: 0 !important; }
             .no-print { display: none !important; }
             #print-area { display: block !important; }
             @page { size: A4; margin: 0; }
-            .print-page { 
-                width: 210mm; height: 297mm; padding: 10mm 15mm; 
-                box-sizing: border-box; display: flex; flex-direction: column; 
-                background: white; position: relative; page-break-after: always;
-            }
+            .print-page { width: 210mm; height: 297mm; padding: 10mm 15mm; box-sizing: border-box; display: flex; flex-direction: column; background: white; position: relative; page-break-after: always; }
             .print-header { display: flex; align-items: center; border-bottom: 3px solid #0047AB; padding-bottom: 10px; }
             .print-header img { height: 120px !important; }
-            .print-doctor-box { 
-                text-align: left; font-size: 16px; border: 2px solid #333; 
-                padding: 8px 12px; line-height: 1.3; min-width: 200px; font-weight: bold;
-            }
-            .patient-detail-strip { 
-                margin: 15px 0; border: 2px solid #000; padding: 12px; 
-                display: grid; grid-template-columns: 1.2fr 1fr; gap: 8px; 
-                font-size: 16px; background: #f9f9f9; 
-            }
+            .print-doctor-box { text-align: left; font-size: 16px; border: 2px solid #333; padding: 8px 12px; line-height: 1.3; min-width: 200px; font-weight: bold; }
+            .patient-detail-strip { margin: 15px 0; border: 2px solid #000; padding: 12px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 8px; font-size: 16px; background: #f9f9f9; }
             .print-content-wrapper { display: flex; flex: 1; border-top: 2px solid #000; margin-top: 10px; position: relative; min-height: 0; }
             .print-sidebar { width: 25%; border-right: 2px solid #000; padding: 15px 5px; display: flex; flex-direction: column; box-sizing: border-box; }
             .print-main { width: 75%; padding: 15px 0 0 20px; box-sizing: border-box; display: flex; flex-direction: column; }
@@ -67,8 +54,6 @@
             .notes-box { border: 1px solid #000; padding: 10px; margin-top: 15px; min-height: 60px; font-size: 14px; }
             .signature-block { margin-top: auto; text-align: right; padding-bottom: 85px; }
             .footer-print { position: absolute; bottom: 8mm; left: 0; width: 100%; text-align: center; background: white; padding: 5px 0; }
-            .footer-print h2 { font-size: 15px !important; margin-bottom: 2px; padding: 4px 15px !important; }
-            .footer-print p { font-size: 11px !important; margin: 0; font-weight: bold; color: #0047AB; }
         }
     </style>
 </head>
@@ -148,8 +133,8 @@
 <script>
     let allPatients = [];
     let currentOPD = "";
-    // THIS LINE IS THE CLOUD FIX: It detects if you are on Render or Local
-    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://hospital-hms-nsdo.onrender.com';
+    // AUTOMATIC URL DETECTION
+    const API_URL = window.location.origin;
 
     async function initApp() {
         document.getElementById('reg_date').valueAsDate = new Date();
@@ -233,104 +218,7 @@
     async function saveFullUpdate() {
         const updateData = captureCurrentData();
         await fetch(`${API_URL}/update-full-patient`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(updateData) });
-        alert("Saved to Cloud!"); fetchPatients();
-    }
-
-    function preparePrint(mode) {
-        const p = captureCurrentData();
-        const logo = document.getElementById('mainLogo').src;
-        const isFull = mode === 'full';
-        const medicines = p.medicines;
-        const drugsPerPage = 8;
-        
-        let printHTML = "";
-
-        const createPage = (medSlice, pageNum, totalPages) => {
-            return `
-            <div class="print-page">
-                <div class="print-header">
-                    <img src="${logo}" style="height:120px; margin-right:20px;">
-                    <div style="flex-grow:1; text-align:center;">
-                        <h1 style="margin:0; color:#0047AB; font-size:30px;">SRI RAJA RAJESHWARI HOSPITAL</h1>
-                        <p style="margin:2px; font-weight:bold; font-size:14px;">SURARAM COLONY, NTR ROAD, HYDERABAD</p>
-                    </div>
-                    <div class="print-doctor-box">
-                        <b>DR. M. JAYACHANDER</b><br>
-                        MBBS, MD (GENERAL MEDICINE)<br>
-                        TSMC / FMR43070
-                    </div>
-                </div>
-                
-                <div class="patient-detail-strip">
-                    <span><b>Name:</b> ${p.name}</span> <span><b>OPD No:</b> ${p.opd_no}</span>
-                    <span><b>Age / Sex:</b> ${p.age} / ${p.sex}</span> <span><b>Date:</b> ${p.date}</span>
-                    <span><b>Village:</b> ${p.village || 'N/A'}</span> <span><b>Phone:</b> ${p.phone || 'N/A'}</span>
-                    <span><b>Weight:</b> ${p.weight || '---'} kg</span> <span><b>Page:</b> ${pageNum} of ${totalPages}</span>
-                </div>
-
-                <div class="print-content-wrapper">
-                    <div class="print-sidebar">
-                        <div class="vitals-box-print">
-                            BP: ${p.bp || '---'}<br>
-                            PULSE: ${p.pulse || '---'}<br>
-                            SPO2: ${p.spo2 || '---'} %<br>
-                            TEMP: ${p.temp || '---'} °F
-                        </div>
-                        <div class="instructions-area">
-                            <span class="instructions-heading">INSTRUCTIONS:</span>
-                            <p>1. Please Get This Prescription in Next Visits</p>
-                            <p>2. Take Medicine for Prescribed Duration</p>
-                            <p>3. In case of reaction stop Medicine & Contact Doctor</p>
-                            <p>4. Follow Doctor's advice Strictly</p>
-                            <div class="telugu-notice">మా వద్ద అన్ని రకముల రక్త మూత్ర పరీక్షలు చేయబడును</div>
-                        </div>
-                    </div>
-
-                    <div class="print-main">
-                        ${isFull ? `
-                            ${pageNum === 1 ? `
-                                <div class="clinical-box"><b>Complaints:</b> ${p.complaints || 'None'}</div>
-                                <div class="clinical-box"><b>Investigations:</b> ${p.investigations || 'None'}</div>
-                            ` : ''}
-
-                            <h3 style="border-bottom:2px solid #0047AB; color:#0047AB; font-size:20px; margin:5px 0;">Prescription (Rx)</h3>
-                            <table class="rx-table">
-                                <thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead>
-                                <tbody>${medSlice.map(m => `<tr><td style="font-weight:bold;">${m.drugName}</td><td align="center">${m.duration}</td><td align="center">${m.route}</td><td>${m.remarks}</td></tr>`).join('')}</tbody>
-                            </table>
-                        ` : '<div style="flex-grow:1;"></div>'}
-
-                        ${(pageNum === totalPages) ? `
-                            <div class="notes-box"><b>NOTES:</b><br>${p.notes || ''}</div>
-                        ` : ''}
-                        
-                        <div class="signature-block">
-                            <p>__________________________</p>
-                            <b>DR. M. JAYACHANDER</b><br>
-                            MD (GENERAL MEDICINE)
-                        </div>
-                    </div>
-                </div>
-
-                <div class="footer-print">
-                    <h2 style="color: #D32F2F; background: #FFEB3B; padding: 4px 20px; border-radius: 6px; border: 2px solid #D32F2F; display: inline-block;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</h2>
-                    <p>Quality Medicines • Trusted Care • Available 24/7</p>
-                </div>
-            </div>`;
-        };
-
-        if (isFull && medicines.length > 0) {
-            const totalPages = Math.ceil(medicines.length / drugsPerPage);
-            for (let i = 0; i < totalPages; i++) {
-                const slice = medicines.slice(i * drugsPerPage, (i + 1) * drugsPerPage);
-                printHTML += createPage(slice, i + 1, totalPages);
-            }
-        } else {
-            printHTML = createPage([], 1, 1);
-        }
-
-        document.getElementById('print-area').innerHTML = printHTML;
-        setTimeout(() => { window.print(); }, 500);
+        alert("Saved!"); fetchPatients();
     }
 
     async function saveRegistration() {
@@ -341,7 +229,74 @@
             pulse: document.getElementById('pulse').value, spo2: document.getElementById('spo2').value, date: document.getElementById('reg_date').value
         };
         const res = await fetch(`${API_URL}/register-patient`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-        if(res.ok) { alert("Registered and Synced!"); fetchPatients(); }
+        if(res.ok) { alert("Registered!"); fetchPatients(); initApp(); }
+    }
+
+    function preparePrint(mode) {
+        const p = captureCurrentData();
+        const logo = document.getElementById('mainLogo').src;
+        const isFull = mode === 'full';
+        const medicines = p.medicines;
+        const drugsPerPage = 8;
+        let printHTML = "";
+        const createPage = (medSlice, pageNum, totalPages) => {
+            return `
+            <div class="print-page">
+                <div class="print-header">
+                    <img src="${logo}" style="height:120px; margin-right:20px;">
+                    <div style="flex-grow:1; text-align:center;">
+                        <h1 style="margin:0; color:#0047AB; font-size:30px;">SRI RAJA RAJESHWARI HOSPITAL</h1>
+                        <p style="margin:2px; font-weight:bold; font-size:14px;">SURARAM COLONY, NTR ROAD, HYDERABAD</p>
+                    </div>
+                    <div class="print-doctor-box">
+                        <b>DR. M. JAYACHANDER</b><br> MBBS, MD (GENERAL MEDICINE)<br> TSMC / FMR43070
+                    </div>
+                </div>
+                <div class="patient-detail-strip">
+                    <span><b>Name:</b> ${p.name}</span> <span><b>OPD No:</b> ${p.opd_no}</span>
+                    <span><b>Age / Sex:</b> ${p.age} / ${p.sex}</span> <span><b>Date:</b> ${p.date}</span>
+                    <span><b>Village:</b> ${p.village || 'N/A'}</span> <span><b>Phone:</b> ${p.phone || 'N/A'}</span>
+                    <span><b>Weight:</b> ${p.weight || '---'} kg</span> <span><b>Page:</b> ${pageNum} of ${totalPages}</span>
+                </div>
+                <div class="print-content-wrapper">
+                    <div class="print-sidebar">
+                        <div class="vitals-box-print">BP: ${p.bp || '---'}<br>PULSE: ${p.pulse || '---'}<br>SPO2: ${p.spo2 || '---'} %<br>TEMP: ${p.temp || '---'} °F</div>
+                        <div class="instructions-area">
+                            <span class="instructions-heading">INSTRUCTIONS:</span>
+                            <p>1. Please Get This Prescription in Next Visits</p>
+                            <p>2. Take Medicine for Prescribed Duration</p>
+                            <p>3. In case of reaction stop Medicine & Contact Doctor</p>
+                            <p>4. Follow Doctor's advice Strictly</p>
+                            <div class="telugu-notice">మా వద్ద అన్ని రకముల రక్త మూత్ర పరీక్షలు చేయబడును</div>
+                        </div>
+                    </div>
+                    <div class="print-main">
+                        ${isFull ? `
+                            <div class="clinical-box"><b>Complaints:</b> ${p.complaints || 'None'}</div>
+                            <div class="clinical-box"><b>Investigations:</b> ${p.investigations || 'None'}</div>
+                            <h3 style="border-bottom:2px solid #0047AB; color:#0047AB; font-size:20px; margin:5px 0;">Prescription (Rx)</h3>
+                            <table class="rx-table">
+                                <thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead>
+                                <tbody>${medSlice.map(m => `<tr><td style="font-weight:bold;">${m.drugName}</td><td align="center">${m.duration}</td><td align="center">${m.route}</td><td>${m.remarks}</td></tr>`).join('')}</tbody>
+                            </table>
+                        ` : ''}
+                        ${(pageNum === totalPages) ? `<div class="notes-box"><b>NOTES:</b><br>${p.notes || ''}</div>` : ''}
+                        <div class="signature-block"><p>__________________________</p><b>DR. M. JAYACHANDER</b><br>MD (GENERAL MEDICINE)</div>
+                    </div>
+                </div>
+                <div class="footer-print">
+                    <h2 style="color: #D32F2F; background: #FFEB3B; padding: 4px 20px; border-radius: 6px; border: 2px solid #D32F2F; display: inline-block;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</h2>
+                </div>
+            </div>`;
+        };
+        if (isFull && medicines.length > 0) {
+            const totalPages = Math.ceil(medicines.length / drugsPerPage);
+            for (let i = 0; i < totalPages; i++) {
+                printHTML += createPage(medicines.slice(i * drugsPerPage, (i + 1) * drugsPerPage), i + 1, totalPages);
+            }
+        } else { printHTML = createPage([], 1, 1); }
+        document.getElementById('print-area').innerHTML = printHTML;
+        setTimeout(() => { window.print(); }, 500);
     }
 </script>
 </body>

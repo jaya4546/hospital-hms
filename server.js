@@ -6,10 +6,10 @@ const path = require('path');
 const app = express();
 app.use(cors());
 app.use(express.json());
-// This line ensures Render finds your dashboard.html inside the public folder
+// Serves your dashboard from the public folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// CLOUD DATABASE CONNECTION (Replaces localhost)
+// CLOUD DATABASE CONNECTION
 const mongoURI = "mongodb+srv://jayachander089:jayachander089@cluster0.p7qf8.mongodb.net/SRR_Hospital?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(mongoURI)
@@ -22,12 +22,11 @@ const patientSchema = new mongoose.Schema({
     date: String, village: String, phone: String, 
     weight: String, temp: String, bp: String, pulse: String, spo2: String,
     complaints: String, investigations: String,
-    notes: String, // Added this to match your HTML
+    notes: String,
     medicines: [{ drugName: String, duration: String, route: String, remarks: String }]
 });
 const Patient = mongoose.model('Patient', patientSchema);
 
-// This ensures the main link opens your dashboard automatically
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
@@ -62,6 +61,5 @@ app.post('/update-full-patient', async (req, res) => {
     } catch (err) { res.status(500).send(err); }
 });
 
-// Render assigns a dynamic port, so we use process.env.PORT
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
