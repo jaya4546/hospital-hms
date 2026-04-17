@@ -4,77 +4,42 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-app.use(cors());
+
+// Middleware
 app.use(express.json());
-app.use(express.static(__dirname));
+app.use(cors());
 
-// --- UPDATED CLOUD CONNECTION (STANDARD FORMAT) ---
-// This version is more stable for hospital networks and firewalls
-const cloudMongoURI = 'mongodb://admin:HospitalPassword123@cluster0-shard-00-00.oddbd8i.mongodb.net:27017,cluster0-shard-00-01.oddbd8i.mongodb.net:27017,cluster0-shard-00-02.oddbd8i.mongodb.net:27017/hospitalDB?ssl=true&replicaSet=atlas-oddbd8i-shard-0&authSource=admin&retryWrites=true&w=majority';
+// --- MONGODB CONNECTION ---
+// Replace the <password> with your actual MongoDB password if not already done
+const mongoURI = "mongodb+srv://jayachander089:jayachander089@cluster0.p7qf8.mongodb.net/SRR_Hospital?retryWrites=true&w=majority";
 
-mongoose.connect(cloudMongoURI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-.then(() => console.log("✅ Successfully Connected to MongoDB ATLAS (Cloud)"))
-.catch(err => {
-    console.error("❌ MongoDB Cloud Error Details:");
-    console.error(err);
-});
-// --- CONNECTION END ---
+mongoose.connect(mongoURI)
+    .then(() => console.log('✅ Successfully Connected to MongoDB ATLAS (Cloud)'))
+    .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
-const patientSchema = new mongoose.Schema({
-    opd_no: { type: String, required: true, unique: true },
-    name: String, 
-    age: String, 
-    sex: String, 
-    date: String, 
-    village: String, 
-    phone: String, 
-    weight: String, 
-    temp: String, 
-    bp: String, 
-    pulse: String, 
-    spo2: String,
-    complaints: String, 
-    investigations: String,
-    medicines: [{ drugName: String, duration: String, route: String, remarks: String }]
+// --- THE HOME ROUTE (Fixes "Cannot GET /") ---
+app.get('/', (req, res) => {
+    res.send(`
+        <div style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+            <h1 style="color: #2c3e50;">Sri Raja Rajeshwari Hospital</h1>
+            <p style="color: #27ae60; font-weight: bold;">✔ System Status: Online & Cloud Connected</p>
+            <hr style="width: 50%; margin: 20px auto;">
+            <p>Welcome, Dr. Jayachander. Your Hospital Management System is ready.</p>
+            <div style="margin-top: 30px;">
+                <button onclick="alert('Redirecting to OPD...')" style="padding: 10px 20px; cursor: pointer;">Go to OPD Module</button>
+            </div>
+        </div>
+    `);
 });
 
-const Patient = mongoose.model('Patient', patientSchema);
-
-// API Endpoints
-app.get('/get-patients', async (req, res) => {
-    try {
-        const patients = await Patient.find().sort({ _id: -1 });
-        res.json(patients);
-    } catch (err) { res.status(500).send(err); }
+// --- SAMPLE API ROUTE FOR PATIENTS ---
+app.get('/api/status', (req, res) => {
+    res.json({ message: "Hospital API is working perfectly." });
 });
 
-app.get('/get-patient/:opd', async (req, res) => {
-    try {
-        const patient = await Patient.findOne({ opd_no: req.params.opd });
-        res.json(patient);
-    } catch (err) { res.status(500).send(err); }
-});
-
-app.post('/register-patient', async (req, res) => {
-    try {
-        const newPatient = new Patient(req.body);
-        await newPatient.save();
-        res.status(200).send({ message: "Saved to Cloud" });
-    } catch (error) { res.status(500).send(error); }
-});
-
-app.post('/update-full-patient', async (req, res) => {
-    try {
-        const { opd_no, ...updateData } = req.body;
-        await Patient.findOneAndUpdate({ opd_no: opd_no }, { $set: updateData });
-        res.status(200).send({ message: "Cloud Update Successful" });
-    } catch (err) { res.status(500).send(err); }
-});
-
-app.listen(5000, () => {
-    console.log("🚀 Server running on http://localhost:5000");
-    console.log("🏥 Sri Raja Rajeshwari Hospital System is LIVE");
+// --- START SERVER ---
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🏥 Sri Raja Rajeshwari Hospital System is LIVE`);
 });
