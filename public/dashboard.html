@@ -3,87 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRR Hospital HMS v2.3</title>
+    <title>SRR Hospital HMS v2.5</title>
     <style>
         :root { --primary: #27ae60; --dark: #2c3e50; --bg: #f0f4f7; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 10px; }
-        .container { max-width: 1100px; background: white; padding: 20px; border-radius: 12px; margin: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-top: 6px solid var(--primary); }
+        .container { max-width: 1200px; background: white; padding: 20px; border-radius: 12px; margin: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-top: 6px solid var(--primary); }
         .header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        h3 { color: var(--dark); font-size: 15px; border-left: 4px solid var(--primary); padding-left: 10px; margin: 15px 0 10px 0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
         .input-group { display: flex; flex-direction: column; }
         label { font-weight: bold; font-size: 11px; margin-bottom: 3px; }
-        input, select, textarea { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
-        .btn { padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-reg { background: var(--primary); color: white; width: 100%; margin-bottom: 20px; }
-        .btn-action { padding: 5px 8px; font-size: 11px; margin-right: 3px; color: white; border-radius: 3px; border:none; cursor: pointer; }
-        .table-container { overflow-x: auto; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        input, select, textarea { padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; }
+        .btn { padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; }
+        .btn-reg { background: var(--primary); color: white; font-size: 15px; }
+        .btn-act { padding: 5px 8px; font-size: 11px; color: white; border: none; border-radius: 3px; cursor: pointer; margin-right: 2px; }
+        .table-container { overflow-x: auto; margin-top: 20px; background: #fff; border: 1px solid #ddd; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; font-size: 13px; }
         th { background: var(--dark); color: white; padding: 10px; text-align: left; }
         td { padding: 8px; border-bottom: 1px solid #eee; }
-        .modal { display: none; position: fixed; z-index: 100; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.7); }
-        .modal-content { background:white; margin: 5% auto; padding: 20px; width: 90%; max-width: 800px; border-radius: 8px; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); }
+        .modal-content { background: white; margin: 5% auto; padding: 20px; width: 90%; max-width: 800px; border-radius: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <img src="logo.jpg" alt="Logo" style="width:150px;">
-        <h2 style="margin:5px 0;">Sri Raja Rajeshwari Hospital</h2>
+        <h2 style="margin:0;">Sri Raja Rajeshwari Hospital</h2>
+        <p style="font-size:11px; margin:0;">Suraram colony NTR road Opp: Ramaleela maidanam</p>
     </div>
 
+    <h3>Registration & Vitals</h3>
     <div class="grid">
         <div class="input-group"><label>Date</label><input type="date" id="date"></div>
         <div class="input-group"><label>OPD No</label><input type="text" id="opd_no" readonly style="background:#fffde7"></div>
         <div class="input-group"><label>Name</label><input type="text" id="name"></div>
-        <div class="input-group"><label>Age</label><input type="number" id="age"></div>
-        <div class="input-group"><label>Sex</label><select id="sex"><option>Male</option><option>Female</option></select></div>
+        <div class="input-group"><label>Age/Sex</label><div style="display:flex;gap:5px"><input type="number" id="age" style="width:60%"><select id="sex"><option>M</option><option>F</option></select></div></div>
         <div class="input-group"><label>Mobile</label><input type="text" id="phone"></div>
+        <div class="input-group"><label>BP</label><input type="text" id="bp"></div>
+        <div class="input-group"><label>Pulse</label><input type="text" id="pulse"></div>
+        <div class="input-group"><label>SpO2</label><input type="text" id="spo2"></div>
+        <div class="input-group"><label>Temp</label><input type="text" id="temp"></div>
+        <div class="input-group"><label>Weight</label><input type="text" id="weight"></div>
     </div>
-    <button class="btn btn-reg" onclick="registerPatient()">SAVE REGISTRATION</button>
+    <button class="btn btn-reg" onclick="register()">SAVE PATIENT</button>
 
-    <div class="record-section">
-        <div style="display:flex; gap:10px; margin-bottom:10px;">
-            <input type="text" id="searchBar" style="flex-grow:1; padding:8px;" placeholder="Search Patient..." onkeyup="searchTable()">
-            <button onclick="fetchRecords()" style="padding:0 10px;">Refresh Data</button>
-        </div>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr><th>Date</th><th>OPD No</th><th>Name</th><th>Age/Sex</th><th>Phone</th><th>Actions</th></tr>
-                </thead>
-                <tbody id="tableBody">
-                    <tr><td colspan="6" style="text-align:center;">Fetching Records... Please wait.</td></tr>
-                </tbody>
-            </table>
-        </div>
+    <div class="table-container">
+        <table id="pTable">
+            <thead>
+                <tr><th>Date</th><th>OPD</th><th>Name</th><th>Age/Sex</th><th>Vitals (BP/P/O2/T/W)</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="tBody"><tr><td colspan="6" style="text-align:center">Loading...</td></tr></tbody>
+        </table>
     </div>
 </div>
 
-<div id="treatModal" class="modal">
+<div id="tModal" class="modal">
     <div class="modal-content">
-        <h3 id="mt" style="color:var(--primary);">Treatment</h3>
-        <div class="grid">
-            <textarea id="comp" placeholder="Complaints"></textarea>
-            <textarea id="hist" placeholder="History"></textarea>
-            <textarea id="invest" placeholder="Investigations"></textarea>
-        </div>
-        <button class="btn btn-reg" onclick="saveTreatment()">SAVE CLINICAL DATA</button>
-        <button onclick="document.getElementById('treatModal').style.display='none'" style="background:none; border:none; color:red; cursor:pointer; width:100%; margin-top:10px;">Close</button>
+        <h3 id="mTitle">Treatment</h3>
+        <textarea id="comp" placeholder="Complaints" style="width:100%; margin-bottom:10px;"></textarea>
+        <button class="btn btn-reg" onclick="saveT()">SAVE CLINICAL DATA</button>
+        <button onclick="document.getElementById('tModal').style.display='none'" style="border:none; background:none; color:red; cursor:pointer; width:100%; margin-top:10px;">Close</button>
     </div>
 </div>
 
 <script>
-    const G_URL = "https://script.google.com/macros/s/AKfycbxgasf0L15wWic3-g8AY5ltXzaJ8p-6EKR57_PxGyS02DQIVuBmUkEWg3BXOH-VlZsWuw/exec";
-    let cur = {};
+    const URL = "https://script.google.com/macros/s/AKfycbxgasf0L15wWic3-g8AY5ltXzaJ8p-6EKR57_PxGyS02DQIVuBmUkEWg3BXOH-VlZsWuw/exec";
+    let curP = {};
 
     window.onload = () => {
         document.getElementById('date').valueAsDate = new Date();
         document.getElementById('opd_no').value = "SRR-" + Math.floor(100000 + Math.random() * 900000);
-        fetchRecords();
+        load();
     };
 
-    async function registerPatient() {
+    async function register() {
         const d = {
             type: "REGISTRATION",
             date: document.getElementById('date').value,
@@ -91,63 +85,54 @@
             name: document.getElementById('name').value,
             age: document.getElementById('age').value,
             sex: document.getElementById('sex').value,
-            phone: document.getElementById('phone').value
+            phone: document.getElementById('phone').value,
+            bp: document.getElementById('bp').value,
+            pulse: document.getElementById('pulse').value,
+            spo2: document.getElementById('spo2').value,
+            temp: document.getElementById('temp').value,
+            weight: document.getElementById('weight').value
         };
-        await fetch(G_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
+        await fetch(URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
         alert("Saved!"); location.reload();
     }
 
-    async function fetchRecords() {
+    async function load() {
         try {
-            const r = await fetch(G_URL);
+            const r = await fetch(URL);
             const data = await r.json();
-            const b = document.getElementById('tableBody');
+            const b = document.getElementById('tBody');
             b.innerHTML = "";
             data.reverse().forEach(row => {
                 const tr = document.createElement('tr');
-                // Updated Mapping to match your sheet structure
-                const dt = row.date || row.opd_number || '---';
-                const opd = row.opd_no || row.name || '---';
-                const nm = row.name || row.age || '---';
-                const as = (row.age || row.sex) + "/" + (row.sex || row.date);
-                const ph = row.phone || row.village || '---';
+                
+                // DATA MAPPING
+                const dt = (row.date || row.opd_number || '').toString().split('T')[0];
+                const op = row.opd_no || row.name || '';
+                const nm = row.name || row.age || '';
+                const as = (row.age || row.sex || '') + "/" + (row.sex || row.date || '');
+                
+                // VITALS MAPPING
+                const v = `${row.bp || ''} | ${row.pulse || ''} | ${row.spo2 || ''}% | ${row.temp || ''}F | ${row.weight || ''}kg`;
 
-                tr.innerHTML = `<td>${dt.toString().split('T')[0]}</td><td>${opd}</td><td>${nm}</td><td>${as}</td><td>${ph}</td>
+                tr.innerHTML = `<td>${dt}</td><td>${op}</td><td>${nm}</td><td>${as}</td><td>${v}</td>
                 <td>
-                    <button class="btn-action" style="background:#3498db;" onclick="alert('Edit ready')">EDIT</button>
-                    <button class="btn-action" style="background:#e67e22;" onclick="openM('${nm}','${opd}')">TREAT</button>
+                    <button class="btn-act" style="background:#3498db" onclick="alert('Edit Info')">EDIT</button>
+                    <button class="btn-act" style="background:#e67e22" onclick="openM('${nm}','${op}')">TREAT</button>
                 </td>`;
                 b.appendChild(tr);
             });
-        } catch(e) { document.getElementById('tableBody').innerHTML = "<tr><td colspan='6'>Error loading data. Try Refresh.</td></tr>"; }
+        } catch(e) { b.innerHTML = "<tr><td colspan='6'>Refresh to see data.</td></tr>"; }
     }
 
-    function openM(n, o) {
-        cur = { n, o };
-        document.getElementById('mt').innerText = "Treating: " + n;
-        document.getElementById('treatModal').style.display = 'block';
+    function openM(n,o) {
+        curP = {n,o}; document.getElementById('mTitle').innerText = "Treating: " + n;
+        document.getElementById('tModal').style.display='block';
     }
 
-    async function saveTreatment() {
-        const d = {
-            type: "TREATMENT",
-            opd_no: cur.o,
-            name: cur.n,
-            complaints: document.getElementById('comp').value,
-            history: document.getElementById('hist').value,
-            investigations: document.getElementById('invest').value
-        };
-        await fetch(G_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
-        alert("Treatment Logged!");
-        document.getElementById('treatModal').style.display='none';
-    }
-
-    function searchTable() {
-        let f = document.getElementById("searchBar").value.toUpperCase();
-        let r = document.getElementById("tableBody").getElementsByTagName("tr");
-        for (let i = 0; i < r.length; i++) {
-            r[i].style.display = r[i].innerText.toUpperCase().includes(f) ? "" : "none";
-        }
+    async function saveT() {
+        const d = { type: "TREATMENT", opd_no: curP.o, name: curP.n, complaints: document.getElementById('comp').value };
+        await fetch(URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
+        alert("Clinical Data Saved!"); document.getElementById('tModal').style.display='none';
     }
 </script>
 </body>
