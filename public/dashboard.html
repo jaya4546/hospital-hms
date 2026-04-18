@@ -5,49 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SRR Hospital HMS - Official Dashboard</title>
     <style>
-        body { font-family: 'Segoe UI', 'Helvetica Neue', sans-serif; background: #eef2f3; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 1000px; background: white; padding: 30px; border-radius: 12px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 10px solid #27ae60; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f7; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1000px; background: white; padding: 35px; border-radius: 15px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid #27ae60; }
         
         /* HEADER SECTION */
-        .header-main { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #27ae60; padding-bottom: 20px; }
-        .hospital-logo { width: 220px; height: auto; display: block; margin: 0 auto; }
-        .hospital-address { margin: 15px 0 0 0; color: #566573; font-size: 15px; font-weight: bold; line-height: 1.4; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .header-main { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #e0e0e0; padding-bottom: 20px; }
+        .hospital-logo { width: 250px; height: auto; display: block; margin: 0 auto 10px; }
+        .hospital-address { margin: 0; color: #566573; font-size: 14px; font-weight: bold; letter-spacing: 0.5px; }
 
-        .header-sub { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 35px; margin-top: 20px; }
+        .header-sub { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; margin-top: 20px; }
         
-        /* DOCTOR BOX (Left) */
-        .doctor-box { border: 2px solid #2c3e50; padding: 15px; border-radius: 8px; background: #f9f9f9; min-width: 320px; text-align: left; line-height: 1.5; font-size: 15px; }
-        .dr-name { font-size: 20px; font-weight: bold; color: #2c3e50; display: block; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 5px; }
+        /* DOCTOR BOX */
+        .doctor-box { border: 2px solid #2c3e50; padding: 15px; border-radius: 8px; background: #fdfdfd; min-width: 320px; text-align: left; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
+        .dr-name { font-size: 22px; font-weight: bold; color: #1a5276; display: block; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 5px; }
         .dr-qual { font-size: 15px; font-weight: 600; color: #34495e; display: block; }
-        .dr-reg { font-size: 14px; color: #e74c3c; font-weight: bold; display: block; margin-top: 5px; background: #fdf2f2; padding: 3px; border-radius: 3px; }
+        .dr-reg { font-size: 14px; color: #c0392b; font-weight: bold; display: block; margin-top: 5px; }
         
-        .header-right-meta { text-align: right; color: #7f8c8d; font-size: 14px; padding-top: 10px; }
+        .sys-meta { text-align: right; color: #7f8c8d; font-size: 13px; line-height: 1.6; }
 
-        /* FORM STYLING */
+        /* FORM GRID */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
         .input-group { display: flex; flex-direction: column; }
-        label { font-weight: bold; color: #2c3e50; margin-bottom: 8px; font-size: 15px; }
-        input, select { padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 16px; }
-        input:focus { border-color: #27ae60; outline: none; box-shadow: 0 0 5px rgba(39,174,96,0.3); }
+        label { font-weight: bold; color: #2c3e50; margin-bottom: 8px; font-size: 14px; }
+        input, select { padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 15px; outline: none; transition: 0.2s; }
+        input:focus { border-color: #27ae60; box-shadow: 0 0 5px rgba(39,174,96,0.2); }
         
         /* VITALS SECTION */
-        .vitals-card { background: #f4f7f6; border: 1px solid #d1d9e0; padding: 20px; border-radius: 10px; }
-        .vitals-card h3 { margin: 0 0 18px 0; color: #27ae60; font-size: 19px; text-transform: uppercase; border-bottom: 2px solid #ddd; padding-bottom: 8px; font-weight: 700; }
+        .vitals-card { background: #f8fafb; border: 1px solid #d1d9e0; padding: 20px; border-radius: 10px; }
+        .vitals-card h3 { margin: 0 0 15px 0; color: #27ae60; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
         .vitals-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
 
-        /* BUTTONS */
-        #saveBtn { width: 100%; padding: 18px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 19px; font-weight: bold; margin-top: 35px; box-shadow: 0 4px 6px rgba(39,174,96,0.2); transition: 0.3s; }
-        #saveBtn:hover { background: #219150; }
+        /* BUTTON */
+        #saveBtn { width: 100%; padding: 18px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 30px; box-shadow: 0 4px 10px rgba(39,174,96,0.3); transition: 0.3s; }
+        #saveBtn:hover { background: #219150; transform: translateY(-1px); }
         #saveBtn:disabled { background: #95a5a6; cursor: not-allowed; }
 
-        .auto-tag { background: #fff3cd; color: #856404; font-weight: bold; border: 2px solid #ffeeba; }
+        .auto-tag { background: #fffde7; color: #856404; font-weight: bold; border: 1px solid #ffeeba; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header-main">
-        <img src="logo.jpg" alt="Sri Raja Rajeshwari Hospital Logo" class="hospital-logo">
+        <img src="logo.jpg" alt="SRR Hospital Logo" class="hospital-logo">
         <p class="hospital-address">ADD: Suraram colony NTR road Opp: Ramaleela maidanam Telangana 500055</p>
     </div>
 
@@ -58,9 +58,10 @@
             <span class="dr-reg">Reg no: TSMC/FMR/43070</span>
         </div>
         
-        <div class="header-right-meta">
+        <div class="sys-meta">
             Sri Raja Rajeshwari Hospital<br>
-            Digital Record System v1.2
+            HMS Digital Dashboard v1.2<br>
+            Secure Clinical Access
         </div>
     </div>
 
@@ -70,12 +71,12 @@
             <input type="date" id="date">
         </div>
         <div class="input-group">
-            <label>OPD Number (Auto-Generated)</label>
+            <label>OPD Number</label>
             <input type="text" id="opd_no" class="auto-tag" readonly>
         </div>
         <div class="input-group">
             <label>Patient Name</label>
-            <input type="text" id="name" placeholder="Full Name">
+            <input type="text" id="name" placeholder="Enter Full Name">
         </div>
         <div class="input-group">
             <label>Age / Sex</label>
@@ -90,7 +91,7 @@
         </div>
         <div class="input-group">
             <label>Mobile Number</label>
-            <input type="text" id="phone" placeholder="Phone Number">
+            <input type="text" id="phone" placeholder="10-digit number">
         </div>
         <div class="input-group">
             <label>Village / Town</label>
@@ -156,7 +157,7 @@
 
         if(!data.name) return alert("Patient Name is required!");
 
-        btn.innerText = "Saving Record...";
+        btn.innerText = "Securing Data...";
         btn.disabled = true;
 
         try {
@@ -165,10 +166,10 @@
                 mode: 'no-cors',
                 body: JSON.stringify(data)
             });
-            alert("✅ Patient Record Saved Successfully!");
+            alert("✅ Record Saved to Database!");
             location.reload();
         } catch (e) {
-            alert("Connection Error. Please check your internet.");
+            alert("Connection Error. Check network.");
             btn.disabled = false;
             btn.innerText = "SAVE PATIENT RECORD";
         }
