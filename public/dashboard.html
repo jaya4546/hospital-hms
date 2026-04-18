@@ -2,151 +2,137 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SRI RAJA RAJESHWARI HOSPITAL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRR Hospital - Patient Registration</title>
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding-bottom: 50px; }
-        header { background: white; padding: 20px; border-bottom: 4px solid #0047AB; display: flex; align-items: center; justify-content: space-between; }
-        .container { max-width: 1100px; margin: 20px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
-        input, select, textarea { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 12px 20px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; color: white; }
-        .btn-reg { background: #28a745; width: 100%; font-size: 16px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: #0047AB; color: white; padding: 10px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #ddd; }
-        #clinical-section { display: none; background: #fff9e6; padding: 20px; border: 2px solid #0047AB; margin: 20px 0; border-radius: 8px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2f3; margin: 0; padding: 20px; }
+        .container { max-width: 800px; background: white; padding: 30px; border-radius: 12px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; text-align: center; border-bottom: 2px solid #27ae60; padding-bottom: 10px; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        label { font-weight: bold; color: #34495e; display: block; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        .vitals-section { background: #f8fafc; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 5px solid #3498db; }
+        h3 { margin-top: 0; color: #2980b9; font-size: 18px; margin-bottom: 15px; }
+        button { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 20px; transition: 0.3s; }
+        button:hover { background: #219150; }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
-<body onload="initApp()">
-
-<header>
-    <div style="display:flex; align-items:center;">
-        <img src="logo.jpg" style="height:80px; margin-right:20px;">
-        <div>
-            <h1 style="margin:0; color:#0047AB;">SRI RAJA RAJESHWARI HOSPITAL</h1>
-            <p style="margin:0;">SURARAM COLONY, HYDERABAD</p>
-        </div>
-    </div>
-    <div style="border:1px solid #000; padding:10px; font-weight:bold;">
-        DR. M. JAYACHANDER<br>MBBS, MD (GEN MED)
-    </div>
-</header>
+<body>
 
 <div class="container">
-    <h3>1. Register Patient</h3>
-    <div class="form-grid">
-        <div><label>OPD No</label><input type="text" id="opd_id" readonly></div>
-        <div><label>Name</label><input type="text" id="name"></div>
-        <div><label>Age</label><input type="text" id="age"></div>
-        <div><label>Sex</label><select id="sex"><option>Male</option><option>Female</option></select></div>
-        <div><label>Phone</label><input type="text" id="phone"></div>
-        <div><label>Village</label><input type="text" id="village"></div>
-        <div><label>Date</label><input type="date" id="reg_date"></div>
-    </div>
-    <button class="btn-reg" onclick="saveRegistration()">REGISTER PATIENT</button>
-
-    <div id="clinical-section">
-        <h2 id="display_name"></h2>
-        <div class="form-grid">
-            <div><label>BP</label><input type="text" id="e_bp"></div>
-            <div><label>Temp</label><input type="text" id="e_temp"></div>
-            <div><label>Pulse</label><input type="text" id="e_pulse"></div>
-            <div><label>SpO2</label><input type="text" id="e_spo2"></div>
+    <h2>Sri Raja Rajeshwari Hospital</h2>
+    
+    <div class="grid">
+        <div>
+            <label>Date</label>
+            <input type="date" id="date">
         </div>
-        <textarea id="complaints" placeholder="Complaints" rows="3" style="margin-bottom:10px;"></textarea>
-        <textarea id="investigations" placeholder="Investigations" rows="3"></textarea>
-        <button style="background:#0047AB; margin-top:10px;" onclick="saveTreatment()">SAVE TREATMENT</button>
+        <div>
+            <label>OPD Number</label>
+            <input type="text" id="opd_no" placeholder="e.g. 101">
+        </div>
+        <div>
+            <label>Patient Name</label>
+            <input type="text" id="name" placeholder="Full Name">
+        </div>
+        <div>
+            <label>Age</label>
+            <input type="number" id="age">
+        </div>
+        <div>
+            <label>Sex</label>
+            <select id="sex">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+        <div>
+            <label>Phone Number</label>
+            <input type="text" id="phone">
+        </div>
+        <div>
+            <label>Village/Town</label>
+            <input type="text" id="village">
+        </div>
     </div>
 
-    <h3>2. Records</h3>
-    <input type="text" id="search" placeholder="Search name..." onkeyup="filterTable()" style="margin-bottom:10px;">
-    <table>
-        <thead><tr><th>OPD</th><th>Name</th><th>Phone</th><th>Action</th></tr></thead>
-        <tbody id="pTable"></tbody>
-    </table>
+    <div class="vitals-section">
+        <h3>Clinical Vitals</h3>
+        <div class="grid">
+            <div>
+                <label>Weight (kg)</label>
+                <input type="text" id="weight">
+            </div>
+            <div>
+                <label>BP (mmHg)</label>
+                <input type="text" id="bp" placeholder="120/80">
+            </div>
+            <div>
+                <label>Pulse (bpm)</label>
+                <input type="text" id="pulse">
+            </div>
+            <div>
+                <label>SpO2 (%)</label>
+                <input type="text" id="spo2">
+            </div>
+            <div>
+                <label>Temp (°F)</label>
+                <input type="text" id="temp">
+            </div>
+        </div>
+    </div>
+
+    <button id="saveBtn" onclick="registerPatient()">SAVE PATIENT RECORD</button>
 </div>
 
 <script>
-    let patients = [];
-    let currentOPD = "";
-    const API = window.location.origin;
+    // Automatically set today's date
+    document.getElementById('date').valueAsDate = new Date();
 
-    function initApp() {
-        document.getElementById('reg_date').valueAsDate = new Date();
-        document.getElementById('opd_id').value = "SRR-" + Math.floor(1000 + Math.random() * 9000);
-        fetchRecords();
-    }
-
-    async function fetchRecords() {
-        const res = await fetch(`${API}/get-patients`);
-        patients = await res.json();
-        renderTable(patients);
-    }
-
-    function renderTable(data) {
-        const html = data.map(p => `<tr><td>${p.opd_no}</td><td>${p.name}</td><td>${p.phone}</td>
-        <td><button style="background:#007bff;" onclick="openTreat('${p.opd_no}')">Treat</button></td></tr>`).join('');
-        document.getElementById('pTable').innerHTML = html;
-    }
-
-    async function saveRegistration() {
-        const name = document.getElementById('name').value;
-        if(!name) return alert("Enter name");
-        
+    async function registerPatient() {
+        const btn = document.getElementById('saveBtn');
         const data = {
-            opd_no: document.getElementById('opd_id').value,
-            name: name,
+            date: document.getElementById('date').value,
+            opd_no: document.getElementById('opd_no').value,
+            name: document.getElementById('name').value,
             age: document.getElementById('age').value,
             sex: document.getElementById('sex').value,
             phone: document.getElementById('phone').value,
             village: document.getElementById('village').value,
-            date: document.getElementById('reg_date').value
+            weight: document.getElementById('weight').value,
+            bp: document.getElementById('bp').value,
+            pulse: document.getElementById('pulse').value,
+            spo2: document.getElementById('spo2').value,
+            temp: document.getElementById('temp').value
         };
 
-        const res = await fetch(`${API}/register-patient`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
+        const googleUrl = "https://script.google.com/macros/s/AKfycbzyomvR_bYHCS0mURzmCbG-kx4XrxXko9I_hjc-DamV-NFg0ECgmuIiKuelF4tw9AMliA/exec";
 
-        if(res.ok) {
-            alert("Registered!");
-            fetchRecords();
-            initApp();
-        } else {
-            alert("Error saving patient");
+        if(!data.name || !data.opd_no) {
+            alert("Please enter at least Name and OPD Number");
+            return;
+        }
+
+        btn.innerText = "Saving...";
+        btn.disabled = true;
+
+        try {
+            await fetch(googleUrl, {
+                method: 'POST',
+                mode: 'no-cors', 
+                body: JSON.stringify(data)
+            });
+            alert("✅ Patient Record Saved to Google Sheets!");
+            location.reload(); 
+        } catch (error) {
+            alert("Network Error: Check Internet Connection");
+            btn.innerText = "SAVE PATIENT RECORD";
+            btn.disabled = false;
         }
     }
-
-    async function openTreat(opd) {
-        currentOPD = opd;
-        const res = await fetch(`${API}/get-patient/${opd}`);
-        const p = await res.json();
-        document.getElementById('display_name').innerText = "Treating: " + p.name;
-        document.getElementById('clinical-section').style.display = 'block';
-    }
-
-    async function saveTreatment() {
-        const data = {
-            opd_no: currentOPD,
-            bp: document.getElementById('e_bp').value,
-            temp: document.getElementById('e_temp').value,
-            complaints: document.getElementById('complaints').value,
-            investigations: document.getElementById('investigations').value
-        };
-        await fetch(`${API}/update-full-patient`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
-        alert("Treatment Saved!");
-    }
-
-    function filterTable() {
-        const val = document.getElementById('search').value.toLowerCase();
-        const filtered = patients.filter(p => p.name.toLowerCase().includes(val));
-        renderTable(filtered);
-    }
 </script>
+
 </body>
 </html>
