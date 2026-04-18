@@ -16,7 +16,7 @@
         .header-sub { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; margin-top: 20px; }
         
         /* DOCTOR BOX */
-        .doctor-box { border: 2px solid #2c3e50; padding: 15px; border-radius: 8px; background: #fdfdfd; min-width: 320px; text-align: left; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
+        .doctor-box { border: 2px solid #2c3e50; padding: 15px; border-radius: 8px; background: #fdfdfd; min-width: 320px; text-align: left; }
         .dr-name { font-size: 22px; font-weight: bold; color: #1a5276; display: block; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 5px; }
         .dr-qual { font-size: 15px; font-weight: 600; color: #34495e; display: block; }
         .dr-reg { font-size: 14px; color: #c0392b; font-weight: bold; display: block; margin-top: 5px; }
@@ -27,27 +27,23 @@
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
         .input-group { display: flex; flex-direction: column; }
         label { font-weight: bold; color: #2c3e50; margin-bottom: 8px; font-size: 14px; }
-        input, select { padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 15px; outline: none; transition: 0.2s; }
-        input:focus { border-color: #27ae60; box-shadow: 0 0 5px rgba(39,174,96,0.2); }
+        input, select { padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 15px; outline: none; }
         
         /* VITALS SECTION */
         .vitals-card { background: #f8fafb; border: 1px solid #d1d9e0; padding: 20px; border-radius: 10px; }
-        .vitals-card h3 { margin: 0 0 15px 0; color: #27ae60; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
+        .vitals-card h3 { margin: 0 0 15px 0; color: #27ae60; font-size: 18px; text-transform: uppercase; }
         .vitals-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
 
         /* BUTTON */
-        #saveBtn { width: 100%; padding: 18px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 30px; box-shadow: 0 4px 10px rgba(39,174,96,0.3); transition: 0.3s; }
-        #saveBtn:hover { background: #219150; transform: translateY(-1px); }
-        #saveBtn:disabled { background: #95a5a6; cursor: not-allowed; }
-
-        .auto-tag { background: #fffde7; color: #856404; font-weight: bold; border: 1px solid #ffeeba; }
+        #saveBtn { width: 100%; padding: 18px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 30px; box-shadow: 0 4px 10px rgba(39,174,96,0.3); }
+        .auto-tag { background: #fffde7; color: #856404; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header-main">
-        <img src="logo.jpg" alt="SRR Hospital Logo" class="hospital-logo">
+        <img src="logo.jpg" alt="Sri Raja Rajeshwari Hospital Logo" class="hospital-logo">
         <p class="hospital-address">ADD: Suraram colony NTR road Opp: Ramaleela maidanam Telangana 500055</p>
     </div>
 
