@@ -3,81 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRR Hospital - Patient Registration</title>
+    <title>SRR Hospital HMS</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2f3; margin: 0; padding: 20px; }
-        .container { max-width: 800px; background: white; padding: 30px; border-radius: 12px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: #2c3e50; text-align: center; border-bottom: 2px solid #27ae60; padding-bottom: 10px; margin-bottom: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        label { font-weight: bold; color: #34495e; display: block; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-        .vitals-section { background: #f8fafc; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 5px solid #3498db; }
-        h3 { margin-top: 0; color: #2980b9; font-size: 18px; margin-bottom: 15px; }
-        button { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 20px; transition: 0.3s; }
-        button:hover { background: #219150; }
-        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #eef2f3; margin: 0; padding: 20px; }
+        .container { max-width: 900px; background: white; padding: 30px; border-radius: 12px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 10px solid #27ae60; }
+        
+        /* HEADER SECTION */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px dashed #bdc3c7; }
+        
+        /* DOCTOR DETAILS (Left) */
+        .doctor-info { background: #f0f7ff; border: 2px solid #2980b9; padding: 15px; border-radius: 8px; min-width: 350px; }
+        .doctor-info h1 { margin: 0; color: #2c3e50; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
+        .doctor-info h2 { margin: 5px 0; color: #2980b9; font-size: 18px; font-weight: 600; }
+        .doctor-info p { margin: 2px 0; color: #34495e; font-size: 14px; font-weight: 500; }
+        
+        /* LOGO SECTION (Right) */
+        .logo-section { text-align: right; }
+        .hospital-logo { width: 100px; height: 100px; object-fit: contain; }
+
+        /* FORM BOXES */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .input-group { display: flex; flex-direction: column; }
+        label { font-weight: bold; color: #2c3e50; margin-bottom: 5px; font-size: 14px; }
+        input, select { padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 15px; background: #fff; }
+        input:focus { border-color: #2980b9; outline: none; box-shadow: 0 0 5px rgba(41,128,185,0.3); }
+
+        /* VITALS SECTION */
+        .vitals-card { background: #fdfdfd; border: 1px solid #e2e8f0; padding: 20px; border-radius: 10px; margin-top: 10px; }
+        .vitals-card h3 { margin-top: 0; color: #27ae60; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .vitals-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+
+        /* SAVE BUTTON */
+        #saveBtn { width: 100%; padding: 18px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 30px; transition: 0.3s; box-shadow: 0 4px 6px rgba(39,174,96,0.2); }
+        #saveBtn:hover { background: #219150; transform: translateY(-1px); }
+        #saveBtn:disabled { background: #95a5a6; cursor: not-allowed; }
+
+        .auto-tag { background: #fff3cd; color: #856404; font-weight: bold; border: 1px solid #ffeeba; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Sri Raja Rajeshwari Hospital</h2>
-    
-    <div class="grid">
-        <div>
-            <label>Date</label>
-            <input type="date" id="date">
+    <div class="header">
+        <div class="doctor-info">
+            <h1>Sri Raja Rajeshwari Hospital</h1>
+            <h2>Dr. Jayachander, MBBS, MD</h2>
+            <p><strong>General Medicine Specialist</strong></p>
+            <p>Registration No: [Your Reg No Here]</p>
+            <p>Suraram Colony, Hyderabad</p>
         </div>
-        <div>
-            <label>OPD Number</label>
-            <input type="text" id="opd_no" placeholder="e.g. 101">
-        </div>
-        <div>
-            <label>Patient Name</label>
-            <input type="text" id="name" placeholder="Full Name">
-        </div>
-        <div>
-            <label>Age</label>
-            <input type="number" id="age">
-        </div>
-        <div>
-            <label>Sex</label>
-            <select id="sex">
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-            </select>
-        </div>
-        <div>
-            <label>Phone Number</label>
-            <input type="text" id="phone">
-        </div>
-        <div>
-            <label>Village/Town</label>
-            <input type="text" id="village">
+
+        <div class="logo-section">
+            <img class="hospital-logo" src="https://cdn-icons-png.flaticon.com/512/687/687529.png" alt="Hospital Logo">
+            <p style="margin: 5px 0 0 0; font-weight: bold; color: #27ae60;">SRR HMS</p>
         </div>
     </div>
 
-    <div class="vitals-section">
+    <div class="grid">
+        <div class="input-group">
+            <label>Visit Date</label>
+            <input type="date" id="date">
+        </div>
+        <div class="input-group">
+            <label>OPD Number (Generated)</label>
+            <input type="text" id="opd_no" class="auto-tag" readonly>
+        </div>
+        <div class="input-group">
+            <label>Patient Name</label>
+            <input type="text" id="name" placeholder="Enter Full Name">
+        </div>
+        <div class="input-group">
+            <label>Age / Sex</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="number" id="age" placeholder="Age" style="width: 50%;">
+                <select id="sex" style="width: 50%;">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+        </div>
+        <div class="input-group">
+            <label>Mobile Number</label>
+            <input type="text" id="phone" placeholder="10-digit number">
+        </div>
+        <div class="input-group">
+            <label>Village / Town</label>
+            <input type="text" id="village" placeholder="Location">
+        </div>
+    </div>
+
+    <div class="vitals-card">
         <h3>Clinical Vitals</h3>
-        <div class="grid">
-            <div>
+        <div class="vitals-grid">
+            <div class="input-group">
                 <label>Weight (kg)</label>
                 <input type="text" id="weight">
             </div>
-            <div>
+            <div class="input-group">
                 <label>BP (mmHg)</label>
                 <input type="text" id="bp" placeholder="120/80">
             </div>
-            <div>
+            <div class="input-group">
                 <label>Pulse (bpm)</label>
                 <input type="text" id="pulse">
             </div>
-            <div>
+            <div class="input-group">
                 <label>SpO2 (%)</label>
                 <input type="text" id="spo2">
             </div>
-            <div>
+            <div class="input-group">
                 <label>Temp (°F)</label>
                 <input type="text" id="temp">
             </div>
@@ -88,8 +123,17 @@
 </div>
 
 <script>
-    // Automatically set today's date
-    document.getElementById('date').valueAsDate = new Date();
+    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbzyomvR_bYHCS0mURzmCbG-kx4XrxXko9I_hjc-DamV-NFg0ECgmuIiKuelF4tw9AMliA/exec";
+
+    // Setup on Page Load
+    window.onload = () => {
+        document.getElementById('date').valueAsDate = new Date();
+        
+        // Auto-generate OPD based on date and unique time suffix
+        const now = new Date();
+        const opdSerial = now.getDate().toString() + (now.getMonth() + 1).toString() + now.getHours().toString() + now.getMinutes().toString();
+        document.getElementById('opd_no').value = "SRR-" + opdSerial;
+    };
 
     async function registerPatient() {
         const btn = document.getElementById('saveBtn');
@@ -108,26 +152,24 @@
             temp: document.getElementById('temp').value
         };
 
-        const googleUrl = "https://script.google.com/macros/s/AKfycbzyomvR_bYHCS0mURzmCbG-kx4XrxXko9I_hjc-DamV-NFg0ECgmuIiKuelF4tw9AMliA/exec";
-
-        if(!data.name || !data.opd_no) {
-            alert("Please enter at least Name and OPD Number");
+        if(!data.name) {
+            alert("Patient Name is required!");
             return;
         }
 
-        btn.innerText = "Saving...";
+        btn.innerText = "Processing Deployment...";
         btn.disabled = true;
 
         try {
-            await fetch(googleUrl, {
+            await fetch(GOOGLE_URL, {
                 method: 'POST',
-                mode: 'no-cors', 
+                mode: 'no-cors',
                 body: JSON.stringify(data)
             });
-            alert("✅ Patient Record Saved to Google Sheets!");
-            location.reload(); 
-        } catch (error) {
-            alert("Network Error: Check Internet Connection");
+            alert("✅ Record Saved Successfully to Sri Raja Rajeshwari Hospital Database!");
+            location.reload();
+        } catch (e) {
+            alert("Connection Error. Please try again.");
             btn.innerText = "SAVE PATIENT RECORD";
             btn.disabled = false;
         }
