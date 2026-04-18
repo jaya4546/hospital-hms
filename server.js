@@ -8,36 +8,22 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// DOCTOR: If this still fails, please ensure you DID NOT add symbols like @ in the password.
-// If you did, recreate the user 'jayachander089' with just letters and numbers.
-const mongoURI = "mongodb+srv://jayachander089:jayachander089@cluster0.p7qf8.mongodb.net/SRR_Hospital?retryWrites=true&w=majority";
+// DOCTOR: I have added 'admin' authSource to ensure your new user is recognized
+const mongoURI = "mongodb+srv://jayachander089:jayachander089@cluster0.p7qf8.mongodb.net/SRR_Hospital?retryWrites=true&w=majority&authSource=admin";
 
-const connectDB = async () => {
+async function connectDB() {
     try {
-        await mongoose.connect(mongoURI, {
-            serverSelectionTimeoutMS: 10000, // Wait 10 seconds before giving up
-            socketTimeoutMS: 45000,         // Close sockets after 45 seconds
-        });
-        console.log("✅ SUCCESS: Database Linked to Hospital System");
+        await mongoose.connect(mongoURI);
+        console.log("✅ HMS Cloud Database Connected");
     } catch (err) {
-        console.error("❌ DATABASE ERROR:", err.message);
-        setTimeout(connectDB, 5000); // Auto-retry every 5 seconds
+        console.error("❌ Connection Failed:", err.message);
+        setTimeout(connectDB, 5000);
     }
-};
-
+}
 connectDB();
 
-const patientSchema = new mongoose.Schema({
-    opd_no: String,
-    name: String,
-    age: String,
-    sex: String,
-    date: String,
-    village: String,
-    phone: String
-}, { strict: false });
-
-const Patient = mongoose.model('Patient', patientSchema);
+// Schema - We use 'strict: false' so it never rejects data
+const Patient = mongoose.model('Patient', new mongoose.Schema({}, { strict: false }));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
@@ -52,14 +38,16 @@ app.get('/get-patients', async (req, res) => {
 
 app.post('/register-patient', async (req, res) => {
     try {
-        const n = new Patient(req.body);
-        await n.save();
+        console.log("Saving patient...");
+        const newPatient = new Patient(req.body);
+        const saved = await newPatient.save();
+        console.log("✅ Saved ID:", saved._id);
         res.status(200).json({ message: "Success" });
-    } catch (e) { 
-        console.error("Save Error:", e.message);
-        res.status(500).json({ error: e.message }); 
+    } catch (error) {
+        console.error("❌ Save Error Details:", error.message);
+        res.status(500).json({ error: error.message });
     }
 });
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`🚀 HMS active on ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Hospital System Live on Port ${PORT}`));
