@@ -11,9 +11,12 @@
         
         /* Header & Logo Section */
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ddd; padding-bottom: 15px; margin-bottom: 20px; }
+        .hosp-brand { display: flex; align-items: center; gap: 20px; }
+        .logo-img { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd; }
         .hosp-info { text-align: left; }
         .doc-info { text-align: right; background: #f1f8e9; padding: 12px; border-radius: 6px; border-right: 5px solid var(--primary); min-width: 250px; }
-        .hosp-name { font-size: 32px; color: var(--accent); margin: 0; font-weight: 900; letter-spacing: 1px; }
+        .hosp-name { font-size: 28px; color: var(--accent); margin: 0; font-weight: 900; letter-spacing: 1px; }
+        .hosp-addr { font-size: 13px; color: #555; margin: 3px 0; font-weight: 600; line-height: 1.4; }
         
         /* Input Grid */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; margin-bottom: 15px; }
@@ -41,9 +44,15 @@
 
 <div class="container">
     <div class="header">
-        <div class="hosp-info">
-            <h1 class="hosp-name">SRI RAJA RAJESHWARI HOSPITAL</h1>
-            <p style="margin:2px 0; font-weight: bold; color: #444;">24/7 Emergency & General Medicine</p>
+        <div class="hosp-brand">
+            <img src="logo.jpg" alt="Hospital Logo" class="logo-img" onerror="this.style.display='none'">
+            <div class="hosp-info">
+                <h1 class="hosp-name">SRI RAJA RAJESHWARI HOSPITAL</h1>
+                <p class="hosp-addr">
+                    Add: Suraram colony NTR road Opp: Ramaleela maidanam<br>
+                    Telangana 500055
+                </p>
+            </div>
         </div>
         <div class="doc-info">
             <h3 style="margin:0; color:var(--primary); font-size: 20px;">Dr. M. Jayachander</h3>
@@ -110,7 +119,6 @@
 </div>
 
 <script>
-    // YOUR UPDATED GOOGLE SCRIPT URL
     const API = "https://script.google.com/macros/s/AKfycbyxAwycLUjAcJVYfhYNRnmfRGLX8Wq6otcAv-LnBz-uEBj50KNghy8anxqKDVhbDeDIFQ/exec";
     let patients = [], history = [];
 
