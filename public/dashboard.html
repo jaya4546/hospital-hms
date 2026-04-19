@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRR Hospital HMS v2.6</title>
+    <title>SRR Hospital HMS - Final Fix v2.8</title>
     <style>
         :root { --primary: #27ae60; --dark: #2c3e50; --bg: #f0f4f7; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #333; }
         .container { max-width: 1200px; background: white; padding: 25px; border-radius: 15px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid var(--primary); }
         
-        /* HEADER RESTORED */
+        /* HEADER */
         .header-main { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
         .hospital-logo { width: 220px; height: auto; margin-bottom: 10px; }
         .header-sub { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
@@ -17,7 +17,6 @@
         .dr-name { font-size: 19px; font-weight: bold; color: #1a5276; display: block; }
 
         /* FORM */
-        h3 { font-size: 16px; color: var(--dark); border-left: 4px solid var(--primary); padding-left: 10px; margin-bottom: 15px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .input-group { display: flex; flex-direction: column; }
         label { font-weight: bold; font-size: 12px; margin-bottom: 5px; color: #555; }
@@ -48,10 +47,9 @@
             <span class="dr-name">Dr. M. Jayachander</span>
             <span style="font-size:13px;">MBBS, MD (General Medicine) | Reg: TSMC/43070</span>
         </div>
-        <div style="text-align: right; color: #777; font-size: 12px;">SRR HMS Clinical Suite v2.6</div>
+        <div style="text-align: right; color: #777; font-size: 12px;">SRR HMS Clinical Suite v2.8</div>
     </div>
 
-    <h3>New Patient Registration</h3>
     <div class="grid">
         <div class="input-group"><label>Date</label><input type="date" id="date"></div>
         <div class="input-group"><label>OPD No</label><input type="text" id="opd_no" style="background:#fffde7" readonly></div>
@@ -108,8 +106,6 @@
             spo2: document.getElementById('spo2').value,
             temp: document.getElementById('temp').value
         };
-        if(!payload.name) return alert("Enter Patient Name");
-        
         await fetch(GOOGLE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
         alert("Patient Registered Successfully!");
         location.reload();
@@ -125,25 +121,30 @@
             data.reverse().forEach(row => {
                 const tr = document.createElement('tr');
                 
-                /** * RIGID MAPPING: 
-                 * We use the exact headers defined in Code.gs doPost (converted to lowercase_underscores)
-                 **/
-                const dDate = (row.date || row.timestamp || '').toString().split('T')[0];
-                const dOPD = row.opd_no || '---';
-                const dName = row.name || '---';
-                const dAgeSex = (row.age || '-') + " / " + (row.sex || '-');
-                
-                const vBP = row.bp || '-';
-                const vP = row.pulse || '-';
-                const vO = row.spo2 || '-';
-                const vT = row.temp || '-';
+                // SMARTER MAPPING: This looks for specific keywords in your column names
+                // to make sure Name doesn't end up in OPD No.
+                let dDate = "", dOPD = "", dName = "", dAge = "", dSex = "", dBP = "", dP = "", dO = "", dT = "";
+
+                for (let key in row) {
+                    let k = key.toLowerCase();
+                    let val = row[key];
+                    if (k.includes('date')) dDate = val.toString().split('T')[0];
+                    if (k.includes('opd')) dOPD = val;
+                    if (k.includes('name')) dName = val;
+                    if (k.includes('age')) dAge = val;
+                    if (k.includes('sex')) dSex = val;
+                    if (k.includes('bp')) dBP = val;
+                    if (k.includes('pulse')) dP = val;
+                    if (k.includes('spo2')) dO = val;
+                    if (k.includes('temp')) dT = val;
+                }
 
                 tr.innerHTML = `
-                    <td>${dDate}</td>
-                    <td style="font-weight:bold; color:var(--primary);">${dOPD}</td>
-                    <td>${dName}</td>
-                    <td>${dAgeSex}</td>
-                    <td><small>BP: ${vBP} | P: ${vP} | O2: ${vO}% | T: ${vT}</small></td>
+                    <td>${dDate || '---'}</td>
+                    <td style="font-weight:bold; color:var(--primary);">${dOPD || '---'}</td>
+                    <td>${dName || '---'}</td>
+                    <td>${dAge}/${dSex}</td>
+                    <td><small>BP: ${dBP} | P: ${dP} | O2: ${dO}% | T: ${dT}</small></td>
                     <td>
                         <button class="btn-action" style="background:#3498db;" onclick="alert('Edit ready')">EDIT</button>
                         <button class="btn-action" style="background:#e67e22;" onclick="alert('Treat ready')">TREAT</button>
@@ -152,11 +153,9 @@
                 tbody.appendChild(tr);
             });
         } catch (e) {
-            console.error(e);
-            document.getElementById('tableBody').innerHTML = "<tr><td colspan='6' style='text-align:center;'>Error loading data. Check internet.</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Error loading data. Check internet.</td></tr>";
         }
     }
 </script>
-
 </body>
 </html>
