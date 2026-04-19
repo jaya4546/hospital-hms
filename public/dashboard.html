@@ -3,32 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRR Hospital HMS - Final Fix v2.8</title>
+    <title>SRR Hospital HMS v2.9 - Final Mapping</title>
     <style>
         :root { --primary: #27ae60; --dark: #2c3e50; --bg: #f0f4f7; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #333; }
         .container { max-width: 1200px; background: white; padding: 25px; border-radius: 15px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid var(--primary); }
-        
-        /* HEADER */
         .header-main { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
         .hospital-logo { width: 220px; height: auto; margin-bottom: 10px; }
-        .header-sub { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .doctor-box { border: 2px solid var(--dark); padding: 12px; border-radius: 8px; background: #fdfdfd; text-align: left; }
-        .dr-name { font-size: 19px; font-weight: bold; color: #1a5276; display: block; }
-
-        /* FORM */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .doctor-box { border: 2px solid var(--dark); padding: 12px; border-radius: 8px; background: #fdfdfd; display: inline-block; text-align: left; }
+        .dr-name { font-size: 19px; font-weight: bold; color: #1a5276; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
         .input-group { display: flex; flex-direction: column; }
-        label { font-weight: bold; font-size: 12px; margin-bottom: 5px; color: #555; }
-        input, select { padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; outline: none; }
-        
-        /* BUTTONS */
-        .btn { padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-save { background: var(--primary); color: white; width: 100%; font-size: 16px; margin-top: 10px; }
-        .btn-action { padding: 6px 12px; font-size: 11px; color: white; border-radius: 4px; border:none; cursor: pointer; }
-
-        /* TABLE */
-        .table-container { overflow-x: auto; margin-top: 30px; background: #fff; border: 1px solid #ddd; border-radius: 8px; }
+        label { font-weight: bold; font-size: 11px; margin-bottom: 4px; color: #555; }
+        input, select { padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; }
+        .btn { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-save { background: var(--primary); color: white; width: 100%; font-size: 16px; }
+        .btn-action { padding: 6px 10px; font-size: 11px; color: white; border-radius: 4px; border:none; cursor: pointer; }
+        .table-container { overflow-x: auto; margin-top: 30px; border: 1px solid #ddd; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; }
         th { background: var(--dark); color: white; padding: 12px; text-align: left; font-size: 13px; }
         td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
@@ -40,16 +31,13 @@
     <div class="header-main">
         <img src="logo.jpg" alt="SRR Hospital" class="hospital-logo">
         <p style="font-size: 12px; font-weight: bold; margin:0;">Suraram colony NTR road Opp: Ramaleela maidanam Telangana 500055</p>
-    </div>
-
-    <div class="header-sub">
-        <div class="doctor-box">
-            <span class="dr-name">Dr. M. Jayachander</span>
+        <div class="doctor-box" style="margin-top:10px;">
+            <span class="dr-name">Dr. M. Jayachander</span><br>
             <span style="font-size:13px;">MBBS, MD (General Medicine) | Reg: TSMC/43070</span>
         </div>
-        <div style="text-align: right; color: #777; font-size: 12px;">SRR HMS Clinical Suite v2.8</div>
     </div>
 
+    <h3>Patient Registration</h3>
     <div class="grid">
         <div class="input-group"><label>Date</label><input type="date" id="date"></div>
         <div class="input-group"><label>OPD No</label><input type="text" id="opd_no" style="background:#fffde7" readonly></div>
@@ -62,7 +50,7 @@
         <div class="input-group"><label>SpO2</label><input type="text" id="spo2"></div>
         <div class="input-group"><label>Temp</label><input type="text" id="temp"></div>
     </div>
-    <button class="btn btn-save" onclick="registerPatient()">SAVE & REGISTER PATIENT</button>
+    <button class="btn btn-save" onclick="registerPatient()">SAVE PATIENT</button>
 
     <div class="table-container">
         <table>
@@ -107,7 +95,7 @@
             temp: document.getElementById('temp').value
         };
         await fetch(GOOGLE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-        alert("Patient Registered Successfully!");
+        alert("Registration Successful!");
         location.reload();
     }
 
@@ -119,32 +107,27 @@
             tbody.innerHTML = "";
 
             data.reverse().forEach(row => {
-                const tr = document.createElement('tr');
+                // FORCE VALUES INTO ARRAY TO PREVENT MAPPING JUMPS
+                const v = Object.values(row); 
                 
-                // SMARTER MAPPING: This looks for specific keywords in your column names
-                // to make sure Name doesn't end up in OPD No.
-                let dDate = "", dOPD = "", dName = "", dAge = "", dSex = "", dBP = "", dP = "", dO = "", dT = "";
+                // STRICT MAPPING BY COLUMN POSITION
+                const dDate = (v[0] || '').toString().split('T')[0];
+                const dOPD  = v[1] || '---';
+                const dName = v[2] || '---';
+                const dAge  = v[3] || '';
+                const dSex  = v[4] || '';
+                const dBP   = v[7] || '-';
+                const dP    = v[8] || '-';
+                const dO2   = v[9] || '-';
+                const dTemp = v[10] || '-';
 
-                for (let key in row) {
-                    let k = key.toLowerCase();
-                    let val = row[key];
-                    if (k.includes('date')) dDate = val.toString().split('T')[0];
-                    if (k.includes('opd')) dOPD = val;
-                    if (k.includes('name')) dName = val;
-                    if (k.includes('age')) dAge = val;
-                    if (k.includes('sex')) dSex = val;
-                    if (k.includes('bp')) dBP = val;
-                    if (k.includes('pulse')) dP = val;
-                    if (k.includes('spo2')) dO = val;
-                    if (k.includes('temp')) dT = val;
-                }
-
+                const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${dDate || '---'}</td>
-                    <td style="font-weight:bold; color:var(--primary);">${dOPD || '---'}</td>
-                    <td>${dName || '---'}</td>
-                    <td>${dAge}/${dSex}</td>
-                    <td><small>BP: ${dBP} | P: ${dP} | O2: ${dO}% | T: ${dT}</small></td>
+                    <td>${dDate}</td>
+                    <td style="font-weight:bold; color:var(--primary);">${dOPD}</td>
+                    <td>${dName}</td>
+                    <td>${dAge} / ${dSex}</td>
+                    <td><small>BP: ${dBP} | P: ${dP} | O2: ${dO2}% | T: ${dTemp}</small></td>
                     <td>
                         <button class="btn-action" style="background:#3498db;" onclick="alert('Edit ready')">EDIT</button>
                         <button class="btn-action" style="background:#e67e22;" onclick="alert('Treat ready')">TREAT</button>
@@ -153,7 +136,7 @@
                 tbody.appendChild(tr);
             });
         } catch (e) {
-            tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Error loading data. Check internet.</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Check Network or Google Script Deployment.</td></tr>";
         }
     }
 </script>
