@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRR Hospital HMS - v3.0</title>
+    <title>SRR Hospital HMS - Edit Mode Enabled</title>
     <style>
-        :root { --primary: #27ae60; --dark: #2c3e50; --bg: #f0f4f7; }
+        :root { --primary: #27ae60; --dark: #2c3e50; --bg: #f0f4f7; --edit: #3498db; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; }
         .container { max-width: 1200px; background: white; padding: 25px; border-radius: 15px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid var(--primary); }
         .header-main { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
@@ -15,11 +15,16 @@
         .input-group { display: flex; flex-direction: column; }
         label { font-weight: bold; font-size: 11px; margin-bottom: 4px; color: #555; }
         input, select { padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 13px; }
-        .btn-save { background: var(--primary); color: white; width: 100%; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; }
+        
+        .btn-main { color: white; width: 100%; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; }
+        .btn-reg { background: var(--primary); }
+        .btn-update { background: var(--edit); display: none; }
+        
         .table-container { overflow-x: auto; margin-top: 30px; background: white; border-radius: 8px; border: 1px solid #ddd; }
         table { width: 100%; border-collapse: collapse; min-width: 1100px; }
         th { background: var(--dark); color: white; padding: 12px; text-align: left; font-size: 13px; }
         td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
+        .btn-act { padding: 5px 10px; cursor: pointer; border: none; border-radius: 4px; color: white; font-weight: bold; margin-right: 5px; }
     </style>
 </head>
 <body>
@@ -33,6 +38,7 @@
         </div>
     </div>
 
+    <h3 id="formTitle">Patient Registration</h3>
     <div class="grid">
         <div class="input-group"><label>Date</label><input type="date" id="date"></div>
         <div class="input-group"><label>OPD No</label><input type="text" id="opd_no" readonly style="background:#fffde7"></div>
@@ -46,19 +52,16 @@
         <div class="input-group"><label>SpO2</label><input type="text" id="spo2"></div>
         <div class="input-group"><label>Temp</label><input type="text" id="temp"></div>
     </div>
-    <button class="btn-save" onclick="register()">SAVE PATIENT RECORD</button>
+    
+    <button id="btnSave" class="btn-main btn-reg" onclick="submitData('REGISTRATION')">SAVE PATIENT RECORD</button>
+    <button id="btnUpdate" class="btn-main btn-update" onclick="submitData('EDIT')">UPDATE PATIENT DETAILS</button>
+    <button id="btnCancel" style="display:none; background:#95a5a6; margin-top:5px;" class="btn-main" onclick="resetForm()">CANCEL EDIT</button>
 
     <div class="table-container">
         <table>
             <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>OPD No</th>
-                    <th>Name</th>
-                    <th>Age/Sex</th>
-                    <th>Village</th>
-                    <th>Vitals (BP/P/O2/T)</th>
-                    <th>Action</th>
+                    <th>Date</th><th>OPD No</th><th>Name</th><th>Age/Sex</th><th>Village</th><th>Vitals</th><th>Actions</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -68,16 +71,35 @@
 
 <script>
     const G_URL = "https://script.google.com/macros/s/AKfycbxgasf0L15wWic3-g8AY5ltXzaJ8p-6EKR57_PxGyS02DQIVuBmUkEWg3BXOH-VlZsWuw/exec";
+    let allRecords = [];
 
     window.onload = () => {
-        document.getElementById('date').valueAsDate = new Date();
-        document.getElementById('opd_no').value = "SRR-" + Math.floor(100000 + Math.random() * 900000);
+        resetForm();
         fetchData();
     };
 
-    async function register() {
+    function resetForm() {
+        document.getElementById('date').valueAsDate = new Date();
+        document.getElementById('opd_no').value = "SRR-" + Math.floor(100000 + Math.random() * 900000);
+        document.getElementById('name').value = "";
+        document.getElementById('age').value = "";
+        document.getElementById('phone').value = "";
+        document.getElementById('village').value = "";
+        document.getElementById('bp').value = "";
+        document.getElementById('pulse').value = "";
+        document.getElementById('spo2').value = "";
+        document.getElementById('temp').value = "";
+        
+        document.getElementById('btnSave').style.display = "block";
+        document.getElementById('btnUpdate').style.display = "none";
+        document.getElementById('btnCancel').style.display = "none";
+        document.getElementById('formTitle').innerText = "Patient Registration";
+        document.getElementById('formTitle').style.color = "var(--dark)";
+    }
+
+    async function submitData(actionType) {
         const d = {
-            type: "REGISTRATION",
+            type: actionType,
             date: document.getElementById('date').value,
             opd_no: document.getElementById('opd_no').value,
             name: document.getElementById('name').value,
@@ -91,31 +113,58 @@
             temp: document.getElementById('temp').value
         };
         if(!d.name) return alert("Enter Name");
+        
         await fetch(G_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
-        alert("Patient Saved!"); location.reload();
+        alert(actionType === 'EDIT' ? "Details Updated!" : "Patient Saved!");
+        location.reload();
     }
 
     async function fetchData() {
-        try {
-            const res = await fetch(G_URL);
-            const data = await res.json();
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = "";
+        const res = await fetch(G_URL);
+        allRecords = await res.json();
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = "";
 
-            data.reverse().forEach(row => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${(row.date || '').toString().split('T')[0]}</td>
-                    <td style="font-weight:bold; color:var(--primary)">${row.opd || ''}</td>
-                    <td>${row.name || ''}</td>
-                    <td>${row.age || ''} / ${row.sex || ''}</td>
-                    <td>${row.vil || ''}</td>
-                    <td><small>BP: ${row.bp || ''} | P: ${row.pu || ''} | O2: ${row.sp || ''}% | T: ${row.te || ''}</small></td>
-                    <td><button style="cursor:pointer" onclick="alert('Treating ${row.name}')">TREAT</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        } catch(e) { console.log(e); }
+        allRecords.reverse().forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${(row.date || '').toString().split('T')[0]}</td>
+                <td style="font-weight:bold; color:var(--primary)">${row.opd}</td>
+                <td>${row.name}</td>
+                <td>${row.age}/${row.sex}</td>
+                <td>${row.vil}</td>
+                <td><small>BP:${row.bp} P:${row.pu} O2:${row.sp}% T:${row.te}</small></td>
+                <td>
+                    <button class="btn-act" style="background:var(--edit)" onclick="editRow('${row.opd}')">EDIT</button>
+                    <button class="btn-act" style="background:var(--dark)" onclick="alert('Treating ${row.name}')">TREAT</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function editRow(opd) {
+        const p = allRecords.find(r => r.opd === opd);
+        if(!p) return;
+
+        document.getElementById('date').value = p.date.toString().split('T')[0];
+        document.getElementById('opd_no').value = p.opd;
+        document.getElementById('name').value = p.name;
+        document.getElementById('age').value = p.age;
+        document.getElementById('sex').value = p.sex;
+        document.getElementById('phone').value = p.ph;
+        document.getElementById('village').value = p.vil;
+        document.getElementById('bp').value = p.bp;
+        document.getElementById('pulse').value = p.pu;
+        document.getElementById('spo2').value = p.sp;
+        document.getElementById('temp').value = p.te;
+
+        document.getElementById('btnSave').style.display = "none";
+        document.getElementById('btnUpdate').style.display = "block";
+        document.getElementById('btnCancel').style.display = "block";
+        document.getElementById('formTitle').innerText = "Editing Details for " + p.name;
+        document.getElementById('formTitle').style.color = "var(--edit)";
+        window.scrollTo(0,0);
     }
 </script>
 </body>
