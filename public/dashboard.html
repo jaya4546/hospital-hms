@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRR Hospital HMS - Version 6.0</title>
+    <title>SRR Hospital HMS - Final Fix</title>
     <style>
         :root { --primary: #27ae60; --dark: #2c3e50; --bg: #f4f7f6; --treat: #e67e22; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
@@ -18,55 +18,34 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { background: var(--dark); color: white; padding: 12px; text-align: left; }
         td { padding: 12px; border-bottom: 1px solid #eee; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); overflow-y: auto; z-index: 1000; }
-        .modal-body { background: white; max-width: 800px; margin: 40px auto; padding: 30px; border-radius: 10px; border-top: 10px solid var(--treat); }
-        .drug-row { display: grid; grid-template-columns: 2fr 1fr 1fr 2fr auto; gap: 10px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <div class="header">
         <h1 class="hosp-name">Sri Raja Rajeshwari Hospital</h1>
         <p><b>Dr. M. Jayachander</b> | MBBS, MD (General Medicine) | Reg: TSMC/FMR/43070</p>
     </div>
-
     <div class="grid">
         <div class="input-box"><label>Date</label><input type="date" id="date"></div>
-        <div class="input-box"><label>OPD No</label><input type="text" id="opd_no" readonly></div>
+        <div class="input-box"><label>OPD No</label><input type="text" id="opd_no" readonly style="background:#f9f9f9"></div>
         <div class="input-box"><label>Name</label><input type="text" id="p_name"></div>
         <div class="input-box"><label>Age</label><input type="number" id="p_age"></div>
         <div class="input-box"><label>Sex</label><select id="p_sex"><option>Male</option><option>Female</option></select></div>
+        <div class="input-box"><label>Phone</label><input type="text" id="p_ph"></div>
         <div class="input-box"><label>Village</label><input type="text" id="p_vil"></div>
         <div class="input-box"><label>BP</label><input type="text" id="p_bp"></div>
         <div class="input-box"><label>Pulse</label><input type="text" id="p_pu"></div>
     </div>
     <button class="save-btn" onclick="submitReg()">SAVE PATIENT</button>
-
     <table>
-        <thead><tr><th>Date</th><th>OPD</th><th>Name</th><th>Age/Sex</th><th>Village</th><th>Action</th></tr></thead>
-        <tbody id="tbody"><tr><td colspan="6" style="text-align:center;">Attempting to reach database...</td></tr></tbody>
+        <thead><tr><th>Date</th><th>OPD</th><th>Name</th><th>Phone</th><th>Village</th><th>Action</th></tr></thead>
+        <tbody id="tbody"><tr><td colspan="6" style="text-align:center;">Fetching data from Google Sheets...</td></tr></tbody>
     </table>
 </div>
 
-<div id="mTreat" class="modal">
-    <div class="modal-body">
-        <h2 id="mTitle" style="color:var(--treat);">Clinical Data</h2>
-        <div class="grid" style="grid-template-columns: 1fr 1fr;">
-            <div class="input-box"><label>Complaints</label><textarea id="mComp" rows="3"></textarea></div>
-            <div class="input-box"><label>Investigations</label><textarea id="mInv" rows="3"></textarea></div>
-        </div>
-        <div id="dList"></div>
-        <button onclick="addRow()">+ Add Drug</button>
-        <div class="input-box" style="margin-top:15px;"><label>Notes</label><textarea id="mNotes" rows="2"></textarea></div>
-        <button class="save-btn" style="background:var(--treat); margin-top:20px;" onclick="saveTreat()">SAVE & CLOSE</button>
-        <button class="save-btn" style="background:#888; margin-top:10px;" onclick="document.getElementById('mTreat').style.display='none'">CANCEL</button>
-    </div>
-</div>
-
 <script>
-    // CACHE BUSTER: This ensures the browser never hangs on an old version
-    const API = "https://script.google.com/macros/s/AKfycbxZyATiFk2ePv3njOhLLC6EFy_8xtmvIuS69iAROQLIJlKVv62WK24CRD2Fnzy1fQtUEQ/exec?v=" + new Date().getTime();
+    const API = "https://script.google.com/macros/s/AKfycbxZyATiFk2ePv3njOhLLC6EFy_8xtmvIuS69iAROQLIJlKVv62WK24CRD2Fnzy1fQtUEQ/exec";
 
     window.onload = () => { 
         document.getElementById('date').valueAsDate = new Date();
@@ -77,55 +56,21 @@
     async function loadData() {
         const body = document.getElementById('tbody');
         try {
-            const res = await fetch(API);
+            const res = await fetch(API + "?v=" + new Date().getTime());
             const data = await res.json();
             body.innerHTML = "";
             (data.patients || []).reverse().forEach(p => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${p.date.split('T')[0]}</td><td>${p.opd}</td><td>${p.name}</td><td>${p.age}/${p.sex}</td><td>${p.vil}</td><td><button onclick="openTreat('${p.opd}','${p.name}', ${JSON.stringify(data.history || [])})">TREAT</button></td>`;
+                tr.innerHTML = `<td>${p.date}</td><td>${p.opd}</td><td>${p.name}</td><td>${p.ph}</td><td>${p.vil}</td><td><button onclick="alert('Treating ${p.name}')">TREAT</button></td>`;
                 body.appendChild(tr);
             });
-        } catch(e) {
-            body.innerHTML = "<tr><td colspan='6' style='text-align:center; color:red;'>Database unreachable. Re-deploy Google Script as 'Anyone'.</td></tr>";
-        }
-    }
-
-    function openTreat(opd, name, history) {
-        document.getElementById('mTitle').innerText = "Patient: " + name;
-        document.getElementById('mComp').value = ""; document.getElementById('mInv').value = "";
-        document.getElementById('mNotes').value = ""; document.getElementById('dList').innerHTML = "";
-        const last = history.filter(h => h.opd.toString() === opd.toString()).pop();
-        if (last) {
-            document.getElementById('mComp').value = last.comp || "";
-            document.getElementById('mInv').value = last.inv || "";
-            document.getElementById('mNotes').value = last.note || "";
-            try { JSON.parse(last.rx).forEach(d => addRow(d.n, d.r, d.d, d.m)); } catch(e) { addRow(); }
-        } else { addRow(); }
-        window.activeOPD = opd; window.activeName = name;
-        document.getElementById('mTreat').style.display = "block";
-    }
-
-    function addRow(n="", r="", d="", m="") {
-        const div = document.createElement('div'); div.className = 'drug-row';
-        div.innerHTML = `<input type="text" placeholder="Drug" class="dn" value="${n}"><input type="text" placeholder="Route" class="dr" value="${r}"><input type="text" placeholder="Days" class="dd" value="${d}"><input type="text" placeholder="Remarks" class="dm" value="${m}"><button onclick="this.parentElement.remove()">✖</button>`;
-        document.getElementById('dList').appendChild(div);
-    }
-
-    async function saveTreat() {
-        let drugs = [];
-        document.querySelectorAll('.drug-row').forEach(r => {
-            let n = r.querySelector('.dn').value;
-            if(n) drugs.push({ n: n, r: r.querySelector('.dr').value, d: r.querySelector('.dd').value, m: r.querySelector('.dm').value });
-        });
-        const p = { type: "TREATMENT", opd_no: window.activeOPD, name: window.activeName, complaints: document.getElementById('mComp').value, investigations: document.getElementById('mInv').value, drugs: drugs, notes: document.getElementById('mNotes').value };
-        await fetch(API.split('?')[0], { method: 'POST', mode: 'no-cors', body: JSON.stringify(p) });
-        alert("Saved!"); location.reload();
+        } catch(e) { body.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Check Google Script Deployment.</td></tr>"; }
     }
 
     async function submitReg() {
-        const d = { type: "REG", date: document.getElementById('date').value, opd_no: document.getElementById('opd_no').value, name: document.getElementById('p_name').value, age: document.getElementById('p_age').value, sex: document.getElementById('p_sex').value, village: document.getElementById('p_vil').value, bp: document.getElementById('p_bp').value, pulse: document.getElementById('p_pu').value };
-        await fetch(API.split('?')[0], { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
-        alert("Registered!"); location.reload();
+        const d = { type: "REG", date: document.getElementById('date').value, opd_no: document.getElementById('opd_no').value, name: document.getElementById('p_name').value, age: document.getElementById('p_age').value, sex: document.getElementById('p_sex').value, phone: document.getElementById('p_ph').value, village: document.getElementById('p_vil').value, bp: document.getElementById('p_bp').value, pulse: document.getElementById('p_pu').value };
+        await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
+        alert("Success!"); location.reload();
     }
 </script>
 </body>
