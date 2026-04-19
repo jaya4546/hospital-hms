@@ -3,24 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRR Hospital HMS v2.9 - Final Mapping</title>
+    <title>SRR Hospital HMS - v3.0</title>
     <style>
         :root { --primary: #27ae60; --dark: #2c3e50; --bg: #f0f4f7; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #333; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; }
         .container { max-width: 1200px; background: white; padding: 25px; border-radius: 15px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid var(--primary); }
         .header-main { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
-        .hospital-logo { width: 220px; height: auto; margin-bottom: 10px; }
-        .doctor-box { border: 2px solid var(--dark); padding: 12px; border-radius: 8px; background: #fdfdfd; display: inline-block; text-align: left; }
-        .dr-name { font-size: 19px; font-weight: bold; color: #1a5276; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .hospital-logo { width: 220px; height: auto; }
+        .doctor-box { border: 2px solid var(--dark); padding: 10px; border-radius: 8px; background: #fdfdfd; display: inline-block; text-align: left; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
         .input-group { display: flex; flex-direction: column; }
         label { font-weight: bold; font-size: 11px; margin-bottom: 4px; color: #555; }
-        input, select { padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; }
-        .btn { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-save { background: var(--primary); color: white; width: 100%; font-size: 16px; }
-        .btn-action { padding: 6px 10px; font-size: 11px; color: white; border-radius: 4px; border:none; cursor: pointer; }
-        .table-container { overflow-x: auto; margin-top: 30px; border: 1px solid #ddd; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        input, select { padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 13px; }
+        .btn-save { background: var(--primary); color: white; width: 100%; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; }
+        .table-container { overflow-x: auto; margin-top: 30px; background: white; border-radius: 8px; border: 1px solid #ddd; }
+        table { width: 100%; border-collapse: collapse; min-width: 1100px; }
         th { background: var(--dark); color: white; padding: 12px; text-align: left; font-size: 13px; }
         td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
     </style>
@@ -29,28 +26,27 @@
 
 <div class="container">
     <div class="header-main">
-        <img src="logo.jpg" alt="SRR Hospital" class="hospital-logo">
-        <p style="font-size: 12px; font-weight: bold; margin:0;">Suraram colony NTR road Opp: Ramaleela maidanam Telangana 500055</p>
-        <div class="doctor-box" style="margin-top:10px;">
-            <span class="dr-name">Dr. M. Jayachander</span><br>
-            <span style="font-size:13px;">MBBS, MD (General Medicine) | Reg: TSMC/43070</span>
+        <img src="logo.jpg" alt="Logo" class="hospital-logo">
+        <div class="doctor-box">
+            <b style="color:#1a5276; font-size:18px;">Dr. M. Jayachander</b><br>
+            <span style="font-size:12px;">MBBS, MD (General Medicine) | Reg: TSMC/43070</span>
         </div>
     </div>
 
-    <h3>Patient Registration</h3>
     <div class="grid">
         <div class="input-group"><label>Date</label><input type="date" id="date"></div>
-        <div class="input-group"><label>OPD No</label><input type="text" id="opd_no" style="background:#fffde7" readonly></div>
+        <div class="input-group"><label>OPD No</label><input type="text" id="opd_no" readonly style="background:#fffde7"></div>
         <div class="input-group"><label>Patient Name</label><input type="text" id="name"></div>
         <div class="input-group"><label>Age</label><input type="number" id="age"></div>
         <div class="input-group"><label>Sex</label><select id="sex"><option>Male</option><option>Female</option></select></div>
         <div class="input-group"><label>Mobile</label><input type="text" id="phone"></div>
+        <div class="input-group"><label>Village</label><input type="text" id="village"></div>
         <div class="input-group"><label>BP</label><input type="text" id="bp"></div>
         <div class="input-group"><label>Pulse</label><input type="text" id="pulse"></div>
         <div class="input-group"><label>SpO2</label><input type="text" id="spo2"></div>
         <div class="input-group"><label>Temp</label><input type="text" id="temp"></div>
     </div>
-    <button class="btn btn-save" onclick="registerPatient()">SAVE PATIENT</button>
+    <button class="btn-save" onclick="register()">SAVE PATIENT RECORD</button>
 
     <div class="table-container">
         <table>
@@ -60,28 +56,27 @@
                     <th>OPD No</th>
                     <th>Name</th>
                     <th>Age/Sex</th>
+                    <th>Village</th>
                     <th>Vitals (BP/P/O2/T)</th>
-                    <th>Actions</th>
+                    <th>Action</th>
                 </tr>
             </thead>
-            <tbody id="tableBody">
-                <tr><td colspan="6" style="text-align:center;">Synchronizing records...</td></tr>
-            </tbody>
+            <tbody id="tableBody"></tbody>
         </table>
     </div>
 </div>
 
 <script>
-    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbxgasf0L15wWic3-g8AY5ltXzaJ8p-6EKR57_PxGyS02DQIVuBmUkEWg3BXOH-VlZsWuw/exec";
+    const G_URL = "https://script.google.com/macros/s/AKfycbxgasf0L15wWic3-g8AY5ltXzaJ8p-6EKR57_PxGyS02DQIVuBmUkEWg3BXOH-VlZsWuw/exec";
 
     window.onload = () => {
         document.getElementById('date').valueAsDate = new Date();
         document.getElementById('opd_no').value = "SRR-" + Math.floor(100000 + Math.random() * 900000);
-        fetchRecords();
+        fetchData();
     };
 
-    async function registerPatient() {
-        const payload = {
+    async function register() {
+        const d = {
             type: "REGISTRATION",
             date: document.getElementById('date').value,
             opd_no: document.getElementById('opd_no').value,
@@ -89,55 +84,38 @@
             age: document.getElementById('age').value,
             sex: document.getElementById('sex').value,
             phone: document.getElementById('phone').value,
+            village: document.getElementById('village').value,
             bp: document.getElementById('bp').value,
             pulse: document.getElementById('pulse').value,
             spo2: document.getElementById('spo2').value,
             temp: document.getElementById('temp').value
         };
-        await fetch(GOOGLE_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-        alert("Registration Successful!");
-        location.reload();
+        if(!d.name) return alert("Enter Name");
+        await fetch(G_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
+        alert("Patient Saved!"); location.reload();
     }
 
-    async function fetchRecords() {
+    async function fetchData() {
         try {
-            const res = await fetch(GOOGLE_URL);
+            const res = await fetch(G_URL);
             const data = await res.json();
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = "";
 
             data.reverse().forEach(row => {
-                // FORCE VALUES INTO ARRAY TO PREVENT MAPPING JUMPS
-                const v = Object.values(row); 
-                
-                // STRICT MAPPING BY COLUMN POSITION
-                const dDate = (v[0] || '').toString().split('T')[0];
-                const dOPD  = v[1] || '---';
-                const dName = v[2] || '---';
-                const dAge  = v[3] || '';
-                const dSex  = v[4] || '';
-                const dBP   = v[7] || '-';
-                const dP    = v[8] || '-';
-                const dO2   = v[9] || '-';
-                const dTemp = v[10] || '-';
-
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${dDate}</td>
-                    <td style="font-weight:bold; color:var(--primary);">${dOPD}</td>
-                    <td>${dName}</td>
-                    <td>${dAge} / ${dSex}</td>
-                    <td><small>BP: ${dBP} | P: ${dP} | O2: ${dO2}% | T: ${dTemp}</small></td>
-                    <td>
-                        <button class="btn-action" style="background:#3498db;" onclick="alert('Edit ready')">EDIT</button>
-                        <button class="btn-action" style="background:#e67e22;" onclick="alert('Treat ready')">TREAT</button>
-                    </td>
+                    <td>${(row.date || '').toString().split('T')[0]}</td>
+                    <td style="font-weight:bold; color:var(--primary)">${row.opd || ''}</td>
+                    <td>${row.name || ''}</td>
+                    <td>${row.age || ''} / ${row.sex || ''}</td>
+                    <td>${row.vil || ''}</td>
+                    <td><small>BP: ${row.bp || ''} | P: ${row.pu || ''} | O2: ${row.sp || ''}% | T: ${row.te || ''}</small></td>
+                    <td><button style="cursor:pointer" onclick="alert('Treating ${row.name}')">TREAT</button></td>
                 `;
                 tbody.appendChild(tr);
             });
-        } catch (e) {
-            tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Check Network or Google Script Deployment.</td></tr>";
-        }
+        } catch(e) { console.log(e); }
     }
 </script>
 </body>
