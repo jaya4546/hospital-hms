@@ -9,19 +9,17 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 15px; }
         .container { max-width: 1300px; background: white; padding: 20px; border-radius: 12px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid var(--primary); }
         
-        /* Compact Header Styling */
-        .header { display: flex; flex-direction: column; border-bottom: 4px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
-        .header-top { display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%; }
+        /* Compact Screen Header */
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
+        .header-left { display: flex; align-items: center; gap: 15px; flex: 2; }
         .logo-img { width: 90px; height: 90px; object-fit: contain; }
         
-        .hosp-brand-center { text-align: center; }
-        .hosp-name { font-size: 28px; color: var(--accent); margin: 0; font-weight: 900; white-space: nowrap; text-transform: uppercase; }
-        .hosp-addr { font-size: 12px; color: #444; margin: 4px 0 0 0; font-weight: 600; line-height: 1.2; }
+        .hosp-name { font-size: 26px; color: var(--accent); margin: 0; font-weight: 900; white-space: nowrap; text-transform: uppercase; }
+        .hosp-addr { font-size: 11px; color: #444; margin: 4px 0 0 0; font-weight: 600; line-height: 1.2; }
 
-        .doc-card { align-self: flex-start; border: 2px solid var(--primary); padding: 8px 15px; border-radius: 6px; background: #f1f8e9; text-align: left; min-width: 200px; margin-top: 5px; }
+        .doc-card { border: 2px solid var(--primary); padding: 8px 15px; border-radius: 6px; background: #f1f8e9; text-align: left; min-width: 210px; }
         .doc-name { font-size: 18px; font-weight: 800; color: var(--primary); margin: 0; }
         .doc-sub { font-size: 13px; font-weight: 700; margin: 2px 0; color: #333; }
-        .doc-reg { font-size: 11px; color: #666; margin: 0; }
 
         /* Form Grid */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 15px; }
@@ -37,10 +35,9 @@
         th { background: var(--dark); color: white; padding: 12px; text-align: left; }
         td { padding: 12px; border-bottom: 1px solid #eee; background: white; }
         
-        /* Button Visibility Fix */
-        .t-btn { border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; color: white !important; font-weight: bold; margin-right: 3px; font-size: 11px; display: inline-block; }
-        .btn-preg { background: #673ab7 !important; } /* Deep Purple for Reg */
-        .btn-prx { background: #263238 !important; }  /* Dark Grey/Black for Rx */
+        .t-btn { border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; color: white !important; font-weight: bold; margin-right: 3px; font-size: 11px; display: inline-block; text-decoration: none; }
+        .btn-preg { background: #673ab7 !important; } 
+        .btn-prx { background: #263238 !important; }  
         
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; padding: 20px; overflow-y: auto; }
         .modal-body { background: white; max-width: 850px; margin: auto; padding: 30px; border-radius: 10px; border-top: 10px solid var(--treat); }
@@ -49,25 +46,30 @@
         /* PRINT STYLES */
         #printArea { display: none; }
         @media print {
-            @page { margin: 1cm 1.5cm; }
-            body { background: white !important; }
+            @page { margin: 0.3cm 1.5cm; } /* Reduced top margin to 0.3cm */
+            body { background: white !important; padding: 0; margin: 0; }
             .container, .modal, .btn-row, .no-print { display: none !important; }
-            #printArea { display: block !important; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            #printArea { display: block !important; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; margin-top: 0; }
             
             .print-table { width: 100%; border-collapse: collapse; }
             .print-header-wrapper { display: table-header-group; }
             .print-footer-wrapper { display: table-footer-group; }
 
-            .print-header-content { border-bottom: 3px solid var(--accent); padding-bottom: 10px; margin-bottom: 20px; }
-            .p-top { display: flex; align-items: center; justify-content: center; gap: 15px; }
-            .p-logo { width: 100px; height: 100px; object-fit: contain; }
-            .p-doc-box { border: 2px solid var(--primary); padding: 8px; border-radius: 4px; width: fit-content; margin-top: 5px; }
+            .print-header-content { border-bottom: 3px solid var(--accent); padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+            .p-left { display: flex; align-items: center; gap: 15px; }
+            .p-logo { width: 90px; height: 90px; object-fit: contain; }
+            .p-doc-box { border: 2px solid var(--primary); padding: 8px; border-radius: 4px; text-align: left; }
             
+            /* Neat Box for Patient Details */
+            .patient-data-box { border: 1.5px solid #333; padding: 12px; border-radius: 6px; margin-bottom: 15px; background: #fafafa !important; }
+            .data-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+            .vitals-strip { border-top: 1px solid #ccc; margin-top: 8px; padding-top: 8px; font-weight: bold; font-size: 13px; color: #222; }
+
             .drug-table { width: 100%; border: 1px solid #ddd; border-collapse: collapse; margin-top: 15px; }
             .drug-table th { background-color: var(--table-blue) !important; color: white !important; padding: 10px; border: 1px solid #ddd; }
             .drug-table td { padding: 10px; border: 1px solid #ddd; }
 
-            .print-footer-content { text-align: center; padding: 15px; font-weight: bold; font-size: 18px; color: #ad1457 !important; border-top: 2px solid #eee; margin-top: 20px; }
+            .print-footer-content { text-align: center; padding: 10px; font-weight: bold; font-size: 16px; color: #ad1457 !important; border-top: 1px solid #eee; margin-top: 15px; }
             .rx-symbol { font-size: 40px; font-weight: bold; margin: 10px 0; }
         }
     </style>
@@ -76,11 +78,11 @@
 
 <div class="container">
     <div class="header">
-        <div class="header-top">
+        <div class="header-left">
             <img src="/logo.jpg" alt="Logo" class="logo-img">
-            <div class="hosp-brand-center">
+            <div class="hosp-info">
                 <h1 class="hosp-name">SRI RAJA RAJESHWARI HOSPITAL</h1>
-                <p class="hosp-addr">Add: Suraram colony IDA jeedimetla NTR road, Opp: Ramaleela maidanam, Telangana 500055</p>
+                <p class="hosp-addr">Suraram colony IDA jeedimetla NTR road, Opp: Ramaleela maidanam, Telangana 500055</p>
             </div>
         </div>
         <div class="doc-card">
@@ -189,11 +191,11 @@
             <thead class="print-header-wrapper">
                 <tr><td>
                     <div class="print-header-content">
-                        <div class="p-top">
+                        <div class="p-left">
                             <img src="/logo.jpg" class="p-logo">
-                            <div style="text-align:center;">
-                                <h1 class="hosp-name" style="font-size:24px;">SRI RAJA RAJESHWARI HOSPITAL</h1>
-                                <p style="margin:2px 0; font-size:11px; font-weight:bold;">Add: Suraram colony IDA jeedimetla NTR road, Opp: Ramaleela maidanam, TS 500055</p>
+                            <div>
+                                <h1 class="hosp-name" style="font-size:22px;">SRI RAJA RAJESHWARI HOSPITAL</h1>
+                                <p style="margin:2px 0; font-size:10px; font-weight:bold;">Suraram colony IDA jeedimetla NTR road, Opp: Ramaleela maidanam, TS 500055</p>
                             </div>
                         </div>
                         <div class="p-doc-box">
@@ -214,14 +216,22 @@
     function printRegOnly(opd) {
         const p = patients.find(i => i.opd === opd);
         const content = `
-            <h3 style="text-align:center; text-decoration: underline; margin-bottom:15px;">REGISTRATION SLIP</h3>
-            <div style="display:flex; justify-content:space-between; margin-bottom:15px; background:#f5f5f5; padding:10px; border-radius:5px; font-size:14px;">
-                <div><b>Patient:</b> ${p.name} (${p.age}/${p.sex})</div>
-                <div style="text-align:right;"><b>Date:</b> ${p.date} | <b>OPD No:</b> ${p.opd}</div>
+            <h3 style="text-align:center; text-decoration: underline; margin-bottom:10px;">REGISTRATION SLIP</h3>
+            <div class="patient-data-box">
+                <div class="data-row">
+                    <span><b>Patient Name:</b> ${p.name}</span>
+                    <span><b>Date:</b> ${p.date}</span>
+                </div>
+                <div class="data-row">
+                    <span><b>Age/Sex:</b> ${p.age}/${p.sex}</span>
+                    <span><b>OPD No:</b> ${p.opd}</span>
+                </div>
+                <div class="vitals-strip">
+                    VITALS: BP: ${p.bp} | Pulse: ${p.pu} | SpO2: ${p.sp}% | Temp: ${p.te}F
+                </div>
             </div>
-            <p style="font-size:13px;"><b>Vitals:</b> BP: ${p.bp} | Pulse: ${p.pu} | SpO2: ${p.sp}% | Temp: ${p.te}F</p>
             <div class="rx-symbol">Rx</div>
-            <div style="height:500px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; color:#ddd;"> [ SPACE FOR MANUAL PRESCRIPTION ] </div>
+            <div style="height:550px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; color:#ddd;"> [ SPACE FOR MANUAL PRESCRIPTION ] </div>
         `;
         document.getElementById('printArea').innerHTML = generatePrintHTML(content);
         window.print();
@@ -236,23 +246,32 @@
             JSON.parse(h.rx).forEach(d => { drugRows += `<tr><td><b>${d.n}</b></td><td>${d.r}</td><td>${d.d} Days</td><td>${d.m}</td></tr>`; });
         } catch(e) { drugRows = "<tr><td colspan='4'>No data</td></tr>"; }
         const content = `
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px; background:#f5f5f5; padding:10px; font-size:13px;">
-                <div><b>Patient:</b> ${p.name} (${p.age}/${p.sex})</div>
-                <div style="text-align:right;"><b>OPD:</b> ${p.opd} | <b>Date:</b> ${p.date}</div>
+            <div class="patient-data-box">
+                <div class="data-row">
+                    <span><b>Patient Name:</b> ${p.name}</span>
+                    <span><b>OPD:</b> ${p.opd}</span>
+                </div>
+                <div class="data-row">
+                    <span><b>Age/Sex:</b> ${p.age}/${p.sex}</span>
+                    <span><b>Date:</b> ${p.date}</span>
+                </div>
+                <div class="vitals-strip">
+                    VITALS: BP: ${p.bp} | Pulse: ${p.pu} | O2: ${p.sp}% | Temp: ${p.te}F
+                </div>
             </div>
-            <p style="font-size:12px;"><b>Vitals:</b> BP: ${p.bp} | Pulse: ${p.pu} | O2: ${p.sp}% | Temp: ${p.te}F</p>
-            <p style="font-size:13px;"><b>Complaints:</b> ${h.comp}</p>
+            <p style="font-size:13px; margin:5px 0;"><b>Complaints:</b> ${h.comp}</p>
             <div class="rx-symbol">Rx</div>
             <table class="drug-table">
                 <thead><tr><th>Medication</th><th>Route</th><th>Duration</th><th>Remarks</th></tr></thead>
                 <tbody>${drugRows}</tbody>
             </table>
-            <div style="margin-top:50px; text-align:right;"><p style="font-weight:bold; border-top:1px solid #000; display:inline-block;">Authorized Signature</p></div>
+            <div style="margin-top:60px; text-align:right;"><p style="font-weight:bold; border-top:1px solid #000; display:inline-block; padding-top:5px;">Authorized Signature</p></div>
         `;
         document.getElementById('printArea').innerHTML = generatePrintHTML(content);
         window.print();
     }
 
+    /* REMAINING FUNCTIONS UNTOUCHED */
     function editPatient(opd) {
         const p = patients.find(i => i.opd === opd);
         if(!p) return;
