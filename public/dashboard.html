@@ -3,49 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRR Hospital HMS - Full Restore</title>
+    <title>SRR Hospital HMS - Professional Edition</title>
     <style>
         :root { --primary: #1b5e20; --dark: #263238; --bg: #eceff1; --accent: #c62828; --edit: #2980b9; --treat: #e67e22; --bill: #1a237e; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; }
-        .container { max-width: 1400px; background: white; padding: 20px; border-radius: 12px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid var(--primary); }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 15px; }
         
-        /* Restored Branding Header */
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
-        .logo-img { width: 90px; height: 90px; object-fit: contain; }
-        .hosp-name { font-size: 26px; color: var(--accent); margin: 0; font-weight: 900; text-transform: uppercase; }
-        .doc-card { border: 2px solid var(--primary); padding: 8px 15px; border-radius: 6px; background: #f1f8e9; min-width: 210px; }
+        /* Main Container Alignment */
+        .container { max-width: 1450px; background: white; padding: 25px; border-radius: 12px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid var(--primary); }
+        
+        /* Professional Branding Header */
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--primary); padding-bottom: 15px; margin-bottom: 25px; }
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .logo-img { width: 100px; height: 100px; object-fit: contain; }
+        .hosp-name { font-size: 28px; color: var(--accent); margin: 0; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+        .hosp-addr { font-size: 12px; color: #444; margin-top: 5px; font-weight: 600; }
+        
+        .doc-card { border: 2px solid var(--primary); padding: 10px 20px; border-radius: 8px; background: #f1f8e9; text-align: left; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
+        .doc-name { font-size: 20px; font-weight: 800; color: var(--primary); margin: 0; }
+        .doc-sub { font-size: 13px; font-weight: 700; color: #333; margin: 2px 0; }
 
-        /* Form and Table Styling */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        /* Registration Grid Alignment */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
         .input-box { display: flex; flex-direction: column; }
-        label { font-weight: bold; font-size: 11px; color: #555; margin-bottom: 4px; text-transform: uppercase; }
-        input, select, textarea { padding: 10px; border: 1px solid #bbb; border-radius: 4px; font-size: 13px; }
-        
-        .btn-row { display: flex; gap: 10px; margin: 15px 0; }
-        .save-btn { flex: 2; background: var(--primary); color: white; border: none; padding: 14px; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        
-        .search-area { background: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0; border: 2px dashed var(--primary); }
-        #searchInput { width: 100%; padding: 12px; border: 2px solid var(--primary); border-radius: 6px; font-size: 16px; }
+        label { font-weight: bold; font-size: 11px; color: #555; margin-bottom: 5px; text-transform: uppercase; }
+        input, select, textarea { padding: 10px; border: 1px solid #bbb; border-radius: 4px; font-size: 14px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 5px rgba(27,94,32,0.2); }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-        th { background: var(--dark); color: white; padding: 12px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #eee; background: white; vertical-align: middle; }
-        .t-btn { border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; color: white !important; font-weight: bold; font-size: 10px; margin-bottom: 2px; display: inline-block; }
+        /* Action Buttons */
+        .btn-row { display: flex; gap: 15px; margin: 20px 0; }
+        .save-btn { flex: 2; background: var(--primary); color: white; border: none; padding: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 16px; text-transform: uppercase; transition: 0.3s; }
+        .save-btn:hover { background: #144d18; }
+        .clear-btn { flex: 1; background: #78909c; color: white; border: none; padding: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
 
-        /* Restored Modals */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; padding: 20px; overflow-y: auto; }
-        .modal-body { background: white; max-width: 850px; margin: auto; padding: 30px; border-radius: 10px; position: relative; }
+        /* Search Section */
+        .search-area { background: #e8f5e9; padding: 15px; border-radius: 8px; margin: 25px 0; border: 2px dashed var(--primary); }
+        #searchInput { width: 100%; padding: 12px; border: 2px solid var(--primary); border-radius: 6px; font-size: 16px; box-sizing: border-box; }
 
-        /* Professional Print Templates */
+        /* Table Alignment */
+        .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: var(--dark); color: white; padding: 15px; text-align: left; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+        td { padding: 12px 15px; border-bottom: 1px solid #eee; background: white; vertical-align: middle; line-height: 1.4; }
+        .t-btn { border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; color: white !important; font-weight: bold; font-size: 11px; margin-right: 5px; transition: 0.2s; display: inline-block; }
+        .t-btn:hover { opacity: 0.8; transform: translateY(-1px); }
+
+        /* Modal Restored */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; padding: 20px; overflow-y: auto; }
+        .modal-body { background: white; max-width: 900px; margin: 20px auto; padding: 35px; border-radius: 12px; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+
+        /* Print Logic Alignment */
         #printArea { display: none; }
         @media print {
-            body { background: white; }
+            body { background: white !important; }
             .container, .modal, .btn-row, .search-area { display: none !important; }
             #printArea { display: block !important; width: 100%; }
-            .print-page { width: 210mm; min-height: 297mm; padding: 10mm 15mm; position: relative; display: flex; flex-direction: column; border: 1px solid #eee; }
-            .bill-table { width: 100%; border-collapse: collapse; border: 1px solid #000; margin-top: 15px; }
-            .bill-table th, .bill-table td { border: 1px solid #000; padding: 8px; text-align: left; }
-            .lab-footer { position: absolute; bottom: 10mm; left: 15mm; right: 15mm; background: #1a237e; color: white; text-align: center; padding: 15px; font-weight: bold; font-size: 20px; border-radius: 8px; -webkit-print-color-adjust: exact; }
+            .print-page { width: 210mm; min-height: 297mm; padding: 15mm; position: relative; display: flex; flex-direction: column; }
+            .bill-table { width: 100%; border-collapse: collapse; border: 1px solid #000; margin-top: 20px; }
+            .bill-table th, .bill-table td { border: 1px solid #000; padding: 10px; text-align: left; }
+            .lab-footer { position: absolute; bottom: 15mm; left: 15mm; right: 15mm; background: #1a237e !important; color: white !important; text-align: center; padding: 15px; font-weight: bold; font-size: 22px; border-radius: 8px; -webkit-print-color-adjust: exact; }
         }
     </style>
 </head>
@@ -53,54 +68,55 @@
 
 <div class="container">
     <div class="header">
-        <div style="display:flex; align-items:center; gap:15px;">
-            <img src="/logo.jpg" alt="Logo" class="logo-img">
+        <div class="header-left">
+            <img src="/logo.jpg" alt="Hospital Logo" class="logo-img">
             <div>
                 <h1 class="hosp-name">SRI RAJA RAJESHWARI HOSPITAL</h1>
-                <p style="font-size:11px; margin:0; font-weight:600;">Suraram colony, Opp: Ramaleela maidanam, TS 500055</p>
+                <p class="hosp-addr">Suraram colony IDA jeedimetla NTR road, Opp: Ramaleela maidanam, Telangana 500055</p>
             </div>
         </div>
         <div class="doc-card">
-            <p style="margin:0; font-size:18px; font-weight:800; color:var(--primary);">Dr. M. Jayachander</p>
-            <p style="margin:0; font-size:12px; font-weight:bold;">MBBS, MD (General Medicine)</p>
-            <p style="margin:0; font-size:11px;">Reg No: TSMC/FMR/43070</p>
+            <p class="doc-name">Dr. M. Jayachander</p>
+            <p class="doc-sub">MBBS, MD (General Medicine)</p>
+            <p style="margin:0; font-size:11px; font-weight: bold;">Reg No: TSMC/FMR/43070</p>
         </div>
     </div>
 
     <div class="grid">
         <div class="input-box"><label>Date</label><input type="date" id="p_date"></div>
-        <div class="input-box"><label>OPD No</label><input type="text" id="p_opd" readonly style="background:#f5f5f5; font-weight:bold;"></div>
-        <div class="input-box"><label>Name</label><input type="text" id="p_name"></div>
-        <div class="input-box"><label>Age</label><input type="number" id="p_age"></div>
-        <div class="input-box"><label>Sex</label><select id="p_sex"><option>Male</option><option>Female</option></select></div>
-        <div class="input-box"><label>Phone</label><input type="text" id="p_phone"></div>
-        <div class="input-box"><label>Village</label><input type="text" id="p_village"></div>
-        <div class="input-box"><label>BP</label><input type="text" id="p_bp"></div>
-        <div class="input-box"><label>Pulse</label><input type="text" id="p_pulse"></div>
-        <div class="input-box"><label>SpO2</label><input type="text" id="p_spo2"></div>
-        <div class="input-box"><label>Temp</label><input type="text" id="p_temp"></div>
+        <div class="input-box"><label>OPD No</label><input type="text" id="p_opd" readonly style="background:#e0e0e0; font-weight: 900;"></div>
+        <div class="input-box"><label>Patient Name</label><input type="text" id="p_name" placeholder="Full Name"></div>
+        <div class="input-box"><label>Age</label><input type="number" id="p_age" placeholder="Years"></div>
+        <div class="input-box"><label>Sex</label><select id="p_sex"><option>Male</option><option>Female</option><option>Other</option></select></div>
+        <div class="input-box"><label>Phone</label><input type="text" id="p_phone" placeholder="Mobile Number"></div>
+        <div class="input-box"><label>Village</label><input type="text" id="p_village" placeholder="Location"></div>
+        <div class="input-box"><label>BP</label><input type="text" id="p_bp" placeholder="120/80"></div>
+        <div class="input-box"><label>Pulse</label><input type="text" id="p_pulse" placeholder="BPM"></div>
+        <div class="input-box"><label>SpO2</label><input type="text" id="p_spo2" placeholder="%"></div>
+        <div class="input-box"><label>Temp</label><input type="text" id="p_temp" placeholder="°F/°C"></div>
     </div>
 
     <div class="btn-row">
         <button class="save-btn" id="saveBtn" onclick="submitReg()">SAVE PATIENT RECORD</button>
-        <button style="flex:1; background:#78909c; color:white; border:none; border-radius:5px; cursor:pointer;" onclick="location.reload()">NEW REGISTRATION</button>
+        <button class="clear-btn" onclick="location.reload()">NEW REGISTRATION</button>
     </div>
 
     <div class="search-area">
-        <input type="text" id="searchInput" placeholder="SEARCH PATIENT BY NAME, VILLAGE, OR OPD..." onkeyup="filterTable()">
+        <label style="font-size: 13px; font-weight: bold; margin-bottom: 8px; display: block; color: var(--primary);">SEARCH DATABASE:</label>
+        <input type="text" id="searchInput" placeholder="Search by Name, OPD Number, or Village..." onkeyup="filterTable()">
     </div>
 
-    <div style="overflow-x: auto;">
+    <div class="table-wrapper">
         <table>
             <thead>
                 <tr>
                     <th>Date</th>
                     <th>OPD No</th>
-                    <th>Name</th>
+                    <th>Patient Details</th>
                     <th>Age/Sex</th>
-                    <th>Phone/Village</th>
-                    <th>Vitals (BP/P/O2)</th>
-                    <th>Actions</th>
+                    <th>Contact/Village</th>
+                    <th>Vitals (BP/P/O2/T)</th>
+                    <th>Clinical Actions</th>
                 </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -111,30 +127,30 @@
 <div id="printArea"></div>
 
 <div id="mBill" class="modal">
-    <div class="modal-body" style="border-top: 8px solid var(--bill);">
+    <div class="modal-body" style="border-top: 10px solid var(--bill);">
         <h2 style="color:var(--bill); margin-top:0;">Investigation Billing</h2>
-        <div id="investList" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-bottom: 15px;"></div>
-        <div style="font-size: 22px; font-weight: bold; text-align: right;">Total: ₹<span id="totalBill">0</span></div>
+        <div id="investList" style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 8px;"></div>
+        <div style="font-size: 26px; font-weight: bold; text-align: right; color: var(--bill);">Total: ₹<span id="totalBill">0</span></div>
         <div class="btn-row">
             <button class="save-btn" style="background:var(--bill);" onclick="handleBillAction('PRINT')">SAVE & PRINT BILL</button>
-            <button onclick="document.getElementById('mBill').style.display='none'">CANCEL</button>
+            <button class="clear-btn" onclick="document.getElementById('mBill').style.display='none'">CANCEL</button>
         </div>
     </div>
 </div>
 
 <div id="mTreat" class="modal">
-    <div class="modal-body" style="border-top: 8px solid var(--treat);">
+    <div class="modal-body" style="border-top: 10px solid var(--treat);">
         <h2 id="mTitle" style="color:var(--treat); margin-top:0;">Clinical Assessment</h2>
-        <div id="billHistory" style="background: #fff9c4; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #fbc02d; display: none;"></div>
+        <div id="billHistory" style="background: #fff9c4; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #fbc02d; display: none; font-weight: 600;"></div>
         <div class="grid" style="grid-template-columns: 1fr 1fr;">
-            <div class="input-box"><label>Complaints</label><textarea id="mComp" rows="3"></textarea></div>
-            <div class="input-box"><label>Investigations</label><textarea id="mInv" rows="3"></textarea></div>
+            <div class="input-box"><label>Chief Complaints</label><textarea id="mComp" rows="4"></textarea></div>
+            <div class="input-box"><label>Investigations</label><textarea id="mInv" rows="4"></textarea></div>
         </div>
-        <div id="dList" style="margin-bottom:10px;"></div>
-        <button onclick="addRow()" style="margin-bottom:10px;">+ Add Medication</button>
+        <div id="dList"></div>
+        <button onclick="addRow()" style="margin: 15px 0; background: #eee; padding: 8px 15px; border-radius: 4px; border: 1px solid #ccc; cursor: pointer;">+ Add Medication Row</button>
         <div class="btn-row">
-            <button class="save-btn" style="background:var(--treat);" onclick="saveTreat()">SAVE TREATMENT</button>
-            <button onclick="document.getElementById('mTreat').style.display='none'">CANCEL</button>
+            <button class="save-btn" style="background:var(--treat);" onclick="saveTreat()">SAVE TREATMENT HISTORY</button>
+            <button class="clear-btn" onclick="document.getElementById('mTreat').style.display='none'">CLOSE</button>
         </div>
     </div>
 </div>
@@ -142,7 +158,7 @@
 <script>
     const API = "https://script.google.com/macros/s/AKfycbyxAwycLUjAcJVYfhYNRnmfRGLX8Wq6otcAv-LnBz-uEBj50KNghy8anxqKDVhbDeDIFQ/exec";
     let patients = [], history = [], bills = [];
-    let PRICELIST = { "CBC": 250, "LFT": 800, "RFT": 800, "ECG": 300, "CRP": 300, "DENGUE": 1200, "HIV": 400 };
+    let PRICELIST = { "CBC": 250, "LFT": 800, "RFT": 800, "ECG": 300, "CRP": 300, "DENGUE": 1200, "HIV": 400, "X-RAY": 500, "URINE CUE": 150 };
 
     window.onload = () => {
         document.getElementById('p_date').valueAsDate = new Date();
@@ -165,10 +181,10 @@
             tr.innerHTML = `
                 <td>${p.date}</td>
                 <td><b>${p.opd}</b></td>
-                <td><b>${p.name}</b></td>
+                <td><b style="color:var(--accent); font-size:14px;">${p.name}</b></td>
                 <td>${p.age || '--'} / ${p.sex || '--'}</td>
-                <td>${p.phone || '--'}<br><small>${p.village || '--'}</small></td>
-                <td>${p.bp || '--'} / ${p.pulse || '--'} / ${p.spo2 || '--'}</td>
+                <td><b>${p.phone || '--'}</b><br><small style="color:#666">${p.village || '--'}</small></td>
+                <td>BP: ${p.bp || '--'}<br>P: ${p.pulse || '--'}<br>O2: ${p.spo2 || '--'} | T: ${p.temp || '--'}</td>
                 <td>
                     <button class="t-btn" style="background:var(--edit)" onclick="editPatient('${p.opd}')">Edit</button>
                     <button class="t-btn" style="background:var(--treat)" onclick="openTreat('${p.opd}','${p.name}')">Treat</button>
@@ -194,21 +210,23 @@
         document.getElementById('p_spo2').value = p.spo2 || "";
         document.getElementById('p_temp').value = p.temp || "";
         document.getElementById('saveBtn').innerText = "UPDATE RECORD";
+        document.getElementById('saveBtn').style.background = "var(--edit)";
         window.scrollTo(0,0);
     }
 
     async function submitReg() {
         const p = { type: "REG", date: document.getElementById('p_date').value, opd_no: document.getElementById('p_opd').value, name: document.getElementById('p_name').value, age: document.getElementById('p_age').value, sex: document.getElementById('p_sex').value, phone: document.getElementById('p_phone').value, village: document.getElementById('p_village').value, bp: document.getElementById('p_bp').value, pulse: document.getElementById('p_pulse').value, spo2: document.getElementById('p_spo2').value, temp: document.getElementById('p_temp').value };
         await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(p) });
-        alert("Patient Record Saved!"); location.reload();
+        alert("Success! Data updated in Excel."); location.reload();
     }
 
     function openBill(opd, name) {
         window.activeOPD = opd; window.activeName = name;
         const cont = document.getElementById('investList'); cont.innerHTML = "";
         Object.keys(PRICELIST).forEach(t => {
-            cont.innerHTML += `<div style="display:flex; justify-content:space-between; padding:5px;"><span>${t} (₹${PRICELIST[t]})</span> <input type="checkbox" class="bc" data-n="${t}" data-p="${PRICELIST[t]}" onchange="calcT()"></div>`;
+            cont.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee;"><span>${t} (₹${PRICELIST[t]})</span> <input type="checkbox" class="bc" data-n="${t}" data-p="${PRICELIST[t]}" onchange="calcT()"></div>`;
         });
+        document.getElementById('totalBill').innerText = "0";
         document.getElementById('mBill').style.display = "block";
     }
 
@@ -219,56 +237,56 @@
 
     async function handleBillAction(mode) {
         const sel = []; document.querySelectorAll('.bc:checked').forEach(c => sel.push({n: c.dataset.n, p: c.dataset.p}));
-        if(sel.length === 0) return alert("Select test!");
+        if(sel.length === 0) return alert("Please select at least one test.");
         const p = patients.find(i => i.opd === window.activeOPD);
         let rows = sel.map((s, i) => `<tr><td>${i+1}</td><td>${s.n}</td><td>₹${s.p}</td></tr>`).join('');
-        const content = `<h2 style="text-align:center;">INVESTIGATION BILL</h2><table class="bill-table"><thead><tr><th>#</th><th>Test</th><th>Price</th></tr></thead><tbody>${rows}</tbody></table><h3 style="text-align:right;">Total: ₹${document.getElementById('totalBill').innerText}</h3>`;
+        const content = `<h2 style="text-align:center; color:var(--accent);">INVESTIGATION BILL</h2><table class="bill-table"><thead><tr><th>#</th><th>Investigation</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table><h2 style="text-align:right;">Total Amount: ₹${document.getElementById('totalBill').innerText}</h2>`;
         document.getElementById('printArea').innerHTML = getBasePage(p, content);
         window.print(); location.reload();
     }
 
     function openTreat(opd, name) {
         window.activeOPD = opd; window.activeName = name;
-        document.getElementById('mTitle').innerText = "Treat: " + name;
+        document.getElementById('mTitle').innerText = "Clinical Summary: " + name;
         const pBills = bills.filter(b => b.opd.toString() === opd.toString());
         const box = document.getElementById('billHistory');
         if(pBills.length > 0) {
             box.style.display = "block";
-            box.innerHTML = "<b>History:</b> " + pBills.map(b => `${b.date}: ${b.tests}`).join(' | ');
-        }
+            box.innerHTML = "LAB HISTORY: " + pBills.map(b => `${b.date}: [${b.tests}]`).join(' | ');
+        } else { box.style.display = "none"; }
         document.getElementById('mTreat').style.display = "block";
     }
 
     function addRow() {
-        const d = document.createElement('div'); d.style.display="flex"; d.style.gap="5px"; d.style.marginBottom="5px";
-        d.innerHTML = `<input type="text" placeholder="Drug" style="flex:2;"><input type="text" placeholder="Dose" style="flex:1;"><button onclick="this.parentElement.remove()" style="background:red; color:white; border:none; padding:5px;">X</button>`;
+        const d = document.createElement('div'); d.style.display="flex"; d.style.gap="8px"; d.style.marginBottom="8px";
+        d.innerHTML = `<input type="text" placeholder="Drug/Medicine Name" style="flex:3;"><input type="text" placeholder="Dosage/Route" style="flex:2;"><button onclick="this.parentElement.remove()" style="background:red; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer;">X</button>`;
         document.getElementById('dList').appendChild(d);
     }
 
     function getBasePage(p, content) {
         return `<div class="print-page">
-            <div style="display:flex; justify-content:space-between; border-bottom:3px solid var(--accent); padding-bottom:10px;">
-                <div style="display:flex; align-items:center; gap:10px;"><img src="/logo.jpg" style="width:70px;"><div><h1 style="font-size:22px; color:var(--accent); margin:0;">SRI RAJA RAJESHWARI HOSPITAL</h1><p style="font-size:10px; margin:0;">Suraram colony, TS</p></div></div>
-                <div style="border:1px solid #000; padding:5px; font-size:12px;"><b>Dr. M. Jayachander</b><br>MD (Gen Med) | Reg: 43070</div>
+            <div style="display:flex; justify-content:space-between; border-bottom:4px solid var(--accent); padding-bottom:15px;">
+                <div style="display:flex; align-items:center; gap:15px;"><img src="/logo.jpg" style="width:80px;"><div><h1 style="font-size:24px; color:var(--accent); margin:0;">SRI RAJA RAJESHWARI HOSPITAL</h1><p style="font-size:11px; margin:0; font-weight:bold;">Suraram colony, Opp: Ramaleela maidanam, TS</p></div></div>
+                <div style="border:2px solid #000; padding:8px; font-size:13px; border-radius:5px;"><b>Dr. M. Jayachander</b><br>MD (Gen Med) | Reg: 43070</div>
             </div>
-            <div style="margin:15px 0; border:1px solid #000; padding:10px; display:flex; justify-content:space-between; font-size:13px;">
-                <div><b>Name:</b> ${p.name}<br><b>Age/Sex:</b> ${p.age}/${p.sex}<br><b>Village:</b> ${p.village}</div>
-                <div><b>Date:</b> ${p.date}<br><b>OPD:</b> ${p.opd}<br><b>Vitals:</b> BP:${p.bp} P:${p.pulse}</div>
+            <div style="margin:20px 0; border:1px solid #000; padding:15px; display:flex; justify-content:space-between; font-size:14px; border-radius:8px;">
+                <div><b>Patient Name:</b> ${p.name}<br><b>Age/Sex:</b> ${p.age}/${p.sex}<br><b>Village:</b> ${p.village || 'N/A'}</div>
+                <div><b>Date:</b> ${p.date}<br><b>OPD No:</b> ${p.opd}<br><b>BP:</b> ${p.bp} | <b>P:</b> ${p.pulse}</div>
             </div>
-            <div style="flex:1;">${content}</div>
+            <div style="flex:1; padding: 20px 0;">${content}</div>
             <div class="lab-footer">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES 💊</div>
         </div>`;
     }
 
     function printRegOnly(opd) {
         const p = patients.find(i => i.opd === opd);
-        document.getElementById('printArea').innerHTML = getBasePage(p, '<h1 style="color:red; font-size:40px; margin-top:20px;">Rx</h1><div style="border: 2px dashed #ccc; height: 400px; margin-top: 20px; display:flex; align-items:center; justify-content:center; color:#ccc;">[ SPACE FOR MANUAL PRESCRIPTION ]</div>');
+        document.getElementById('printArea').innerHTML = getBasePage(p, '<h1 style="color:red; font-size:50px; margin-top:20px;">Rx</h1><div style="height:450px; border:2px dashed #eee; margin-top:20px;"></div>');
         window.print();
     }
     
     function filterTable() {
         const v = document.getElementById('searchInput').value.toLowerCase();
-        renderTable(patients.filter(p => p.name.toLowerCase().includes(v) || p.opd.toLowerCase().includes(v)));
+        renderTable(patients.filter(p => p.name.toLowerCase().includes(v) || p.opd.toLowerCase().includes(v) || (p.village && p.village.toLowerCase().includes(v))));
     }
 </script>
 </body>
