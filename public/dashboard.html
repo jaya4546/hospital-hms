@@ -3,45 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRR Hospital HMS - Full Data Sync</title>
+    <title>SRR Hospital HMS - Full Restore</title>
     <style>
         :root { --primary: #1b5e20; --dark: #263238; --bg: #eceff1; --accent: #c62828; --edit: #2980b9; --treat: #e67e22; --bill: #1a237e; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 15px; }
         .container { max-width: 1400px; background: white; padding: 20px; border-radius: 12px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid var(--primary); }
+        
+        /* Restored Branding Header */
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
-        .hosp-name { font-size: 24px; color: var(--accent); font-weight: 900; text-transform: uppercase; }
+        .logo-img { width: 90px; height: 90px; object-fit: contain; }
+        .hosp-name { font-size: 26px; color: var(--accent); margin: 0; font-weight: 900; text-transform: uppercase; }
+        .doc-card { border: 2px solid var(--primary); padding: 8px 15px; border-radius: 6px; background: #f1f8e9; min-width: 210px; }
+
+        /* Form and Table Styling */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 15px; }
         .input-box { display: flex; flex-direction: column; }
         label { font-weight: bold; font-size: 11px; color: #555; margin-bottom: 4px; text-transform: uppercase; }
-        input, select { padding: 10px; border: 1px solid #bbb; border-radius: 4px; font-size: 13px; }
+        input, select, textarea { padding: 10px; border: 1px solid #bbb; border-radius: 4px; font-size: 13px; }
+        
         .btn-row { display: flex; gap: 10px; margin: 15px 0; }
         .save-btn { flex: 2; background: var(--primary); color: white; border: none; padding: 14px; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        
         .search-area { background: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0; border: 2px dashed var(--primary); }
-        #searchInput { width: 100%; padding: 12px; border: 2px solid var(--primary); border-radius: 6px; }
+        #searchInput { width: 100%; padding: 12px; border: 2px solid var(--primary); border-radius: 6px; font-size: 16px; }
+
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
         th { background: var(--dark); color: white; padding: 12px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #eee; background: white; }
-        .t-btn { border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; color: white !important; font-weight: bold; font-size: 10px; }
+        td { padding: 10px; border-bottom: 1px solid #eee; background: white; vertical-align: middle; }
+        .t-btn { border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; color: white !important; font-weight: bold; font-size: 10px; margin-bottom: 2px; display: inline-block; }
+
+        /* Restored Modals */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; padding: 20px; overflow-y: auto; }
+        .modal-body { background: white; max-width: 850px; margin: auto; padding: 30px; border-radius: 10px; position: relative; }
+
+        /* Professional Print Templates */
+        #printArea { display: none; }
+        @media print {
+            body { background: white; }
+            .container, .modal, .btn-row, .search-area { display: none !important; }
+            #printArea { display: block !important; width: 100%; }
+            .print-page { width: 210mm; min-height: 297mm; padding: 10mm 15mm; position: relative; display: flex; flex-direction: column; border: 1px solid #eee; }
+            .bill-table { width: 100%; border-collapse: collapse; border: 1px solid #000; margin-top: 15px; }
+            .bill-table th, .bill-table td { border: 1px solid #000; padding: 8px; text-align: left; }
+            .lab-footer { position: absolute; bottom: 10mm; left: 15mm; right: 15mm; background: #1a237e; color: white; text-align: center; padding: 15px; font-weight: bold; font-size: 20px; border-radius: 8px; -webkit-print-color-adjust: exact; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <div>
-            <h1 class="hosp-name">SRI RAJA RAJESHWARI HOSPITAL</h1>
-            <p style="font-size:11px; margin:0;">Suraram colony, TS 500055</p>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <img src="/logo.jpg" alt="Logo" class="logo-img">
+            <div>
+                <h1 class="hosp-name">SRI RAJA RAJESHWARI HOSPITAL</h1>
+                <p style="font-size:11px; margin:0; font-weight:600;">Suraram colony, Opp: Ramaleela maidanam, TS 500055</p>
+            </div>
         </div>
-        <div style="border: 2px solid var(--primary); padding: 8px; border-radius: 6px; background: #f1f8e9;">
-            <p style="margin:0; font-weight:800; color:var(--primary);">Dr. M. Jayachander</p>
-            <p style="margin:0; font-size:11px;">MBBS, MD (General Medicine)</p>
+        <div class="doc-card">
+            <p style="margin:0; font-size:18px; font-weight:800; color:var(--primary);">Dr. M. Jayachander</p>
+            <p style="margin:0; font-size:12px; font-weight:bold;">MBBS, MD (General Medicine)</p>
+            <p style="margin:0; font-size:11px;">Reg No: TSMC/FMR/43070</p>
         </div>
     </div>
 
     <div class="grid">
         <div class="input-box"><label>Date</label><input type="date" id="p_date"></div>
-        <div class="input-box"><label>OPD No</label><input type="text" id="p_opd" readonly style="background:#f5f5f5;"></div>
-        <div class="input-box"><label>Patient Name</label><input type="text" id="p_name"></div>
+        <div class="input-box"><label>OPD No</label><input type="text" id="p_opd" readonly style="background:#f5f5f5; font-weight:bold;"></div>
+        <div class="input-box"><label>Name</label><input type="text" id="p_name"></div>
         <div class="input-box"><label>Age</label><input type="number" id="p_age"></div>
         <div class="input-box"><label>Sex</label><select id="p_sex"><option>Male</option><option>Female</option></select></div>
         <div class="input-box"><label>Phone</label><input type="text" id="p_phone"></div>
@@ -54,11 +83,11 @@
 
     <div class="btn-row">
         <button class="save-btn" id="saveBtn" onclick="submitReg()">SAVE PATIENT RECORD</button>
-        <button style="flex:1;" onclick="location.reload()">NEW REGISTRATION</button>
+        <button style="flex:1; background:#78909c; color:white; border:none; border-radius:5px; cursor:pointer;" onclick="location.reload()">NEW REGISTRATION</button>
     </div>
 
     <div class="search-area">
-        <input type="text" id="searchInput" placeholder="SEARCH BY NAME, VILLAGE, OR OPD..." onkeyup="filterTable()">
+        <input type="text" id="searchInput" placeholder="SEARCH PATIENT BY NAME, VILLAGE, OR OPD..." onkeyup="filterTable()">
     </div>
 
     <div style="overflow-x: auto;">
@@ -79,20 +108,52 @@
     </div>
 </div>
 
+<div id="printArea"></div>
+
+<div id="mBill" class="modal">
+    <div class="modal-body" style="border-top: 8px solid var(--bill);">
+        <h2 style="color:var(--bill); margin-top:0;">Investigation Billing</h2>
+        <div id="investList" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-bottom: 15px;"></div>
+        <div style="font-size: 22px; font-weight: bold; text-align: right;">Total: ₹<span id="totalBill">0</span></div>
+        <div class="btn-row">
+            <button class="save-btn" style="background:var(--bill);" onclick="handleBillAction('PRINT')">SAVE & PRINT BILL</button>
+            <button onclick="document.getElementById('mBill').style.display='none'">CANCEL</button>
+        </div>
+    </div>
+</div>
+
+<div id="mTreat" class="modal">
+    <div class="modal-body" style="border-top: 8px solid var(--treat);">
+        <h2 id="mTitle" style="color:var(--treat); margin-top:0;">Clinical Assessment</h2>
+        <div id="billHistory" style="background: #fff9c4; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #fbc02d; display: none;"></div>
+        <div class="grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="input-box"><label>Complaints</label><textarea id="mComp" rows="3"></textarea></div>
+            <div class="input-box"><label>Investigations</label><textarea id="mInv" rows="3"></textarea></div>
+        </div>
+        <div id="dList" style="margin-bottom:10px;"></div>
+        <button onclick="addRow()" style="margin-bottom:10px;">+ Add Medication</button>
+        <div class="btn-row">
+            <button class="save-btn" style="background:var(--treat);" onclick="saveTreat()">SAVE TREATMENT</button>
+            <button onclick="document.getElementById('mTreat').style.display='none'">CANCEL</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const API = "https://script.google.com/macros/s/AKfycbyxAwycLUjAcJVYfhYNRnmfRGLX8Wq6otcAv-LnBz-uEBj50KNghy8anxqKDVhbDeDIFQ/exec";
-    let patients = [];
-    
-    window.onload = () => { 
+    let patients = [], history = [], bills = [];
+    let PRICELIST = { "CBC": 250, "LFT": 800, "RFT": 800, "ECG": 300, "CRP": 300, "DENGUE": 1200, "HIV": 400 };
+
+    window.onload = () => {
         document.getElementById('p_date').valueAsDate = new Date();
         document.getElementById('p_opd').value = "SRR-" + Math.floor(Math.random()*900000 + 100000);
-        loadData(); 
+        loadData();
     };
 
     async function loadData() {
         const res = await fetch(API + "?nocache=" + Date.now());
         const data = await res.json();
-        patients = data.patients || []; 
+        patients = data.patients || []; history = data.history || []; bills = data.bills || [];
         renderTable(patients);
     }
 
@@ -110,18 +171,12 @@
                 <td>${p.bp || '--'} / ${p.pulse || '--'} / ${p.spo2 || '--'}</td>
                 <td>
                     <button class="t-btn" style="background:var(--edit)" onclick="editPatient('${p.opd}')">Edit</button>
+                    <button class="t-btn" style="background:var(--treat)" onclick="openTreat('${p.opd}','${p.name}')">Treat</button>
+                    <button class="t-btn" style="background:var(--bill)" onclick="openBill('${p.opd}','${p.name}')">Bill</button>
+                    <button class="t-btn" style="background:#673ab7" onclick="printRegOnly('${p.opd}')">P-Reg</button>
                 </td>`;
             body.appendChild(tr);
         });
-    }
-
-    function filterTable() {
-        const val = document.getElementById('searchInput').value.toLowerCase();
-        renderTable(patients.filter(p => 
-            p.name.toLowerCase().includes(val) || 
-            p.opd.toLowerCase().includes(val) || 
-            (p.village && p.village.toLowerCase().includes(val))
-        ));
     }
 
     function editPatient(opd) {
@@ -143,23 +198,77 @@
     }
 
     async function submitReg() {
-        const p = {
-            type: "REG",
-            date: document.getElementById('p_date').value,
-            opd_no: document.getElementById('p_opd').value,
-            name: document.getElementById('p_name').value,
-            age: document.getElementById('p_age').value,
-            sex: document.getElementById('p_sex').value,
-            phone: document.getElementById('p_phone').value,
-            village: document.getElementById('p_village').value,
-            bp: document.getElementById('p_bp').value,
-            pulse: document.getElementById('p_pulse').value,
-            spo2: document.getElementById('p_spo2').value,
-            temp: document.getElementById('p_temp').value
-        };
+        const p = { type: "REG", date: document.getElementById('p_date').value, opd_no: document.getElementById('p_opd').value, name: document.getElementById('p_name').value, age: document.getElementById('p_age').value, sex: document.getElementById('p_sex').value, phone: document.getElementById('p_phone').value, village: document.getElementById('p_village').value, bp: document.getElementById('p_bp').value, pulse: document.getElementById('p_pulse').value, spo2: document.getElementById('p_spo2').value, temp: document.getElementById('p_temp').value };
         await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(p) });
-        alert("Success! Record sent to Excel.");
-        location.reload();
+        alert("Patient Record Saved!"); location.reload();
+    }
+
+    function openBill(opd, name) {
+        window.activeOPD = opd; window.activeName = name;
+        const cont = document.getElementById('investList'); cont.innerHTML = "";
+        Object.keys(PRICELIST).forEach(t => {
+            cont.innerHTML += `<div style="display:flex; justify-content:space-between; padding:5px;"><span>${t} (₹${PRICELIST[t]})</span> <input type="checkbox" class="bc" data-n="${t}" data-p="${PRICELIST[t]}" onchange="calcT()"></div>`;
+        });
+        document.getElementById('mBill').style.display = "block";
+    }
+
+    function calcT() {
+        let t = 0; document.querySelectorAll('.bc:checked').forEach(c => t += parseInt(c.dataset.p));
+        document.getElementById('totalBill').innerText = t;
+    }
+
+    async function handleBillAction(mode) {
+        const sel = []; document.querySelectorAll('.bc:checked').forEach(c => sel.push({n: c.dataset.n, p: c.dataset.p}));
+        if(sel.length === 0) return alert("Select test!");
+        const p = patients.find(i => i.opd === window.activeOPD);
+        let rows = sel.map((s, i) => `<tr><td>${i+1}</td><td>${s.n}</td><td>₹${s.p}</td></tr>`).join('');
+        const content = `<h2 style="text-align:center;">INVESTIGATION BILL</h2><table class="bill-table"><thead><tr><th>#</th><th>Test</th><th>Price</th></tr></thead><tbody>${rows}</tbody></table><h3 style="text-align:right;">Total: ₹${document.getElementById('totalBill').innerText}</h3>`;
+        document.getElementById('printArea').innerHTML = getBasePage(p, content);
+        window.print(); location.reload();
+    }
+
+    function openTreat(opd, name) {
+        window.activeOPD = opd; window.activeName = name;
+        document.getElementById('mTitle').innerText = "Treat: " + name;
+        const pBills = bills.filter(b => b.opd.toString() === opd.toString());
+        const box = document.getElementById('billHistory');
+        if(pBills.length > 0) {
+            box.style.display = "block";
+            box.innerHTML = "<b>History:</b> " + pBills.map(b => `${b.date}: ${b.tests}`).join(' | ');
+        }
+        document.getElementById('mTreat').style.display = "block";
+    }
+
+    function addRow() {
+        const d = document.createElement('div'); d.style.display="flex"; d.style.gap="5px"; d.style.marginBottom="5px";
+        d.innerHTML = `<input type="text" placeholder="Drug" style="flex:2;"><input type="text" placeholder="Dose" style="flex:1;"><button onclick="this.parentElement.remove()" style="background:red; color:white; border:none; padding:5px;">X</button>`;
+        document.getElementById('dList').appendChild(d);
+    }
+
+    function getBasePage(p, content) {
+        return `<div class="print-page">
+            <div style="display:flex; justify-content:space-between; border-bottom:3px solid var(--accent); padding-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:10px;"><img src="/logo.jpg" style="width:70px;"><div><h1 style="font-size:22px; color:var(--accent); margin:0;">SRI RAJA RAJESHWARI HOSPITAL</h1><p style="font-size:10px; margin:0;">Suraram colony, TS</p></div></div>
+                <div style="border:1px solid #000; padding:5px; font-size:12px;"><b>Dr. M. Jayachander</b><br>MD (Gen Med) | Reg: 43070</div>
+            </div>
+            <div style="margin:15px 0; border:1px solid #000; padding:10px; display:flex; justify-content:space-between; font-size:13px;">
+                <div><b>Name:</b> ${p.name}<br><b>Age/Sex:</b> ${p.age}/${p.sex}<br><b>Village:</b> ${p.village}</div>
+                <div><b>Date:</b> ${p.date}<br><b>OPD:</b> ${p.opd}<br><b>Vitals:</b> BP:${p.bp} P:${p.pulse}</div>
+            </div>
+            <div style="flex:1;">${content}</div>
+            <div class="lab-footer">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES 💊</div>
+        </div>`;
+    }
+
+    function printRegOnly(opd) {
+        const p = patients.find(i => i.opd === opd);
+        document.getElementById('printArea').innerHTML = getBasePage(p, '<h1 style="color:red; font-size:40px; margin-top:20px;">Rx</h1><div style="border: 2px dashed #ccc; height: 400px; margin-top: 20px; display:flex; align-items:center; justify-content:center; color:#ccc;">[ SPACE FOR MANUAL PRESCRIPTION ]</div>');
+        window.print();
+    }
+    
+    function filterTable() {
+        const v = document.getElementById('searchInput').value.toLowerCase();
+        renderTable(patients.filter(p => p.name.toLowerCase().includes(v) || p.opd.toLowerCase().includes(v)));
     }
 </script>
 </body>
