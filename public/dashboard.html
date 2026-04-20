@@ -38,7 +38,7 @@
         .modal-body { background: white; max-width: 850px; margin: auto; padding: 30px; border-radius: 10px; border-top: 10px solid var(--treat); }
         .drug-row { display: grid; grid-template-columns: 2fr 1fr 1fr 2fr auto; gap: 8px; margin-bottom: 8px; }
 
-        /* PRINT STYLES - CAREFULLY MODIFIED TO PREVENT EMPTY PAGES */
+        /* PRINT STYLES */
         #printArea { display: none; }
         @media print {
             @page { margin: 0; }
@@ -192,6 +192,7 @@
         } catch(e) { console.error(e); }
     }
 
+    /* Updated Base Page to include Village */
     function getBasePage(p, content) {
         return `
         <div class="print-page">
@@ -211,7 +212,7 @@
             </div>
             <div class="patient-data-box">
                 <div class="data-row"><span><b>Name:</b> ${p.name}</span><span><b>Date:</b> ${p.date}</span></div>
-                <div class="data-row"><span><b>Age/Sex:</b> ${p.age}/${p.sex}</span><span><b>OPD:</b> ${p.opd}</span></div>
+                <div class="data-row"><span><b>Age/Sex/Village:</b> ${p.age}/${p.sex} - ${p.vil || 'N/A'}</span><span><b>OPD:</b> ${p.opd}</span></div>
                 <div class="vitals-strip">VITALS: BP: ${p.bp} | Pulse: ${p.pu} | O2: ${p.sp}% | Temp: ${p.te}F</div>
             </div>
             ${content}
@@ -229,12 +230,8 @@
         </div>`;
     }
 
-    /* RECTIFIED FUNCTION: Removes Registration Slip title and dashed placeholder box */
     function printRegOnly(opd) {
         const p = patients.find(i => i.opd === opd);
-        
-        // This clean content removes the title and the huge dashed box. 
-        // It leaves the entire top and bottom areas untouched.
         const content = `
             <div class="rx-symbol">Rx</div>
             <div style="flex:1;"></div>
