@@ -3,74 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRR Hospital HMS - Official Build</title>
+    <title>SRR Hospital HMS</title>
     <style>
         :root { --primary: #1b5e20; --accent: #c62828; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 10px; }
         .container { max-width: 1150px; margin: auto; background: white; padding: 20px; border-radius: 12px; border-top: 10px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* Header Layout */
+        /* Header */
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 12px; margin-bottom: 20px; }
-        .logo { width: 85px; height: 85px; object-fit: contain; }
+        .logo { width: 80px; height: 80px; }
+        .hosp-title { text-align: center; flex: 1; }
+        .hosp-title h1 { color: var(--accent); margin: 0; font-size: 24px; text-transform: uppercase; font-weight: 900; }
+        .address-text { font-size: 12px; color: #000; margin-top: 5px; font-weight: 600; line-height: 1.4; }
         
-        .hosp-title { text-align: center; flex: 1; padding: 0 15px; }
-        .hosp-title h1 { color: var(--accent); margin: 0; font-size: 24px; text-transform: uppercase; font-weight: 900; letter-spacing: 0.5px; }
-        .address-text { font-size: 12px; color: #000; margin-top: 6px; line-height: 1.5; font-weight: 600; }
-        
-        /* Doctor Details Boxed & Bold */
-        .doc-box { border: 3px solid #000; padding: 10px; min-width: 220px; text-align: right; background: #fffde7; border-radius: 4px; box-shadow: 3px 3px 0px #000; }
-        .doc-box b { font-weight: 900; font-size: 16px; display: block; color: #000; text-transform: uppercase; }
-        .doc-box .qual { font-weight: 800; font-size: 13px; display: block; margin: 3px 0; color: #1b5e20; }
-        .doc-box .reg { font-weight: 900; font-size: 12px; display: block; color: var(--accent); border-top: 1.5px solid #000; margin-top: 4px; padding-top: 4px; }
+        /* Doctor Box */
+        .doc-box { border: 3px solid #000; padding: 10px; min-width: 220px; text-align: right; background: #fffde7; border-radius: 4px; }
+        .doc-box b { font-weight: 900; font-size: 16px; display: block; text-transform: uppercase; }
+        .doc-box .qual { font-weight: 800; font-size: 13px; display: block; color: #1b5e20; }
+        .doc-box .reg { font-weight: 900; font-size: 12px; display: block; color: var(--accent); border-top: 2px solid #000; margin-top: 4px; padding-top: 4px; }
 
-        /* Dashboard Bar */
         .opd-bar { background: #e8f5e9; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; color: var(--primary); display: flex; justify-content: space-between; font-size: 14px; border: 1px solid #c8e6c9; }
-        
-        /* Input Grid */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
-        input:focus { border-color: var(--primary); outline: none; background: #f9f9f9; }
         
-        /* Buttons */
-        .btn { padding: 12px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; width: 100%; text-transform: uppercase; transition: 0.2s; }
-        .btn-reg { background: var(--primary); box-shadow: 0 3px #0d3311; }
-        .btn-reg:active { box-shadow: none; transform: translateY(2px); }
+        .btn { padding: 12px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; width: 100%; text-transform: uppercase; }
+        .btn-reg { background: var(--primary); }
         
-        /* Table Styling */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: #263238; color: white; padding: 12px; text-align: left; font-size: 13px; text-transform: uppercase; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; color: #333; }
-        tr:hover { background: #f1f1f1; }
-        .opd-id { font-weight: 900; color: var(--primary); }
+        th { background: #263238; color: white; padding: 12px; text-align: left; font-size: 13px; }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
 
-        /* Clinical Modal */
+        /* Modal */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; padding: 20px; overflow-y: auto; }
-        .modal-body { background: white; max-width: 900px; margin: auto; padding: 25px; border-radius: 10px; border-top: 10px solid #e67e22; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .modal-body { background: white; max-width: 900px; margin: auto; padding: 25px; border-radius: 10px; border-top: 10px solid #e67e22; }
         
-        /* Rx Row Styling */
-        .drug-row { display: flex; gap: 6px; margin-bottom: 8px; align-items: center; }
+        .drug-row { display: flex; gap: 5px; margin-bottom: 8px; align-items: center; }
         .dn { flex: 2.5; font-weight: bold; }
-        .dr { flex: 1; }
-        .dd { flex: 0.7; }
-        .dm { flex: 2; }
-        .rm-btn { background: #c62828; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .rm-btn { background: #c62828; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <img src="logo.jpg" class="logo" alt="SRR Logo">
-        
+        <img src="logo.jpg" class="logo">
         <div class="hosp-title">
             <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
             <div class="address-text">
                 Add: Suraram colony NTR road opp: Ramaleela maidanam<br>
                 Telangana 500055<br>
-                <span style="font-size: 18px; letter-spacing: 3px;">📞 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                <span style="font-size: 18px;">📞 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
             </div>
         </div>
-
         <div class="doc-box">
             <b>DR. M. JAYACHANDER</b>
             <span class="qual">MBBS, MD (General Medicine)</span>
@@ -80,65 +64,46 @@
 
     <div class="opd-bar">
         <span>📅 Date: <span id="curDate"></span></span>
-        <span>🆔 Next OPD ID: <span id="nextOPD">...</span></span>
+        <span>🆔 Next OPD: <span id="nextOPD">...</span></span>
     </div>
 
     <div class="grid">
         <input type="text" id="p_name" placeholder="Patient Name">
         <input type="number" id="p_age" placeholder="Age">
-        <select id="p_sex"><option>Male</option><option>Female</option><option>Other</option></select>
-        <input type="text" id="p_vil" placeholder="Village / Area">
-        <input type="text" id="p_phone" placeholder="Phone Number">
-        <input type="text" id="p_weight" placeholder="Weight (kg)">
-        <input type="text" id="p_bp" placeholder="Blood Pressure (B.P.)">
-        <input type="text" id="p_pulse" placeholder="Pulse Rate">
-        <input type="text" id="p_spo2" placeholder="SpO2 %">
-        <input type="text" id="p_temp" placeholder="Temperature">
+        <select id="p_sex"><option>Male</option><option>Female</option></select>
+        <input type="text" id="p_vil" placeholder="Village">
+        <input type="text" id="p_phone" placeholder="Phone">
+        <input type="text" id="p_weight" placeholder="Weight">
+        <input type="text" id="p_bp" placeholder="BP">
+        <input type="text" id="p_pulse" placeholder="Pulse">
+        <input type="text" id="p_spo2" placeholder="SpO2%">
+        <input type="text" id="p_temp" placeholder="Temp">
     </div>
     
     <input type="hidden" id="edit_opd">
-    <button id="saveBtn" class="btn btn-reg" onclick="savePatient()">Register & Save Patient</button>
+    <button id="saveBtn" class="btn btn-reg" onclick="savePatient()">Register & Save</button>
     <button id="cancelBtn" class="btn" style="background:#7f8c8d; display:none; margin-top:8px;" onclick="resetForm()">Cancel Edit</button>
 
     <table>
         <thead>
-            <tr>
-                <th>OPD No</th>
-                <th>Patient Name</th>
-                <th>Phone Number</th>
-                <th>Weight</th>
-                <th>Actions</th>
-            </tr>
+            <tr><th>OPD No</th><th>Name</th><th>Phone</th><th>Weight</th><th>Actions</th></tr>
         </thead>
         <tbody id="tbody"></tbody>
     </table>
 
     <div id="mTreat" class="modal">
         <div class="modal-body">
-            <h2 id="tTitle" style="margin-top:0; color:#d35400; border-bottom: 2px solid #eee; padding-bottom: 10px;">Clinical Assessment</h2>
-            
+            <h2 id="tTitle" style="margin-top:0; color:#d35400;">Clinical Assessment</h2>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:15px;">
-                <div>
-                    <label style="font-weight:bold; font-size:13px;">Chief Complaints</label>
-                    <textarea id="mComp" rows="3" placeholder="Symptoms reported by patient..."></textarea>
-                </div>
-                <div>
-                    <label style="font-weight:bold; font-size:13px;">Investigations</label>
-                    <textarea id="mInv" rows="3" placeholder="Lab tests, X-ray findings etc..."></textarea>
-                </div>
+                <div><label>Complaints</label><textarea id="mComp" rows="3"></textarea></div>
+                <div><label>Investigations</label><textarea id="mInv" rows="3"></textarea></div>
             </div>
-            
-            <h4 style="margin:20px 0 10px 0; color:#2c3e50; background:#f8f9fa; padding:10px; border-left: 5px solid #e67e22;">Rx (Medications)</h4>
+            <h4 style="margin:20px 0 10px 0; background:#f8f9fa; padding:8px;">Rx (Medications)</h4>
             <div id="dList"></div>
-            <button onclick="addRow()" style="margin-top:10px; padding:10px 18px; cursor:pointer; background:#546e7a; color:white; border:none; border-radius:4px; font-weight:bold;">+ Add Medicine</button>
-            
-            <div style="margin-top:20px;">
-                <label style="font-weight:bold; font-size:13px;">Clinical Advice / Follow-up</label>
-                <textarea id="mNotes" rows="2" placeholder="Dietary advice or return instructions..."></textarea>
-            </div>
-            
+            <button onclick="addRow()" style="margin-top:10px; padding:8px; cursor:pointer;">+ Add Medicine</button>
+            <div style="margin-top:20px;"><label>Advice / Follow-up</label><textarea id="mNotes" rows="2"></textarea></div>
             <div style="display:flex; gap:15px; margin-top:25px;">
-                <button id="treatSaveBtn" class="btn" style="background:#e67e22; flex:1;" onclick="updateTreatment()">SAVE CLINICAL DATA</button>
+                <button id="treatSaveBtn" class="btn" style="background:#e67e22; flex:1;" onclick="updateTreatment()">SAVE TREATMENT</button>
                 <button class="btn" style="background:#7f8c8d; width:120px;" onclick="closeModal()">CLOSE</button>
             </div>
         </div>
@@ -146,19 +111,18 @@
 </div>
 
 <script>
+    // MAKE SURE THIS URL IS EXACTLY FROM YOUR DEPLOYMENT
     const API_URL = "https://script.google.com/macros/s/AKfycbxWIJnOjylaYJBb_KvYjrE58m3VXWQf9n-tPWPYol9uqs1b8yC77cnAilUNAOLUv9Dt/exec";
     
-    // Auto-set current date
     document.getElementById('curDate').innerText = new Date().toLocaleDateString('en-IN');
     let patients = [];
 
-    // Load Data from Sheet
     async function load() {
         try {
-            const r = await fetch(API_URL + "?nocache=" + Date.now());
-            patients = await r.json();
+            const resp = await fetch(API_URL + "?nocache=" + new Date().getTime());
+            const data = await resp.json();
+            patients = data;
             
-            // Calculate Next OPD Number
             if(patients.length > 0) {
                 const lastID = patients[0].opd_no; 
                 const num = parseInt(lastID.split('-')[1]) || 1000;
@@ -167,26 +131,26 @@
                 document.getElementById('nextOPD').innerText = "SRR-1001";
             }
 
-            // Render Table
             document.getElementById('tbody').innerHTML = patients.map(p => `
                 <tr>
-                    <td class="opd-id">${p.opd_no}</td>
-                    <td style="text-transform:uppercase;">${p.name}</td>
+                    <td style="font-weight:bold; color:var(--primary);">${p.opd_no}</td>
+                    <td>${p.name}</td>
                     <td>${p.phone_number || '-'}</td>
-                    <td>${p.weight ? p.weight + ' kg' : '-'}</td>
+                    <td>${p.weight || '-'}</td>
                     <td>
-                        <button onclick="editPatient('${p.opd_no}')" style="background:#0277bd; color:white; border:none; padding:6px 12px; border-radius:3px; cursor:pointer;">Edit</button>
-                        <button onclick="openTreat('${p.opd_no}')" style="background:#e67e22; color:white; border:none; padding:6px 12px; border-radius:3px; cursor:pointer;">Treat</button>
+                        <button onclick="editPatient('${p.opd_no}')">Edit</button>
+                        <button onclick="openTreat('${p.opd_no}')" style="background:#e67e22; color:white; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">Treat</button>
                     </td>
                 </tr>
             `).join('');
-        } catch(e) { console.error("Database sync failed"); }
+        } catch(e) { 
+            console.log("Load Error:", e);
+            document.getElementById('tbody').innerHTML = "<tr><td colspan='5'>Error loading data. Check Web App URL.</td></tr>";
+        }
     }
 
-    // Save/Update Patient Registration
     async function savePatient() {
-        if(!document.getElementById('p_name').value) { alert("Name is required"); return; }
-        
+        if(!document.getElementById('p_name').value) { alert("Enter Name"); return; }
         const data = {
             type: document.getElementById('edit_opd').value ? "UPDATE_DETAILS" : "REGISTRATION",
             opd: document.getElementById('edit_opd').value || document.getElementById('nextOPD').innerText,
@@ -202,17 +166,85 @@
             spo2: document.getElementById('p_spo2').value,
             temp: document.getElementById('p_temp').value
         };
-        
-        const sBtn = document.getElementById('saveBtn');
-        sBtn.innerText = "Processing..."; sBtn.disabled = true;
-        
+        document.getElementById('saveBtn').innerText = "Saving...";
         await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
         resetForm(); load();
     }
 
-    // Open Clinical Modal
     function openTreat(opd) {
         window.activeOPD = opd;
         const p = patients.find(x => x.opd_no == opd);
-        document.getElementById('tTitle').innerText = "Patient: " + p.name + " (" + opd + ")";
-        document.getElementById('mComp').value
+        document.getElementById('tTitle').innerText = "Treating: " + p.name;
+        document.getElementById('mComp').value = p.complaints || "";
+        document.getElementById('mInv').value = p.investigations || "";
+        document.getElementById('mNotes').value = p.notes || "";
+        document.getElementById('dList').innerHTML = "";
+        
+        try {
+            const meds = JSON.parse(p.medications);
+            if(meds.length > 0) meds.forEach(m => addRow(m.n, m.r, m.d, m.rem));
+            else addRow();
+        } catch(e) { addRow(); }
+        
+        document.getElementById('mTreat').style.display = "block";
+    }
+
+    function addRow(n="", r="", d="", rem="") {
+        const div = document.createElement('div');
+        div.className = "drug-row";
+        div.innerHTML = `
+            <input type="text" placeholder="Drug" class="dn" value="${n}">
+            <input type="text" placeholder="Freq" class="dr" value="${r}">
+            <input type="text" placeholder="Day" class="dd" value="${d}">
+            <input type="text" placeholder="Advice" class="dm" value="${rem}">
+            <button class="rm-btn" onclick="this.parentElement.remove()">X</button>`;
+        document.getElementById('dList').appendChild(div);
+    }
+
+    async function updateTreatment() {
+        let drugs = [];
+        document.querySelectorAll('.drug-row').forEach(row => {
+            const n = row.querySelector('.dn').value;
+            if(n) drugs.push({ n: n, r: row.querySelector('.dr').value, d: row.querySelector('.dd').value, rem: row.querySelector('.dm').value });
+        });
+        const data = { 
+            type: "TREATMENT", opd: window.activeOPD, 
+            complaints: document.getElementById('mComp').value, 
+            investigations: document.getElementById('mInv').value,
+            drugs: drugs, notes: document.getElementById('mNotes').value 
+        };
+        document.getElementById('treatSaveBtn').innerText = "Saving...";
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
+        closeModal(); load();
+    }
+
+    function editPatient(opd) {
+        const p = patients.find(x => x.opd_no == opd);
+        document.getElementById('edit_opd').value = p.opd_no;
+        document.getElementById('p_name').value = p.name;
+        document.getElementById('p_age').value = p.age;
+        document.getElementById('p_sex').value = p.sex;
+        document.getElementById('p_vil').value = p.village;
+        document.getElementById('p_phone').value = p.phone_number;
+        document.getElementById('p_weight').value = p.weight;
+        document.getElementById('p_bp').value = p.bp;
+        document.getElementById('p_pulse').value = p.pulse;
+        document.getElementById('p_spo2').value = p.spo2;
+        document.getElementById('p_temp').value = p.temp;
+        document.getElementById('saveBtn').innerText = "Update Record";
+        document.getElementById('cancelBtn').style.display = "block";
+        window.scrollTo(0,0);
+    }
+
+    function resetForm() {
+        document.getElementById('edit_opd').value = "";
+        document.getElementById('saveBtn').innerText = "Register & Save";
+        document.getElementById('cancelBtn').style.display = "none";
+        document.querySelectorAll('.grid input').forEach(i => i.value = "");
+    }
+
+    function closeModal() { document.getElementById('mTreat').style.display = "none"; }
+    load();
+</script>
+</body>
+</html>
