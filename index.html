@@ -8,21 +8,29 @@
         :root { --primary: #1b5e20; --accent: #c62828; --bg: #f4f7f6; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 10px; }
         .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 12px; border-top: 10px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
-        .logo { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; }
+        .logo { width: 80px; height: 80px; object-fit: cover; }
+        .hosp-title { text-align: center; flex: 1; }
         .hosp-title h1 { color: var(--accent); margin: 0; font-size: 22px; text-transform: uppercase; font-weight: 900; }
+        
+        .opd-bar { background: #e8f5e9; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-weight: bold; color: var(--primary); display: flex; justify-content: space-between; font-size: 14px; }
+        
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+        
         .btn { padding: 12px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; width: 100%; transition: 0.3s; }
         .btn-reg { background: var(--primary); }
         .btn-update { background: #0288d1; }
-        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .btn:disabled { background: #999; cursor: not-allowed; }
+        
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { background: #263238; color: white; padding: 10px; text-align: left; font-size: 13px; }
         td { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
+
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; padding: 20px; overflow-y: auto; }
         .modal-body { background: white; max-width: 800px; margin: auto; padding: 25px; border-radius: 8px; }
-        .opd-info { background: #e8f5e9; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-weight: bold; color: var(--primary); display: flex; justify-content: space-between; }
+
         @media print { .no-print { display: none; } #printArea { display: block; } }
     </style>
 </head>
@@ -30,9 +38,9 @@
 
 <div class="container">
     <div class="header">
-        <img src="logo.jpg" class="logo" alt="Hospital Logo">
-        <div style="text-align:center; flex:1;">
-            <h1 style="color:var(--accent); margin:0;">SRI RAJA RAJESHWARI HOSPITAL</h1>
+        <img src="logo.jpg" class="logo" alt="Logo">
+        <div class="hosp-title">
+            <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
             <p style="margin:2px; font-weight:bold;">Suraram Colony, Hyderabad</p>
         </div>
         <div style="font-size:12px; border:2px solid var(--primary); padding:8px; background:#f1f8e9; min-width:140px;">
@@ -41,7 +49,7 @@
     </div>
 
     <div class="no-print">
-        <div class="opd-info">
+        <div class="opd-bar">
             <span>Date: <span id="curDate"></span></span>
             <span>Next OPD No: <span id="nextOPD">Loading...</span></span>
         </div>
@@ -49,11 +57,11 @@
         <div class="grid">
             <input type="text" id="p_name" placeholder="Patient Name">
             <input type="number" id="p_age" placeholder="Age">
-            <select id="p_sex"><option>Male</option><option>Female</option><option>Other</option></select>
-            <input type="text" id="p_vil" placeholder="Village/Area">
+            <select id="p_sex"><option>Male</option><option>Female</option></select>
+            <input type="text" id="p_vil" placeholder="Village">
             <input type="text" id="p_phone" placeholder="Phone Number">
-            <input type="text" id="p_weight" placeholder="Weight (kg)">
-            <input type="text" id="p_bp" placeholder="BP (e.g. 120/80)">
+            <input type="text" id="p_weight" placeholder="Weight">
+            <input type="text" id="p_bp" placeholder="BP">
             <input type="text" id="p_pulse" placeholder="Pulse">
             <input type="text" id="p_spo2" placeholder="SpO2%">
             <input type="text" id="p_temp" placeholder="Temp">
@@ -64,24 +72,21 @@
         <button id="cancelBtn" class="btn" style="background:#7f8c8d; display:none; margin-top:5px;" onclick="resetForm()">CANCEL EDIT</button>
 
         <table>
-            <thead><tr><th>OPD</th><th>Name</th><th>Phone</th><th>Wt</th><th>Actions</th></tr></thead>
-            <tbody id="tbody"><tr><td colspan="5" style="text-align:center;">Fetching patient records...</td></tr></tbody>
+            <thead><tr><th>OPD No</th><th>Name</th><th>Phone Number</th><th>Weight</th><th>Actions</th></tr></thead>
+            <tbody id="tbody"></tbody>
         </table>
     </div>
 
     <div id="mTreat" class="modal">
         <div class="modal-body">
-            <h2 id="tTitle" style="color:#e67e22; margin-top:0;">Patient Treatment</h2>
-            <div class="grid">
-                <textarea id="mComp" placeholder="Chief Complaints" rows="3"></textarea>
-                <textarea id="mInv" placeholder="Investigations Required" rows="3"></textarea>
-            </div>
-            <h3>Medications (Rx)</h3>
+            <h2 id="tTitle" style="color:#e67e22; margin-top:0;">Assessment</h2>
+            <textarea id="mComp" placeholder="Chief Complaints" rows="3"></textarea>
+            <h3 style="border-bottom: 2px solid #eee; padding-bottom:5px;">Medications (Rx)</h3>
             <div id="dList"></div>
             <button onclick="addRow()" style="margin:10px 0; background:#546e7a; color:white; border:none; padding:8px; border-radius:4px; cursor:pointer;">+ Add Medicine</button>
-            <textarea id="mNotes" placeholder="Advice / Follow-up Notes" rows="2"></textarea>
+            <textarea id="mNotes" placeholder="Follow-up Notes" rows="2"></textarea>
             <div style="display:flex; gap:10px; margin-top:20px;">
-                <button id="treatSaveBtn" class="btn" style="background:#e67e22; flex:1;" onclick="updateTreatment()">SAVE TREATMENT</button>
+                <button id="treatSaveBtn" class="btn" style="background:#e67e22; flex:1;" onclick="updateTreatment()">SAVE</button>
                 <button class="btn" style="background:#7f8c8d; width:80px;" onclick="closeModal()">CLOSE</button>
             </div>
         </div>
@@ -91,18 +96,16 @@
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxiJBkvpFLOqYtLjVcZHZlfZui-J-CnokX8_JUn4vZmaF3dSSdRFzO1_Jlk_3dDRnbP/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbxWIJnOjylaYJBb_KvYjrE58m3VXWQf9n-tPWPYol9uqs1b8yC77cnAilUNAOLUv9Dt/exec";
     
     document.getElementById('curDate').innerText = new Date().toLocaleDateString('en-IN');
     let patients = [];
 
     async function load() {
         try {
-            // "nocache" forces browser to ignore old saved versions of the data
             const r = await fetch(API_URL + "?nocache=" + Date.now());
             patients = await r.json();
             
-            // Generate Auto-OPD Number based on latest entry
             if(patients.length > 0) {
                 const latestOPD = patients[0].opd_no; 
                 const numPart = parseInt(latestOPD.replace("SRR-", ""));
@@ -111,26 +114,19 @@
                 document.getElementById('nextOPD').innerText = "SRR-1001";
             }
 
-            renderTable(patients);
-        } catch(e) {
-            document.getElementById('tbody').innerHTML = "<tr><td colspan='5' style='color:red; text-align:center;'>Unable to load data. Please check connection.</td></tr>";
-        }
-    }
-
-    function renderTable(data) {
-        document.getElementById('tbody').innerHTML = data.map(p => `
-            <tr>
-                <td><b>${p.opd_no}</b></td>
-                <td>${p.name}</td>
-                <td>${p.phone || '-'}</td>
-                <td>${p.weight ? p.weight+'kg' : '-'}</td>
-                <td>
-                    <button style="background:#0288d1; color:white; border:none; padding:4px 8px; cursor:pointer; border-radius:3px;" onclick="editPatient('${p.opd_no}')">Edit</button>
-                    <button style="background:#e67e22; color:white; border:none; padding:4px 8px; cursor:pointer; border-radius:3px;" onclick="openTreat('${p.opd_no}')">Treat</button>
-                    <button style="background:#263238; color:white; border:none; padding:4px 8px; cursor:pointer; border-radius:3px;" onclick="printRx('${p.opd_no}')">Print</button>
-                </td>
-            </tr>
-        `).join('');
+            document.getElementById('tbody').innerHTML = patients.map(p => `
+                <tr>
+                    <td><b>${p.opd_no}</b></td>
+                    <td>${p.name}</td>
+                    <td>${p.phone_number || '-'}</td>
+                    <td>${p.weight || '-'}</td>
+                    <td>
+                        <button style="background:#0288d1; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:3px;" onclick="editPatient('${p.opd_no}')">Edit</button>
+                        <button style="background:#e67e22; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:3px;" onclick="openTreat('${p.opd_no}')">Treat</button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch(e) { console.error("Load failed", e); }
     }
 
     async function savePatient() {
@@ -153,8 +149,7 @@
             temp: document.getElementById('p_temp').value
         };
 
-        if(!data.name) return alert("Please enter Patient Name");
-
+        if(!data.name) return alert("Patient Name is required!");
         saveBtn.disabled = true;
         saveBtn.innerText = "Processing...";
 
@@ -164,8 +159,8 @@
             if(status === "Success") {
                 resetForm();
                 await load(); 
-            } else { alert("Server error: " + status); }
-        } catch(e) { alert("Failed to connect to server."); }
+            }
+        } catch(e) { alert("Server error. Check Apps Script deployment."); }
         finally {
             saveBtn.disabled = false;
             saveBtn.innerText = editOpd ? "UPDATE PATIENT" : "REGISTER PATIENT";
@@ -179,15 +174,15 @@
         document.getElementById('p_age').value = p.age;
         document.getElementById('p_sex').value = p.sex;
         document.getElementById('p_vil').value = p.village;
-        document.getElementById('p_phone').value = p.phone;
-        document.getElementById('p_weight').value = p.weight;
+        document.getElementById('p_phone').value = p.phone_number || "";
+        document.getElementById('p_weight').value = p.weight || "";
         document.getElementById('p_bp').value = p.bp;
         document.getElementById('p_pulse').value = p.pulse;
         document.getElementById('p_spo2').value = p.spo2;
         document.getElementById('p_temp').value = p.temp;
         
         const sBtn = document.getElementById('saveBtn');
-        sBtn.innerText = "UPDATE PATIENT";
+        sBtn.innerText = "UPDATE DATA";
         sBtn.className = "btn btn-update";
         document.getElementById('cancelBtn').style.display = "block";
         window.scrollTo({top: 0, behavior: 'smooth'});
@@ -205,30 +200,23 @@
     function openTreat(opd) {
         window.activeOPD = opd;
         const p = patients.find(x => x.opd_no == opd);
-        document.getElementById('tTitle').innerText = "Treating: " + p.name + " (" + opd + ")";
+        document.getElementById('tTitle').innerText = "Treating: " + p.name;
         document.getElementById('mComp').value = p.complaints || "";
-        document.getElementById('mInv').value = p.investigations || "";
         document.getElementById('mNotes').value = p.notes || "";
         document.getElementById('dList').innerHTML = "";
-        
-        if(p.medications && p.medications !== "[]") {
-            try {
-                JSON.parse(p.medications).forEach(m => addRow(m.n, m.r, m.d, m.rem));
-            } catch(e) { addRow(); }
-        } else { addRow(); }
-        
+        addRow();
         document.getElementById('mTreat').style.display = "block";
     }
 
-    function addRow(n="", r="", d="", rem="") {
+    function addRow() {
         const div = document.createElement('div');
         div.style.display = "flex"; div.style.gap = "5px"; div.style.marginBottom = "5px";
         div.innerHTML = `
-            <input type="text" placeholder="Drug" class="dn" value="${n}" style="flex:2;">
-            <input type="text" placeholder="Route" class="dr" value="${r}" style="width:80px;">
-            <input type="text" placeholder="Days" class="dd" value="${d}" style="width:60px;">
-            <input type="text" placeholder="Remark" class="dm" value="${rem}" style="flex:1;">
-            <button onclick="this.parentElement.remove()" style="background:red; color:white; border:none; padding:5px; cursor:pointer; border-radius:3px;">X</button>`;
+            <input type="text" placeholder="Drug" class="dn" style="flex:2;">
+            <input type="text" placeholder="Route" class="dr" style="width:80px;">
+            <input type="text" placeholder="Days" class="dd" style="width:60px;">
+            <input type="text" placeholder="Remark" class="dm" style="flex:1;">
+            <button onclick="this.parentElement.remove()" style="background:red; color:white; border:none; padding:5px; border-radius:3px; cursor:pointer;">X</button>`;
         document.getElementById('dList').appendChild(div);
     }
 
@@ -244,7 +232,6 @@
             type: "TREATMENT", 
             opd: window.activeOPD, 
             complaints: document.getElementById('mComp').value, 
-            investigations: document.getElementById('mInv').value, 
             drugs: drugs, 
             notes: document.getElementById('mNotes').value 
         };
@@ -256,43 +243,7 @@
         load();
     }
 
-    function printRx(opd) {
-        const p = patients.find(x => x.opd_no == opd);
-        if(!p.medications || p.medications === "[]") return alert("No treatment data found. Save treatment first.");
-        
-        const drugs = JSON.parse(p.medications).map(d => `<tr><td>${d.n}</td><td>${d.r}</td><td>${d.d}</td><td>${d.rem}</td></tr>`).join('');
-        
-        const printContent = `
-            <div style="padding:20px; border:2px solid #000; font-family: 'Times New Roman', serif;">
-                <div style="text-align:center; border-bottom:2px solid #000; padding-bottom:10px;">
-                    <h1 style="color:red; margin:0; font-size:28px;">SRI RAJA RAJESHWARI HOSPITAL</h1>
-                    <p style="margin:2px; font-weight:bold;">Suraram Colony, Hyderabad | Ph: 91+ [Your Number]</p>
-                    <p style="margin:2px; font-size:18px;"><b>Dr. M. Jayachander, MBBS, MD (General Medicine)</b></p>
-                </div>
-                <div style="display:flex; justify-content:space-between; margin:15px 0; border-bottom:1px solid #000; padding-bottom:10px; font-size:16px;">
-                    <div><b>NAME:</b> ${p.name} (${p.age}/${p.sex})<br><b>VILLAGE:</b> ${p.village}</div>
-                    <div style="text-align:right;"><b>OPD NO:</b> ${p.opd_no}<br><b>DATE:</b> ${p.date}</div>
-                </div>
-                <p><b>Vitals:</b> BP: ${p.bp} | Pulse: ${p.pulse} | SpO2: ${p.spo2}% | Temp: ${p.temp} | WT: ${p.weight}kg</p>
-                <p><b>Complaints:</b> ${p.complaints}</p>
-                <h1 style="color:red; margin:10px 0; font-size:40px;">Rx</h1>
-                <table style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:16px;">
-                    <thead style="background:#f0f0f0;"><tr><th style="border:1px solid #000;">Medicine Name</th><th style="border:1px solid #000;">Route</th><th style="border:1px solid #000;">Days</th><th style="border:1px solid #000;">Instructions</th></tr></thead>
-                    <tbody>${drugs.replace(/<td>/g, '<td style="border:1px solid #000; padding:8px;">')}</tbody>
-                </table>
-                <p style="margin-top:20px;"><b>Advice/Notes:</b> ${p.notes}</p>
-                <div style="margin-top:60px; text-align:right;"><b>Doctor's Signature</b></div>
-            </div>`;
-            
-        const win = window.open('', '', 'height=700,width=900');
-        win.document.write('<html><head><title>Print Prescription</title></head><body>' + printContent + '</body></html>');
-        win.document.close();
-        setTimeout(() => { win.print(); }, 500);
-    }
-
     function closeModal() { document.getElementById('mTreat').style.display = "none"; }
-    
-    // Initial Load
     load();
 </script>
 </body>
