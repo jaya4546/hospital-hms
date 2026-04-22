@@ -8,91 +8,108 @@
         :root { --primary: #1b5e20; --accent: #c62828; --bg: #f4f7f6; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 10px; }
         .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 12px; border-top: 10px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
-        .logo { width: 80px; height: 80px; }
+        .logo { width: 70px; height: 70px; }
         .hosp-title { text-align: center; flex: 1; }
-        .hosp-title h1 { color: var(--accent); margin: 0; font-size: 22px; text-transform: uppercase; font-weight: 900; }
-        .opd-bar { background: #e8f5e9; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-weight: bold; color: var(--primary); display: flex; justify-content: space-between; font-size: 14px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
-        .btn { padding: 12px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; width: 100%; transition: 0.3s; }
+        .hosp-title h1 { color: var(--accent); margin: 0; font-size: 20px; text-transform: uppercase; font-weight: 900; }
+        
+        .opd-bar { background: #e8f5e9; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-weight: bold; color: var(--primary); display: flex; justify-content: space-between; font-size: 13px; border: 1px solid #c8e6c9; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 15px; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 13px; }
+        
+        .btn { padding: 10px; border: none; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; width: 100%; transition: 0.3s; }
         .btn-reg { background: var(--primary); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: #263238; color: white; padding: 10px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; padding: 20px; overflow-y: auto; }
-        .modal-body { background: white; max-width: 800px; margin: auto; padding: 25px; border-radius: 8px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { background: #263238; color: white; padding: 8px; text-align: left; font-size: 13px; }
+        td { padding: 8px; border-bottom: 1px solid #eee; font-size: 13px; }
+
+        /* Treatment Modal */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; padding: 15px; overflow-y: auto; }
+        .modal-body { background: white; max-width: 850px; margin: auto; padding: 20px; border-radius: 8px; }
+        
+        /* Compact Drug Box Layout */
+        .drug-row { display: flex; gap: 4px; margin-bottom: 5px; align-items: center; }
+        .dn { flex: 2.5; } /* Medicine Name */
+        .dr { flex: 1; }   /* Frequency */
+        .dd { flex: 0.8; } /* Duration (Days) */
+        .dm { flex: 2; }   /* Advice/Remarks */
+        
+        .remove-btn { background: #c62828; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <img src="logo.jpg" class="logo">
+        <img src="logo.jpg" class="logo" alt="SRR Logo">
         <div class="hosp-title">
             <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
-            <p style="margin:2px; font-weight:bold;">Suraram Colony, Hyderabad</p>
+            <p style="margin:2px; font-size:12px;">Suraram Colony, Hyderabad</p>
         </div>
-        <div style="text-align: right; font-size: 12px; border-left: 2px solid var(--primary); padding-left: 10px;">
-            <b>Dr. M. Jayachander</b><br>
-            MBBS, MD (Gen Med)<br>
-            <span style="color:var(--accent);">Reg No: TSMC/92345</span>
+        <div style="text-align: right; font-size: 12px; min-width: 150px;">
+            <b style="color:var(--primary);">Dr. M. Jayachander</b><br>
+            MBBS, MD (General Medicine)<br>
+            <span style="color:var(--accent); font-weight: bold;">Reg No: TSMC/92345</span>
         </div>
     </div>
 
-    <div class="no-print">
-        <div class="opd-bar">
-            <span>Date: <span id="curDate"></span></span>
-            <span>Next OPD: <span id="nextOPD">...</span></span>
-        </div>
-
-        <div class="grid">
-            <input type="text" id="p_name" placeholder="Patient Name">
-            <input type="number" id="p_age" placeholder="Age">
-            <select id="p_sex"><option>Male</option><option>Female</option></select>
-            <input type="text" id="p_vil" placeholder="Village">
-            <input type="text" id="p_phone" placeholder="Phone Number">
-            <input type="text" id="p_weight" placeholder="Weight">
-            <input type="text" id="p_bp" placeholder="BP">
-            <input type="text" id="p_pulse" placeholder="Pulse">
-            <input type="text" id="p_spo2" placeholder="SpO2%">
-            <input type="text" id="p_temp" placeholder="Temp">
-        </div>
-        
-        <input type="hidden" id="edit_opd">
-        <button id="saveBtn" class="btn btn-reg" onclick="savePatient()">REGISTER PATIENT</button>
-        <button id="cancelBtn" class="btn" style="background:#7f8c8d; display:none; margin-top:5px;" onclick="resetForm()">CANCEL EDIT</button>
-
-        <table>
-            <thead><tr><th>OPD</th><th>Name</th><th>Phone</th><th>Weight</th><th>Actions</th></tr></thead>
-            <tbody id="tbody"></tbody>
-        </table>
+    <div class="opd-bar">
+        <span>Date: <span id="curDate"></span></span>
+        <span>Next OPD ID: <span id="nextOPD">...</span></span>
     </div>
+
+    <div class="grid">
+        <input type="text" id="p_name" placeholder="Patient Name">
+        <input type="number" id="p_age" placeholder="Age">
+        <select id="p_sex"><option>Male</option><option>Female</option><option>Other</option></select>
+        <input type="text" id="p_vil" placeholder="Village">
+        <input type="text" id="p_phone" placeholder="Phone Number">
+        <input type="text" id="p_weight" placeholder="Weight (kg)">
+        <input type="text" id="p_bp" placeholder="BP">
+        <input type="text" id="p_pulse" placeholder="Pulse">
+        <input type="text" id="p_spo2" placeholder="SpO2 %">
+        <input type="text" id="p_temp" placeholder="Temp">
+    </div>
+    
+    <input type="hidden" id="edit_opd">
+    <button id="saveBtn" class="btn btn-reg" onclick="savePatient()">REGISTER PATIENT</button>
+    <button id="cancelBtn" class="btn" style="background:#7f8c8d; display:none; margin-top:5px;" onclick="resetForm()">CANCEL EDIT</button>
+
+    <table>
+        <thead><tr><th>OPD No</th><th>Name</th><th>Phone</th><th>Weight</th><th>Actions</th></tr></thead>
+        <tbody id="tbody"></tbody>
+    </table>
 
     <div id="mTreat" class="modal">
         <div class="modal-body">
-            <h2 id="tTitle" style="color:#e67e22; margin-top:0;">Clinical Assessment</h2>
-            <div style="margin-bottom:15px;">
-                <label><b>Chief Complaints:</b></label>
-                <textarea id="mComp" rows="2" style="margin-top:5px;"></textarea>
-            </div>
-            <div style="margin-bottom:15px;">
-                <label><b>Investigations (Lab/X-Ray):</b></label>
-                <textarea id="mInv" rows="2" style="margin-top:5px;" placeholder="Enter lab tests or findings..."></textarea>
+            <h3 id="tTitle" style="margin-top:0; color:var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px;">Patient Assessment</h3>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
+                <div>
+                    <label style="font-size:12px; font-weight:bold;">Chief Complaints</label>
+                    <textarea id="mComp" rows="2" placeholder="Enter symptoms..."></textarea>
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:bold;">Investigations</label>
+                    <textarea id="mInv" rows="2" placeholder="Lab/Imaging findings..."></textarea>
+                </div>
             </div>
             
-            <h3 style="border-bottom: 2px solid #eee; padding-bottom:5px;">Rx (Medications)</h3>
+            <h4 style="margin:15px 0 8px 0; color:#444;">Rx (Medications)</h4>
             <div id="dList"></div>
-            <button onclick="addRow()" style="margin:10px 0; background:#546e7a; color:white; border:none; padding:8px; border-radius:4px; cursor:pointer;">+ Add Medicine</button>
+            <button onclick="addRow()" style="margin-top:5px; padding:6px 12px; cursor:pointer; background:#546e7a; color:white; border:none; border-radius:4px;">+ Add Medicine</button>
             
             <div style="margin-top:15px;">
-                <label><b>Advice / Follow-up:</b></label>
-                <textarea id="mNotes" rows="2" style="margin-top:5px;"></textarea>
+                <label style="font-size:12px; font-weight:bold;">Advice / Notes</label>
+                <textarea id="mNotes" rows="2" placeholder="Dietary advice or follow-up..."></textarea>
             </div>
             
             <div style="display:flex; gap:10px; margin-top:20px;">
                 <button id="treatSaveBtn" class="btn" style="background:#e67e22; flex:1;" onclick="updateTreatment()">SAVE TREATMENT</button>
-                <button class="btn" style="background:#7f8c8d; width:80px;" onclick="closeModal()">CLOSE</button>
+                <button class="btn" style="background:#7f8c8d; width:100px;" onclick="closeModal()">CLOSE</button>
             </div>
         </div>
     </div>
@@ -100,7 +117,6 @@
 
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxWIJnOjylaYJBb_KvYjrE58m3VXWQf9n-tPWPYol9uqs1b8yC77cnAilUNAOLUv9Dt/exec";
-    
     document.getElementById('curDate').innerText = new Date().toLocaleDateString('en-IN');
     let patients = [];
 
@@ -109,8 +125,7 @@
         patients = await r.json();
         
         if(patients.length > 0) {
-            const latest = patients[0].opd_no; 
-            const num = parseInt(latest.split('-')[1]);
+            const num = parseInt(patients[0].opd_no.split('-')[1]) || 1000;
             document.getElementById('nextOPD').innerText = "SRR-" + (num + 1);
         } else {
             document.getElementById('nextOPD').innerText = "SRR-1001";
@@ -121,10 +136,10 @@
                 <td><b>${p.opd_no}</b></td>
                 <td>${p.name}</td>
                 <td>${p.phone_number || '-'}</td>
-                <td>${p.weight || '-'}</td>
+                <td>${p.weight ? p.weight + ' kg' : '-'}</td>
                 <td>
-                    <button onclick="editPatient('${p.opd_no}')">Edit</button>
-                    <button onclick="openTreat('${p.opd_no}')">Treat</button>
+                    <button onclick="editPatient('${p.opd_no}')" style="cursor:pointer;">Edit</button>
+                    <button onclick="openTreat('${p.opd_no}')" style="background:#e67e22; color:white; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">Treat</button>
                 </td>
             </tr>
         `).join('');
@@ -146,8 +161,65 @@
             spo2: document.getElementById('p_spo2').value,
             temp: document.getElementById('p_temp').value
         };
+        document.getElementById('saveBtn').innerText = "Saving...";
         await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
         resetForm(); load();
+    }
+
+    function openTreat(opd) {
+        window.activeOPD = opd;
+        const p = patients.find(x => x.opd_no == opd);
+        document.getElementById('tTitle').innerText = "Clinical Record: " + p.name + " (" + opd + ")";
+        
+        // Load Existing Data
+        document.getElementById('mComp').value = p.complaints || "";
+        document.getElementById('mInv').value = p.investigations || "";
+        document.getElementById('mNotes').value = p.notes || "";
+        document.getElementById('dList').innerHTML = "";
+        
+        if (p.medications && p.medications !== "[]") {
+            try {
+                const meds = JSON.parse(p.medications);
+                meds.forEach(m => addRow(m.n, m.r, m.d, m.rem));
+            } catch(e) { addRow(); }
+        } else {
+            addRow();
+        }
+        document.getElementById('mTreat').style.display = "block";
+    }
+
+    function addRow(n="", r="", d="", rem="") {
+        const div = document.createElement('div');
+        div.className = "drug-row";
+        div.innerHTML = `
+            <input type="text" placeholder="Drug Name" class="dn" value="${n}">
+            <input type="text" placeholder="Freq" class="dr" value="${r}">
+            <input type="text" placeholder="Days" class="dd" value="${d}">
+            <input type="text" placeholder="Advice" class="dm" value="${rem}">
+            <button class="remove-btn" onclick="this.parentElement.remove()">X</button>`;
+        document.getElementById('dList').appendChild(div);
+    }
+
+    async function updateTreatment() {
+        let drugs = [];
+        document.querySelectorAll('.drug-row').forEach(row => {
+            const name = row.querySelector('.dn').value;
+            if(name) drugs.push({ n: name, r: row.querySelector('.dr').value, d: row.querySelector('.dd').value, rem: row.querySelector('.dm').value });
+        });
+
+        const data = { 
+            type: "TREATMENT", 
+            opd: window.activeOPD, 
+            complaints: document.getElementById('mComp').value, 
+            investigations: document.getElementById('mInv').value,
+            drugs: drugs, 
+            notes: document.getElementById('mNotes').value 
+        };
+
+        document.getElementById('treatSaveBtn').innerText = "Saving...";
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
+        document.getElementById('treatSaveBtn').innerText = "SAVE TREATMENT";
+        closeModal(); load();
     }
 
     function editPatient(opd) {
@@ -165,7 +237,7 @@
         document.getElementById('p_temp').value = p.temp;
         document.getElementById('saveBtn').innerText = "UPDATE DATA";
         document.getElementById('cancelBtn').style.display = "block";
-        window.scrollTo(0,0);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function resetForm() {
@@ -173,50 +245,6 @@
         document.getElementById('saveBtn').innerText = "REGISTER PATIENT";
         document.getElementById('cancelBtn').style.display = "none";
         document.querySelectorAll('.grid input').forEach(i => i.value = "");
-    }
-
-    function openTreat(opd) {
-        window.activeOPD = opd;
-        const p = patients.find(x => x.opd_no == opd);
-        document.getElementById('tTitle').innerText = "Treating: " + p.name;
-        document.getElementById('mComp').value = p.complaints || "";
-        document.getElementById('mInv').value = p.investigations || "";
-        document.getElementById('mNotes').value = p.notes || "";
-        document.getElementById('dList').innerHTML = "";
-        addRow();
-        document.getElementById('mTreat').style.display = "block";
-    }
-
-    function addRow() {
-        const div = document.createElement('div');
-        div.style.display = "flex"; div.style.gap = "5px"; div.style.marginBottom = "5px";
-        div.innerHTML = `
-            <input type="text" placeholder="Drug" class="dn" style="flex:2;">
-            <input type="text" placeholder="Route" class="dr" style="width:80px;">
-            <input type="text" placeholder="Days" class="dd" style="width:60px;">
-            <input type="text" placeholder="Remark" class="dm" style="flex:1;">
-            <button onclick="this.parentElement.remove()" style="background:red; color:white; border:none; padding:5px; border-radius:3px; cursor:pointer;">X</button>`;
-        document.getElementById('dList').appendChild(div);
-    }
-
-    async function updateTreatment() {
-        let drugs = [];
-        document.querySelectorAll('#dList div').forEach(row => {
-            const name = row.querySelector('.dn').value;
-            if(name) drugs.push({ n: name, r: row.querySelector('.dr').value, d: row.querySelector('.dd').value, rem: row.querySelector('.dm').value });
-        });
-
-        const data = { 
-            type: "TREATMENT", 
-            opd: window.activeOPD, 
-            complaints: document.getElementById('mComp').value, 
-            investigations: document.getElementById('mInv').value,
-            drugs: drugs, 
-            notes: document.getElementById('mNotes').value 
-        };
-
-        await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
-        closeModal(); load();
     }
 
     function closeModal() { document.getElementById('mTreat').style.display = "none"; }
