@@ -8,25 +8,20 @@
         :root { --primary: #1b5e20; --accent: #c62828; --bg: #f4f7f6; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 10px; }
         .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 12px; border-top: 10px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
         .logo { width: 80px; }
         .hosp-title h1 { color: var(--accent); margin: 0; font-size: 24px; text-transform: uppercase; font-weight: 900; }
-        
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
         .btn { padding: 12px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; width: 100%; }
         .btn-reg { background: var(--primary); font-size: 16px; }
         .btn-update { background: #0288d1; font-size: 16px; }
-        
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { background: #263238; color: white; padding: 10px; text-align: left; }
         td { padding: 10px; border-bottom: 1px solid #eee; }
-
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; padding: 20px; overflow-y: auto; }
         .modal-body { background: white; max-width: 800px; margin: auto; padding: 25px; border-radius: 8px; }
-
+        .status-box { display: flex; gap: 10px; margin-bottom: 15px; font-weight: bold; color: var(--primary); }
         @media print { .no-print { display: none; } #printArea { display: block; } }
     </style>
 </head>
@@ -40,11 +35,16 @@
             <p style="margin:2px; font-weight:bold;">Suraram Colony, Hyderabad</p>
         </div>
         <div style="font-size:12px; border:2px solid var(--primary); padding:8px; background:#f1f8e9;">
-            <b>Dr. M. Jayachander</b><br>MBBS, MD (Gen Med)<br>Reg: TSMC/FMR/43070
+            <b>Dr. M. Jayachander</b><br>MBBS, MD (Gen Med)
         </div>
     </div>
 
     <div class="no-print">
+        <div class="status-box">
+            <span>Date: <span id="displayDate"></span></span>
+            <span>Next OPD: <span id="displayOPD">Loading...</span></span>
+        </div>
+        
         <div class="grid">
             <input type="text" id="p_name" placeholder="Patient Name">
             <input type="number" id="p_age" placeholder="Age">
@@ -82,7 +82,6 @@
             </div>
         </div>
     </div>
-
     <div id="printArea"></div>
 </div>
 
@@ -90,10 +89,24 @@
     const API_URL = "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
     let patients = [];
 
+    // Auto-set current date
+    document.getElementById('displayDate').innerText = new Date().toLocaleDateString();
+
     async function load() {
+        // Force update using nocache
         const r = await fetch(API_URL + "?nocache=" + Date.now());
         patients = await r.json();
-        document.getElementById('tbody').innerHTML = patients.reverse().map(p => `
+        
+        // Auto-generate next OPD Number
+        if(patients.length > 0) {
+            const lastOPD = patients[0].opd_no; // Assuming latest is first in response
+            const lastNum = parseInt(lastOPD.replace("SRR-", "")) || 1000;
+            document.getElementById('displayOPD').innerText = "SRR-" + (lastNum + 1);
+        } else {
+            document.getElementById('displayOPD').innerText = "SRR-1001";
+        }
+
+        document.getElementById('tbody').innerHTML = patients.map(p => `
             <tr>
                 <td><b>${p.opd_no}</b></td>
                 <td>${p.name}</td>
@@ -110,10 +123,14 @@
 
     async function savePatient() {
         const editOpd = document.getElementById('edit_opd').value;
+        const saveBtn = document.getElementById('saveBtn');
+        saveBtn.innerText = "Saving...";
+        saveBtn.disabled = true;
+
         const data = {
             type: editOpd ? "UPDATE_DETAILS" : "REGISTRATION",
-            opd: editOpd || ("SRR-" + Date.now().toString().slice(-6)),
-            date: new Date().toLocaleDateString(),
+            opd: editOpd || document.getElementById('displayOPD').innerText,
+            date: document.getElementById('displayDate').innerText,
             name: document.getElementById('p_name').value,
             age: document.getElementById('p_age').value,
             sex: document.getElementById('p_sex').value,
@@ -125,8 +142,16 @@
             spo2: document.getElementById('p_spo2').value,
             temp: document.getElementById('p_temp').value
         };
-        await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
-        location.reload();
+
+        try {
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
+            resetForm();
+            await load(); // Reload list to show the saved patient immediately
+        } catch (e) {
+            alert("Error saving patient data.");
+        } finally {
+            saveBtn.disabled = false;
+        }
     }
 
     function editPatient(opd) {
@@ -167,7 +192,7 @@
         document.getElementById('mInv').value = p.investigations || "";
         document.getElementById('mNotes').value = p.notes || "";
         document.getElementById('dList').innerHTML = "";
-        if(p.medications && p.medications !== "") {
+        if(p.medications && p.medications !== "" && p.medications !== "[]") {
             JSON.parse(p.medications).forEach(m => addRow(m.n, m.r, m.d, m.rem));
         } else { addRow(); }
         document.getElementById('mTreat').style.display = "block";
@@ -193,32 +218,34 @@
         });
         const data = { type: "TREATMENT", opd: window.activeOPD, complaints: document.getElementById('mComp').value, investigations: document.getElementById('mInv').value, drugs: drugs, notes: document.getElementById('mNotes').value };
         await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
-        location.reload();
+        closeModal();
+        load();
     }
 
     function printRx(opd) {
         const p = patients.find(x => x.opd_no == opd);
-        if(!p.medications) return alert("Please save treatment first!");
+        if(!p.medications || p.medications === "[]") return alert("Please save treatment first!");
         const drugs = JSON.parse(p.medications).map(d => `<tr><td>${d.n}</td><td>${d.r}</td><td>${d.d}</td><td>${d.rem}</td></tr>`).join('');
         document.getElementById('printArea').innerHTML = `
-            <div style="padding:15px; border:1px solid #000;">
-                <div class="header">
-                    <img src="logo.jpg" class="logo">
-                    <div style="text-align:center; flex:1;"><h1>SRI RAJA RAJESHWARI HOSPITAL</h1><p>Suraram, Hyderabad</p></div>
-                    <div style="font-size:12px; border:1px solid #000; padding:5px;"><b>Dr. M. Jayachander</b><br>MBBS, MD</div>
+            <div style="padding:15px; border:1px solid #000; font-family:serif;">
+                <div style="text-align:center; border-bottom:2px solid #000; padding-bottom:10px;">
+                    <h1 style="color:red; margin:0;">SRI RAJA RAJESHWARI HOSPITAL</h1>
+                    <p style="margin:2px;">Suraram Colony, Hyderabad | Emergency: 24/7</p>
+                    <p style="margin:2px;"><b>Dr. M. Jayachander, MBBS, MD (General Medicine)</b></p>
                 </div>
-                <div style="border:2px solid #000; padding:10px; margin-bottom:15px; font-weight:bold; display:grid; grid-template-columns: 1fr 1fr;">
-                    <div>NAME: ${p.name} <br> AGE/SEX: ${p.age}/${p.sex} <br> VILLAGE: ${p.village}</div>
-                    <div>OPD: ${p.opd_no} <br> PHONE: ${p.phone} <br> WT: ${p.weight}kg</div>
+                <div style="display:flex; justify-content:space-between; margin:10px 0; border-bottom:1px solid #000; padding-bottom:5px;">
+                    <div>NAME: ${p.name} (${p.age}/${p.sex})</div>
+                    <div>OPD: ${p.opd_no} | DATE: ${p.date}</div>
                 </div>
-                <p><b>Vitals:</b> BP: ${p.bp} | Pulse: ${p.pulse} | SpO2: ${p.spo2} | Temp: ${p.temp}</p>
+                <p><b>Vitals:</b> BP: ${p.bp} | Pulse: ${p.pulse} | SpO2: ${p.spo2}% | Temp: ${p.temp} | WT: ${p.weight}kg</p>
                 <p><b>Complaints:</b> ${p.complaints}</p>
-                <h2 style="color:red; font-size:35px; margin:5px 0;">Rx</h2>
+                <h2 style="color:red; font-style:italic;">Rx</h2>
                 <table style="width:100%; border:1px solid #000; border-collapse:collapse;">
-                    <thead style="background:#eee;"><tr><th>Drug Name</th><th>Route</th><th>Days</th><th>Remark</th></tr></thead>
+                    <thead><tr style="background:#eee;"><th>Medicine</th><th>Route</th><th>Days</th><th>Instructions</th></tr></thead>
                     <tbody>${drugs}</tbody>
                 </table>
-                <p style="margin-top:20px;"><b>Notes/Advice:</b> ${p.notes}</p>
+                <p style="margin-top:20px;"><b>Advice:</b> ${p.notes}</p>
+                <div style="margin-top:50px; text-align:right;">(Doctor's Signature)</div>
             </div>`;
         window.print();
     }
