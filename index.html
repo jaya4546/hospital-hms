@@ -12,8 +12,8 @@
         /* Hospital Header UI */
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 12px; margin-bottom: 20px; }
         .logo { width: 85px; height: 85px; object-fit: contain; }
-        .hosp-title { text-align: center; flex: 1; }
-        .hosp-title h1 { color: var(--accent); margin: 0; font-size: 24px; text-transform: uppercase; font-weight: 900; }
+        .hosp-title { text-align: center; flex: 1; overflow: hidden; }
+        .hosp-title h1 { color: var(--accent); margin: 0; font-size: 24px; text-transform: uppercase; font-weight: 900; white-space: nowrap; } /* Single line forced */
         .address-text { font-size: 12px; color: #000; margin-top: 6px; line-height: 1.5; font-weight: 600; }
         
         .doc-box { border: 3px solid #000; padding: 10px; min-width: 220px; text-align: right; background: #fffde7; border-radius: 4px; box-shadow: 3px 3px 0px #000; }
@@ -106,18 +106,14 @@
     <div id="mTreat" class="modal">
         <div class="modal-body">
             <h2 id="tTitle" style="margin-top:0; color:#d35400; border-bottom: 2px solid #eee; padding-bottom: 10px;">Clinical Assessment</h2>
-            
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:15px;">
                 <div><label style="font-weight:bold;">Chief Complaints</label><textarea id="mComp" rows="3"></textarea></div>
                 <div><label style="font-weight:bold;">Investigations</label><textarea id="mInv" rows="3"></textarea></div>
             </div>
-            
             <h4 style="margin:20px 0 10px 0; background:#f8f9fa; padding:10px; border-left: 5px solid #e67e22;">Medications (Rx)</h4>
             <div id="dList"></div>
             <button onclick="addRow()" style="margin-top:10px; padding:10px 20px; cursor:pointer; background:#546e7a; color:white; border:none; border-radius:4px; font-weight:bold;">+ Add Medicine Row</button>
-            
             <div style="margin-top:20px;"><label style="font-weight:bold;">Clinical Advice / Follow-up</label><textarea id="mNotes" rows="2"></textarea></div>
-            
             <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:25px;">
                 <button id="treatSaveBtn" class="btn" style="background:#1b5e20; flex:2;" onclick="updateTreatment()">Save Clinical Data</button>
                 <button class="btn" style="background:#e67e22; flex:1.2;" onclick="printPrescription()">Print Full Prescription</button>
@@ -214,11 +210,11 @@
         return `
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:4px solid #1b5e20; padding-bottom:15px; margin-bottom:20px; background:white;">
                 <img src="logo.jpg" style="width:100px; height:100px; object-fit:contain;">
-                <div style="text-align:center; flex:1;">
-                    <h1 style="color:#c62828; margin:0; font-size:32px; font-weight:900;">SRI RAJA RAJESHWARI HOSPITAL</h1>
+                <div style="text-align:center; flex:1; overflow:hidden;">
+                    <h1 style="color:#c62828; margin:0; font-size:28px; font-weight:900; white-space:nowrap;">SRI RAJA RAJESHWARI HOSPITAL</h1>
                     <p style="margin:5px 0; font-weight:bold; font-size:14px;">Suraram colony NTR road, opp: Ramaleela maidanam, Telangana 500055</p>
                 </div>
-                <div style="text-align:right; border:2px solid #000; padding:10px; background:#fffde7; border-radius:5px;">
+                <div style="text-align:right; border:2px solid #000; padding:10px; background:#fffde7; border-radius:5px; min-width:230px;">
                     <b style="font-size:18px;">DR. M. JAYACHANDER</b><br>
                     <span style="font-size:13px;">MBBS, MD (General Medicine)</span><br>
                     <span style="font-size:13px; color:#c62828;">REG NO: TSMC/FMR/43070</span>
@@ -246,7 +242,7 @@
             <div style="margin-top:40px; border-top:3px solid #1b5e20; padding:15px; display:flex; align-items:center; justify-content:space-between; background:white;">
                 <span style="font-size:30px;">⚕️</span>
                 <div style="text-align:center; flex:1;">
-                    <h2 style="margin:0; color:#c62828; font-size:24px; font-weight:900; letter-spacing:1px; text-shadow:1px 1px #000;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</h2>
+                    <h2 style="margin:0; color:#c62828; font-size:22px; font-weight:900; letter-spacing:1px; text-shadow:0.5px 0.5px #000;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</h2>
                 </div>
                 <span style="font-size:30px;">💊</span>
             </div>
@@ -263,8 +259,9 @@
 
         let finalHtml = "";
         const pageSize = 6;
+        const totalPages = Math.max(1, Math.ceil(drugs.length / pageSize));
         
-        for (let i = 0; i < Math.max(1, Math.ceil(drugs.length / pageSize)); i++) {
+        for (let i = 0; i < totalPages; i++) {
             let chunk = drugs.slice(i * pageSize, (i + 1) * pageSize);
             let drugRows = chunk.map(d => `
                 <tr>
@@ -278,16 +275,24 @@
                 <div class="${i > 0 ? 'page-break' : ''}" style="padding:40px; min-height:1000px; display:flex; flex-direction:column; background:white;">
                     ${getPrintHeader(p)}
                     <div style="flex:1;">
+                        ${i === 0 ? `
                         <div style="margin-bottom:10px;"><b>CHIEF COMPLAINTS:</b> ${document.getElementById('mComp').value}</div>
                         <div style="margin-bottom:15px;"><b>INVESTIGATIONS:</b> ${document.getElementById('mInv').value}</div>
+                        ` : ''}
+                        
                         <h3 style="border-bottom:2px solid #000; margin-bottom:10px;">Rx (Medications) ${i > 0 ? '(Cont.)' : ''}</h3>
                         <table style="width:100%; border-collapse:collapse;">
                             <thead><tr style="background:#f2f2f2;"><th style="padding:10px; border:1px solid #000; text-align:left;">Drug Name</th><th style="padding:10px; border:1px solid #000;">Frequency</th><th style="padding:10px; border:1px solid #000;">Duration</th><th style="padding:10px; border:1px solid #000; text-align:left;">Advice</th></tr></thead>
                             <tbody>${drugRows}</tbody>
                         </table>
-                        ${i === Math.ceil(drugs.length / pageSize) - 1 || drugs.length === 0 ? `<div style="margin-top:20px;"><b>CLINICAL ADVICE:</b> ${document.getElementById('mNotes').value}</div>` : ''}
+                        
+                        ${i === totalPages - 1 ? `<div style="margin-top:20px;"><b>CLINICAL ADVICE:</b> ${document.getElementById('mNotes').value}</div>` : ''}
                     </div>
-                    <div style="text-align:right; margin-bottom:20px;"><b>Doctor's Signature: ________________</b></div>
+                    
+                    <div style="text-align:right; margin-bottom:20px; line-height:1.4;">
+                        <b style="font-size:16px;">DR. M. JAYACHANDER</b><br>
+                        <span style="font-size:13px;">MBBS, M.D. (GENERAL MEDICINE)</span>
+                    </div>
                     ${getPrintFooter()}
                 </div>
             `;
@@ -303,7 +308,10 @@
                 <div style="flex:1; border:1px dashed #ccc; margin:20px 0; padding:50px; text-align:center; color:#eee; font-size:40px;">
                     <br><br>Manual Prescription Area
                 </div>
-                <div style="text-align:right; margin-bottom:20px;"><b>Doctor's Signature: ________________</b></div>
+                <div style="text-align:right; margin-bottom:20px; line-height:1.4;">
+                    <b style="font-size:16px;">DR. M. JAYACHANDER</b><br>
+                    <span style="font-size:13px;">MBBS, M.D. (GENERAL MEDICINE)</span>
+                </div>
                 ${getPrintFooter()}
             </div>
         `;
