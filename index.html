@@ -2,135 +2,170 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SRR Hospital Management</title>
     <style>
-        :root { --primary: #1b5e20; --accent: #c62828; --bg: #f4f7f6; --lab: #0277bd; --edit: #1565c0; --treat: #ef6c00; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 10px; }
-        .container { max-width: 1200px; margin: auto; background: white; padding: 20px; border-radius: 12px; border-top: 10px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        :root { --primary: #1b5e20; --accent: #c62828; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 10px; }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 2px 15px rgba(0,0,0,0.1); }
         
-        /* Header Fixes */
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 12px; margin-bottom: 20px; }
-        .logo { width: 85px; height: 85px; object-fit: contain; }
-        .hosp-title { text-align: center; flex: 1; }
-        .hosp-title h1 { color: var(--accent); margin: 0; font-size: 20px; text-transform: uppercase; font-weight: 900; white-space: nowrap; letter-spacing: -0.5px; }
+        /* Header Fix: Prevents overlap marked in your photos */
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--primary); padding-bottom: 15px; margin-bottom: 20px; }
+        .logo-side img { width: 90px; height: 90px; object-fit: contain; }
+        .center-side { text-align: center; flex: 1; padding: 0 15px; }
+        .center-side h1 { color: var(--accent); margin: 0; font-size: 22px; text-transform: uppercase; font-weight: 900; }
+        .center-side p { margin: 5px 0 0; font-size: 11px; font-weight: bold; color: #333; line-height: 1.3; }
         
-        .doc-box { border: 2px solid #000; padding: 8px; min-width: 250px; text-align: right; background: #fffde7; border-radius: 4px; box-shadow: 2px 2px 0px #000; line-height: 1.2; }
-        .doc-box b { font-weight: 900; font-size: 15px; display: block; margin-bottom: 2px; }
-        .doc-box span { font-size: 11px; font-weight: 700; display: block; }
+        /* Doctor Box to the Right */
+        .doc-side { border: 2px solid #000; padding: 8px; min-width: 250px; text-align: right; background: #fffde7; border-radius: 4px; box-shadow: 2px 2px 0px #000; }
+        .doc-side b { font-size: 15px; display: block; }
+        .doc-side span { font-size: 11px; font-weight: 700; display: block; }
+        .reg-no { color: var(--accent); border-top: 1px solid #000; margin-top: 5px; padding-top: 3px; }
 
-        .opd-bar { background: #e8f5e9; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; color: var(--primary); display: flex; justify-content: space-between; border: 1px solid #c8e6c9; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        /* OPD Bar */
+        .opd-bar { background: #e8f5e9; padding: 12px; border-radius: 6px; margin-bottom: 20px; display: flex; justify-content: space-between; font-weight: bold; border: 1px solid #c8e6c9; color: var(--primary); }
 
-        .btn { padding: 10px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; text-transform: uppercase; }
-        .btn-reg { background: var(--primary); width: 100%; padding: 15px; font-size: 16px; }
-        .btn-edit { background: var(--edit); padding: 5px 8px; font-size: 11px; }
-        .btn-treat { background: var(--treat); padding: 5px 8px; font-size: 11px; }
+        /* Form Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        .btn-reg { background: var(--primary); color: white; width: 100%; padding: 15px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
 
+        /* Patient Table */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { background: #263238; color: white; padding: 12px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
+        .btn-select { background: #0277bd; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
-        #printSection { display: none; }
-
-        @media print {
-            @page { size: A4; margin: 0; }
-            body * { visibility: hidden; }
-            #printSection, #printSection * { visibility: visible; }
-            #printSection { display: flex; flex-direction: column; position: absolute; left: 0; top: 0; width: 100%; height: 100vh; padding: 40px; box-sizing: border-box; background: white !important; }
-        }
+        /* ACTION MENU MODAL */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); }
+        .modal-content { background: white; margin: 5% auto; padding: 25px; width: 80%; max-width: 600px; border-radius: 12px; position: relative; text-align: center; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .menu-btn { padding: 15px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; color: white; font-size: 13px; text-transform: uppercase; }
+        
+        /* Menu Colors */
+        .m-edit { background: #1565c0; }
+        .m-treat { background: #ef6c00; }
+        .m-invest { background: #6a1b9a; }
+        .m-presc { background: #2e7d32; }
+        .m-reg { background: #c62828; }
+        .m-prev { background: #37474f; }
+        .m-next { background: #00838f; }
+        
+        .close-btn { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #666; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <img src="logo.jpg" class="logo">
-        <div class="hosp-title">
+        <div class="logo-side"><img src="logo.jpg" alt="Logo"></div>
+        <div class="center-side">
             <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
-            <div style="font-size: 10px; font-weight: 700;">Suraram colony NTR road, Telangana 500055</div>
+            <p>SURARAM COLONY 1ST OM JANDA NTR ROAD<br>OPP: RAMALEELA MAIDANAM TG 500055</p>
         </div>
-        <div class="doc-box">
+        <div class="doc-side">
             <b>DR. M. JAYACHANDER</b>
-            <span>MBBS, MD (General Medicine)</span>
-            <span style="color:var(--accent); border-top:1px solid #000; margin-top:3px; padding-top:2px;">REG NO: TSMC/FMR/43070</span>
+            <span>MBBS, M.D. (GENERAL MEDICINE)</span>
+            <span class="reg-no">REG NO: TSMC/FMR/43070</span>
         </div>
     </div>
 
     <div class="opd-bar">
-        <span>📅 Date: <span id="curDate"></span></span>
-        <span>🆔 Next OPD ID: <span id="nextOPD">...</span></span>
+        <span>DATE: <span id="curDate"></span></span>
+        <span>NEXT OPD: <span id="nextOPD">...</span></span>
     </div>
 
     <div class="grid">
         <input type="text" id="p_name" placeholder="Patient Name">
         <input type="number" id="p_age" placeholder="Age">
         <select id="p_sex"><option>Male</option><option>Female</option></select>
-        <input type="text" id="p_vil" placeholder="Village">
-        <input type="text" id="p_phone" placeholder="Phone">
+        <input type="text" id="p_addr" placeholder="Address">
         <input type="text" id="p_weight" placeholder="Weight">
         <input type="text" id="p_bp" placeholder="BP">
-        <input type="text" id="p_pulse" placeholder="Pulse">
+        <input type="text" id="p_pr" placeholder="P.R.">
         <input type="text" id="p_spo2" placeholder="SpO2">
         <input type="text" id="p_temp" placeholder="Temp">
     </div>
     
-    <input type="hidden" id="edit_opd">
-    <button id="saveBtn" class="btn btn-reg" onclick="savePatient()">Register Patient</button>
+    <button class="btn-reg" onclick="savePatient()">Register Patient</button>
 
-    <input type="text" id="pSearch" style="width:100%; margin-top:20px; padding:12px; border:2px solid var(--primary); border-radius:8px;" placeholder="🔍 Search Patients..." onkeyup="filterTable()">
+    <input type="text" id="pSearch" style="width:100%; margin-top:20px; padding:12px; border:2px solid var(--primary); border-radius:8px;" placeholder="🔍 Search Patient Records..." onkeyup="filterTable()">
 
     <table>
-        <thead><tr><th>OPD ID</th><th>Name</th><th>Phone</th><th>Actions</th></tr></thead>
-        <tbody id="tbody"><tr><td colspan="4" style="text-align:center;">Connecting to clinical database...</td></tr></tbody>
+        <thead>
+            <tr><th>OPD ID</th><th>Name</th><th>Address</th><th>Action</th></tr>
+        </thead>
+        <tbody id="tbody">
+            <tr><td colspan="4" style="text-align:center;">Fetching database...</td></tr>
+        </tbody>
     </table>
 </div>
 
-<div id="printSection"></div>
+<div id="actionModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h2 id="menuPatientName" style="color: var(--primary); margin-top: 0;">Patient Name</h2>
+        <p id="menuPatientID" style="font-weight: bold; color: #666;">ID: SRR-1000</p>
+        
+        <div class="menu-grid">
+            <button class="menu-btn m-edit" onclick="action('EDIT')">Edit Patient Details</button>
+            <button class="menu-btn m-treat" onclick="action('TREAT')">Treat</button>
+            <button class="menu-btn m-invest" onclick="action('INVEST')">Investigations</button>
+            <button class="menu-btn m-presc" onclick="action('PRINT_PRES')">Print Prescription</button>
+            <button class="menu-btn m-reg" onclick="action('PRINT_REG')">Print Registration</button>
+            <button class="menu-btn m-prev" onclick="action('PREV_INVEST')">Previous Investigations</button>
+            <button class="menu-btn m-next" onclick="action('NEXT_VISIT')">Next Visit</button>
+        </div>
+    </div>
+</div>
 
 <script>
-    // Updated API URL
-    const API_URL = "https://script.google.com/macros/s/AKfycbwkHV41HwwKwvH8GgiYNkwcgmJPfPrIo0gfHnbW9IldvSynQcXXHuA5X8SSqLbXvM1T/exec";
-    
+    const API_URL = "https://script.google.com/macros/s/AKfycbwoniyghfNnNn2os_kcqBfbG9TBm4taob-i9MttARtkHfWiCMDV_rK-3wdT9Bp8sw7N/exec";
     let patients = [];
+    let selectedPatient = null;
 
     document.getElementById('curDate').innerText = new Date().toLocaleDateString('en-IN');
 
-    // JSONP Loader to bypass security blocks
     function loadData() {
         const script = document.createElement('script');
-        script.src = API_URL + "?callback=handleResponse&ts=" + new Date().getTime();
+        script.src = `${API_URL}?callback=handleResponse&ts=${new Date().getTime()}`;
         document.body.appendChild(script);
     }
 
-    // This handles the data when Google sends it back
     function handleResponse(data) {
         patients = data;
         renderTable(patients);
-        if(patients.length > 0) {
-            // Find highest OPD ID to set next ID
-            const lastNo = parseInt(patients[patients.length-1].opd_no.split('-')[1]) || 1000;
+        if (patients.length > 0) {
+            const lastNo = parseInt(patients[patients.length - 1].opd_number.split('-')[1]) || 1000;
             document.getElementById('nextOPD').innerText = "SRR-" + (lastNo + 1);
-        } else { document.getElementById('nextOPD').innerText = "SRR-1001"; }
+        } else {
+            document.getElementById('nextOPD').innerText = "SRR-1001";
+        }
     }
 
     function renderTable(dataList) {
-        if(!dataList || dataList.length === 0) {
-            document.getElementById('tbody').innerHTML = "<tr><td colspan='4' style='text-align:center;'>No records found in database.</td></tr>";
-            return;
-        }
         document.getElementById('tbody').innerHTML = dataList.map(p => `
             <tr>
-                <td><b>${p.opd_no}</b></td>
+                <td><b>${p.opd_number}</b></td>
                 <td style="text-transform:uppercase;">${p.name}</td>
-                <td>${p.phone_number || '-'}</td>
-                <td>
-                    <button class="btn btn-edit" onclick="editPatient('${p.opd_no}')">Edit</button>
-                    <button class="btn btn-treat" onclick="alert('Treating ${p.name}')">Treat</button>
-                </td>
+                <td>${p.address || '-'}</td>
+                <td><button class="btn-select" onclick="openMenu('${p.opd_number}')">Select</button></td>
             </tr>
         `).reverse().join('');
+    }
+
+    function openMenu(id) {
+        selectedPatient = patients.find(p => p.opd_number === id);
+        document.getElementById('menuPatientName').innerText = selectedPatient.name;
+        document.getElementById('menuPatientID').innerText = "ID: " + selectedPatient.opd_number;
+        document.getElementById('actionModal').style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById('actionModal').style.display = "none";
+    }
+
+    function action(type) {
+        alert("You selected " + type + " for " + selectedPatient.name + ". Waiting for your next instructions to build this part!");
     }
 
     async function savePatient() {
@@ -141,30 +176,24 @@
             name: document.getElementById('p_name').value,
             age: document.getElementById('p_age').value,
             sex: document.getElementById('p_sex').value,
-            village: document.getElementById('p_vil').value,
-            phone: document.getElementById('p_phone').value,
+            address: document.getElementById('p_addr').value,
             weight: document.getElementById('p_weight').value,
             bp: document.getElementById('p_bp').value,
-            pulse: document.getElementById('p_pulse').value,
+            pr: document.getElementById('p_pr').value,
             spo2: document.getElementById('p_spo2').value,
             temp: document.getElementById('p_temp').value
         };
-        if(!data.name) return alert("Please enter a patient name");
+        if(!data.name) return alert("Enter Name");
 
-        // Submit via no-cors mode for widest compatibility
         fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) })
-        .then(() => {
-            alert("Registration Submitted Successfully!");
-            location.reload();
-        });
+        .then(() => { alert("Registered!"); location.reload(); });
     }
 
     function filterTable() {
         const t = document.getElementById('pSearch').value.toLowerCase();
-        renderTable(patients.filter(p => p.name.toLowerCase().includes(t) || p.opd_no.toLowerCase().includes(t)));
+        renderTable(patients.filter(p => p.name.toLowerCase().includes(t) || p.opd_number.toLowerCase().includes(t)));
     }
 
-    // Trigger data load
     loadData();
 </script>
 </body>
