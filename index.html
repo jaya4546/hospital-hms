@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRR Hospital Management System</title>
+    <title>SRR Hospital & Lab Management</title>
     <style>
-        :root { --primary: #1b5e20; --accent: #c62828; --bg: #f4f7f6; }
+        :root { --primary: #1b5e20; --accent: #c62828; --bg: #f4f7f6; --lab: #0277bd; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 10px; }
         .container { max-width: 1150px; margin: auto; background: white; padding: 20px; border-radius: 12px; border-top: 10px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
@@ -36,6 +36,13 @@
 
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; padding: 20px; overflow-y: auto; }
         .modal-body { background: white; max-width: 1000px; margin: auto; padding: 25px; border-radius: 10px; border-top: 10px solid #e67e22; }
+        
+        /* Lab UI inside Modal */
+        .lab-container { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; margin-top: 15px; border-top: 2px dashed #ccc; padding-top: 15px; }
+        .test-list-scroll { height: 250px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 5px; background: #fafafa; }
+        .test-item { display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid #eee; cursor: pointer; }
+        .test-item:hover { background: #e3f2fd; }
+        .selected-tests { background: #fff8e1; padding: 10px; border-radius: 5px; border: 1px solid #ffe082; }
         
         .drug-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
         .dn { flex: 4.5; font-weight: bold; font-size: 15px; border: 2px solid #999; }
@@ -107,16 +114,45 @@
     <div id="mTreat" class="modal">
         <div class="modal-body">
             <h2 id="tTitle" style="margin-top:0; color:#d35400; border-bottom: 2px solid #eee; padding-bottom: 10px;">Clinical Assessment</h2>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:15px;">
-                <div><label style="font-weight:bold;">Chief Complaints</label><textarea id="mComp" rows="3"></textarea></div>
-                <div><label style="font-weight:bold;">Investigations</label><textarea id="mInv" rows="3"></textarea></div>
+            
+            <div id="prevInvSection" style="background:#e1f5fe; padding:10px; border-radius:5px; margin-bottom:15px; display:none;">
+                <b>Previous Investigations:</b> <span id="prevInvData"></span>
             </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                <div><label style="font-weight:bold;">Chief Complaints</label><textarea id="mComp" rows="2"></textarea></div>
+                <div><label style="font-weight:bold;">Investigations Result (Notes)</label><textarea id="mInv" rows="2"></textarea></div>
+            </div>
+
+            <div class="lab-container">
+                <div>
+                    <h4 style="margin:0 0 10px 0; color:var(--lab);">🧪 Lab Investigations</h4>
+                    <input type="text" id="labSearch" placeholder="🔍 Search Tests..." onkeyup="searchLab()" style="margin-bottom:10px;">
+                    <div class="test-list-scroll" id="labTestMenu"></div>
+                    <div style="margin-top:10px; display:flex; gap:5px;">
+                        <input type="text" id="customTestName" placeholder="Other Test Name">
+                        <input type="number" id="customTestPrice" placeholder="Price" style="width:100px;">
+                        <button onclick="addCustomTest()" style="background:var(--lab); color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">ADD</button>
+                    </div>
+                </div>
+                <div class="selected-tests">
+                    <h4 style="margin:0 0 10px 0;">Selected Tests Billing</h4>
+                    <div id="billItems" style="min-height:100px;"></div>
+                    <div style="border-top:2px solid #333; margin-top:10px; padding-top:10px; font-size:18px; font-weight:bold; display:flex; justify-content:space-between;">
+                        <span>Total:</span>
+                        <span id="billTotal">₹ 0</span>
+                    </div>
+                    <button class="btn" style="background:var(--lab); margin-top:10px;" onclick="printLabBill()">Print Investigation Bill</button>
+                </div>
+            </div>
+
             <h4 style="margin:20px 0 10px 0; background:#f8f9fa; padding:10px; border-left: 5px solid #e67e22;">Medications (Rx)</h4>
             <div id="dList"></div>
             <button onclick="addRow()" style="margin-top:10px; padding:10px 20px; cursor:pointer; background:#546e7a; color:white; border:none; border-radius:4px; font-weight:bold;">+ Add Medicine Row</button>
             <div style="margin-top:20px;"><label style="font-weight:bold;">Clinical Advice / Follow-up</label><textarea id="mNotes" rows="2"></textarea></div>
+            
             <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:25px;">
-                <button id="treatSaveBtn" class="btn" style="background:#1b5e20; flex:2;" onclick="updateTreatment()">Save Clinical Data</button>
+                <button id="treatSaveBtn" class="btn" style="background:#1b5e20; flex:2;" onclick="updateTreatment()">Save Clinical & Lab Data</button>
                 <button class="btn" style="background:#e67e22; flex:1.2;" onclick="printPrescription()">Print Full Prescription</button>
                 <button class="btn" style="background:#0277bd; flex:1.2;" onclick="printRegistration()">Print Registration Only</button>
                 <button class="btn" style="background:#7f8c8d; width:100px;" onclick="closeModal()">Close</button>
@@ -128,10 +164,24 @@
 <div id="printSection"></div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxWIJnOjylaYJBb_KvYjrE58m3VXWQf9n-tPWPYol9uqs1b8yC77cnAilUNAOLUv9Dt/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbxbRYLjR310D-MnDEWNBaKozTl8718oXK02RRy5JmhzoW5uMUKY1ZBuqCERW0Hja3vL/exec";
     
-    document.getElementById('curDate').innerText = new Date().toLocaleDateString('en-IN');
+    const labMaster = [
+        {n: "CBP", p: 250}, {n: "ESR", p: 100}, {n: "M.P", p: 250}, {n: "WIDAL TEST", p: 250}, 
+        {n: "BLOOD GROUP", p: 100}, {n: "FBS", p: 50}, {n: "PLBS", p: 50}, {n: "HBA1C", p: 500},
+        {n: "BL.UREA", p: 250}, {n: "S.CREATININE", p: 250}, {n: "L.F.T", p: 800}, {n: "LIPID PROFILE", p: 500},
+        {n: "S.BILIRUBIN", p: 250}, {n: "C.U.E", p: 100}, {n: "URINE C/S", p: 500}, {n: "HIV I & II", p: 400},
+        {n: "R.F.T", p: 800}, {n: "HBSAG", p: 250}, {n: "VDRL", p: 250}, {n: "MANTOUX TEST", p: 300},
+        {n: "CRP", p: 300}, {n: "R.A.FACTOR", p: 300}, {n: "T3.T4&TSH", p: 500}, {n: "TESTOSTERONE", p: 800},
+        {n: "VITAMIN B12", p: 800}, {n: "VITAMIN D3", p: 1200}, {n: "CA 125", p: 800}, {n: "CALCIUM", p: 300},
+        {n: "ELECTROLYTES", p: 600}, {n: "ECG", p: 300}, {n: "DENGUE RAPID TEST", p: 1200}, {n: "TROP - I", p: 800},
+        {n: "S.URIC ACID", p: 300}, {n: "Sr.AMYLASE", p: 400}, {n: "Sr.LIPASE", p: 400}
+    ];
+
+    let selectedTests = [];
     let patients = [];
+
+    document.getElementById('curDate').innerText = new Date().toLocaleDateString('en-IN');
 
     async function loadData() {
         const tbody = document.getElementById('tbody');
@@ -149,50 +199,74 @@
     }
 
     function renderTable(dataList) {
-        const tbody = document.getElementById('tbody');
-        tbody.innerHTML = dataList.map(p => `
+        document.getElementById('tbody').innerHTML = dataList.map(p => `
             <tr>
                 <td style="font-weight:bold; color:var(--primary);">${p.opd_no}</td>
                 <td style="text-transform:uppercase;">${p.name}</td>
                 <td>${p.phone_number || '-'}</td>
                 <td>${p.weight ? p.weight + ' kg' : '-'}</td>
                 <td>
-                    <button onclick="editPatient('${p.opd_no}')" style="cursor:pointer; padding:5px 10px;">Edit</button>
+                    <button onclick="editPatient('${p.opd_no}')">Edit</button>
                     <button onclick="openTreat('${p.opd_no}')" style="background:#e67e22; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Treat</button>
                 </td>
             </tr>
         `).join('');
     }
 
-    function filterPatients() {
-        const term = document.getElementById('patientSearch').value.toLowerCase();
-        const filtered = patients.filter(p => 
-            p.name.toLowerCase().includes(term) || 
-            (p.phone_number && p.phone_number.toString().includes(term)) || 
-            p.opd_no.toLowerCase().includes(term)
-        );
-        renderTable(filtered);
+    function searchLab() {
+        const term = document.getElementById('labSearch').value.toLowerCase();
+        const menu = document.getElementById('labTestMenu');
+        menu.innerHTML = labMaster.filter(t => t.n.toLowerCase().includes(term)).map(t => `
+            <div class="test-item" onclick="addTest('${t.n}', ${t.p})">
+                <span>${t.n}</span> <b>₹${t.p}</b>
+            </div>
+        `).join('');
     }
 
-    async function savePatient() {
-        if(!document.getElementById('p_name').value) return alert("Name is required");
-        const data = {
-            type: document.getElementById('edit_opd').value ? "UPDATE_DETAILS" : "REGISTRATION",
-            opd: document.getElementById('edit_opd').value || document.getElementById('nextOPD').innerText,
-            date: document.getElementById('curDate').innerText,
-            name: document.getElementById('p_name').value, age: document.getElementById('p_age').value, sex: document.getElementById('p_sex').value, village: document.getElementById('p_vil').value, phone: document.getElementById('p_phone').value, weight: document.getElementById('p_weight').value, bp: document.getElementById('p_bp').value, pulse: document.getElementById('p_pulse').value, spo2: document.getElementById('p_spo2').value, temp: document.getElementById('p_temp').value
-        };
-        await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
-        resetForm(); loadData();
+    function addTest(name, price) {
+        if(selectedTests.find(x => x.n === name)) return;
+        selectedTests.push({n: name, p: price});
+        updateBill();
+    }
+
+    function addCustomTest() {
+        const n = document.getElementById('customTestName').value;
+        const p = parseInt(document.getElementById('customTestPrice').value);
+        if(n && p) { addTest(n, p); document.getElementById('customTestName').value=""; document.getElementById('customTestPrice').value=""; }
+    }
+
+    function updateBill() {
+        const list = document.getElementById('billItems');
+        let total = 0;
+        list.innerHTML = selectedTests.map((t, index) => {
+            total += t.p;
+            return `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span>${t.n}</span>
+                <span>₹${t.p} <button onclick="selectedTests.splice(${index},1); updateBill();" style="border:none; background:none; color:red; cursor:pointer;">X</button></span>
+            </div>`;
+        }).join('');
+        document.getElementById('billTotal').innerText = "₹ " + total;
     }
 
     function openTreat(opd) {
         window.activeOPD = opd;
+        selectedTests = []; updateBill(); searchLab();
         const p = patients.find(x => x.opd_no == opd);
         document.getElementById('tTitle').innerText = `Treating: ${p.name}`;
-        document.getElementById('mComp').value = p.complaints;
-        document.getElementById('mInv').value = p.investigations;
-        document.getElementById('mNotes').value = p.notes;
+        document.getElementById('mComp').value = p.complaints || "";
+        document.getElementById('mInv').value = p.investigations || "";
+        document.getElementById('mNotes').value = p.notes || "";
+        
+        if(p.lab_tests && p.lab_tests !== "[]") {
+            try {
+                const prev = JSON.parse(p.lab_tests);
+                document.getElementById('prevInvSection').style.display = "block";
+                document.getElementById('prevInvData').innerText = prev.map(t => t.n).join(", ") + " (Saved on " + (p.date || 'Previous Visit') + ")";
+            } catch(e) { document.getElementById('prevInvSection').style.display = "none"; }
+        } else {
+            document.getElementById('prevInvSection').style.display = "none";
+        }
+
         document.getElementById('dList').innerHTML = "";
         try {
             const meds = JSON.parse(p.medications);
@@ -202,20 +276,22 @@
         document.getElementById('mTreat').style.display = "block";
     }
 
-    function addRow(n="", r="", d="", rem="") {
-        const div = document.createElement('div');
-        div.className = "drug-row";
-        div.innerHTML = `<input type="text" placeholder="Medicine Name" class="dn" value="${n}"><input type="text" placeholder="Freq" class="dr" value="${r}"><input type="text" placeholder="Days" class="dd" value="${d}"><input type="text" placeholder="Advice" class="dm" value="${rem}"><button class="rm-btn" onclick="this.parentElement.remove()">X</button>`;
-        document.getElementById('dList').appendChild(div);
-    }
-
     async function updateTreatment() {
         let drugs = [];
         document.querySelectorAll('.drug-row').forEach(row => {
             const name = row.querySelector('.dn').value;
             if(name) drugs.push({ n: name, r: row.querySelector('.dr').value, d: row.querySelector('.dd').value, rem: row.querySelector('.dm').value });
         });
-        const data = { type: "TREATMENT", opd: window.activeOPD, complaints: document.getElementById('mComp').value, investigations: document.getElementById('mInv').value, drugs: drugs, notes: document.getElementById('mNotes').value };
+        
+        const data = { 
+            type: "TREATMENT", 
+            opd: window.activeOPD, 
+            complaints: document.getElementById('mComp').value, 
+            investigations: document.getElementById('mInv').value, 
+            drugs: drugs, 
+            notes: document.getElementById('mNotes').value,
+            lab_tests: selectedTests 
+        };
         await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
         closeModal(); loadData();
     }
@@ -234,7 +310,6 @@
                     <b style="font-size:12px; color:#c62828;">REG NO: TSMC/FMR/43070</b>
                 </div>
             </div>
-            
             <div style="display:flex; gap:15px; margin-bottom:15px;">
                 <div style="flex:1.5; border:2px solid #000; padding:12px; border-radius:5px; line-height:1.6;">
                     <div style="display:grid; grid-template-columns: 1fr 1fr;">
@@ -258,14 +333,12 @@
                     <b style="font-size:18px; text-transform:uppercase;">DR. M. JAYACHANDER</b><br>
                     <b style="font-size:14px; text-transform:uppercase;">MBBS, M.D. (GENERAL MEDICINE)</b>
                 </div>
-                
                 <div style="border-top:1px solid #ccc; padding-top:8px; margin-bottom:5px;">
                    <div style="font-size:10px; font-weight:bold; color:#555; margin-bottom:4px;">(NOTE: Not valid for medico legal purpose)</div>
                    <div style="font-size:11px; font-weight:bold; line-height:1.4; color:#000;">
-                       మా ప్రత్యేక సేవలు: బిపి షుగర్ గుండె వ్యాధులు కాలేవ్యాధులు (జాండీస్) కిడ్నీ సమస్యలు నరాల వ్యాధులు (పక్షవాతం) వైరల్ ఫీవర్ వ్యాధులు జీర్ణకోశ వ్యాధులు (అల్సర్) ఊపిరితిత్తుల వ్యాధులు థైరాయిడ్ మరియు ఫిట్స్ చూడబడును
+                       మా ప్రత్యేక సేవలు: బిపి షుగర్ గుండె వ్యాధులు కాలేవ్యాధులు (జాండీస్) కిడ్నీ సమస్యలు నరాల వ్యాధులు (పక్షవాతం) వైరల్ ఫీవర్ వ్యాధులు జీర్ణకోశ వ్యాధులు (అల్సర్) ఊరితిత్తుల వ్యాధులు థైరాయిడ్ మరియు ఫిట్స్ చూడబడును
                    </div>
                 </div>
-
                 <div style="border-top:3px solid #1b5e20; padding:10px; display:flex; align-items:center; justify-content:space-between; background:white;">
                     <span style="font-size:25px;">⚕️</span>
                     <div style="text-align:center; flex:1;">
@@ -275,6 +348,32 @@
                 </div>
             </div>
         `;
+    }
+
+    function printLabBill() {
+        if(selectedTests.length === 0) return alert("Select at least one test");
+        const p = patients.find(x => x.opd_no == window.activeOPD);
+        let total = 0;
+        const rows = selectedTests.map((t, i) => {
+            total += t.p;
+            return `<tr><td style="padding:10px; border:1px solid #000;">${i+1}</td><td style="padding:10px; border:1px solid #000;">${t.n}</td><td style="padding:10px; border:1px solid #000; text-align:right;">₹${t.p}</td></tr>`;
+        }).join('');
+
+        const content = `
+            <div style="padding:40px; min-height:1050px; display:flex; flex-direction:column; background:white; box-sizing:border-box;">
+                ${getPrintHeader(p)}
+                <div style="flex:1;">
+                    <h2 style="text-align:center; border-bottom:2px solid #000; padding-bottom:10px;">LAB INVESTIGATION BILL</h2>
+                    <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+                        <thead><tr style="background:#f2f2f2;"><th style="padding:10px; border:1px solid #000; text-align:left;">S.No</th><th style="padding:10px; border:1px solid #000; text-align:left;">Test Name</th><th style="padding:10px; border:1px solid #000; text-align:right;">Price</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                        <tfoot><tr><th colspan="2" style="padding:10px; border:1px solid #000; text-align:right;">Grand Total:</th><th style="padding:10px; border:1px solid #000; text-align:right;">₹${total}</th></tr></tfoot>
+                    </table>
+                </div>
+                ${getClinicalFooter()}
+            </div>
+        `;
+        doPrint(content);
     }
 
     function printPrescription() {
@@ -292,12 +391,7 @@
         for (let i = 0; i < totalPages; i++) {
             let chunk = drugs.slice(i * pageSize, (i + 1) * pageSize);
             let drugRows = chunk.map(d => `
-                <tr>
-                    <td style="padding:12px; border:1px solid #000;"><b>${d.n}</b></td>
-                    <td style="padding:12px; border:1px solid #000; text-align:center;">${d.r}</td>
-                    <td style="padding:12px; border:1px solid #000; text-align:center;">${d.d} Days</td>
-                    <td style="padding:12px; border:1px solid #000;">${d.rem}</td>
-                </tr>`).join('');
+                <tr><td style="padding:12px; border:1px solid #000;"><b>${d.n}</b></td><td style="padding:12px; border:1px solid #000; text-align:center;">${d.r}</td><td style="padding:12px; border:1px solid #000; text-align:center;">${d.d} Days</td><td style="padding:12px; border:1px solid #000;">${d.rem}</td></tr>`).join('');
 
             finalHtml += `
                 <div class="${i > 0 ? 'page-break' : ''}" style="padding:25px 40px; min-height:1050px; display:flex; flex-direction:column; background:white; box-sizing:border-box;">
@@ -305,58 +399,43 @@
                     <div style="flex:1;">
                         ${i === 0 ? `
                         <div style="margin-bottom:8px;"><b>CHIEF COMPLAINTS:</b> ${document.getElementById('mComp').value}</div>
-                        <div style="margin-bottom:12px;"><b>INVESTIGATIONS:</b> ${document.getElementById('mInv').value}</div>
+                        <div style="margin-bottom:12px;"><b>INVESTIGATIONS (RESULT):</b> ${document.getElementById('mInv').value}</div>
                         ` : ''}
-                        
                         <h3 style="border-bottom:2px solid #000; margin-bottom:8px; font-size:16px;">Rx (Medications) ${i > 0 ? '(Cont.)' : ''}</h3>
                         <table style="width:100%; border-collapse:collapse;">
                             <thead><tr style="background:#f2f2f2;"><th style="padding:10px; border:1px solid #000; text-align:left;">Drug Name</th><th style="padding:10px; border:1px solid #000;">Frequency</th><th style="padding:10px; border:1px solid #000;">Duration</th><th style="padding:10px; border:1px solid #000; text-align:left;">Advice</th></tr></thead>
                             <tbody>${drugRows}</tbody>
                         </table>
-                        
                         ${i === totalPages - 1 ? `<div style="margin-top:15px;"><b>CLINICAL ADVICE:</b> ${document.getElementById('mNotes').value}</div>` : ''}
                     </div>
                     ${getClinicalFooter()}
-                </div>
-            `;
+                </div>`;
         }
         doPrint(finalHtml);
     }
 
     function printRegistration() {
         const p = patients.find(x => x.opd_no == window.activeOPD);
-        const content = `
-            <div style="padding:25px 40px; min-height:1050px; display:flex; flex-direction:column; background:white; box-sizing:border-box;">
-                ${getPrintHeader(p)}
-                <div style="flex:1; margin:20px 0;">
-                    </div>
-                ${getClinicalFooter()}
-            </div>
-        `;
-        doPrint(content);
+        doPrint(`<div style="padding:25px 40px; min-height:1050px; display:flex; flex-direction:column; background:white; box-sizing:border-box;">${getPrintHeader(p)}<div style="flex:1;"></div>${getClinicalFooter()}</div>`);
     }
 
-    function doPrint(html) {
-        document.getElementById('printSection').innerHTML = html;
-        window.print();
+    function doPrint(html) { document.getElementById('printSection').innerHTML = html; window.print(); }
+    function addRow(n="", r="", d="", rem="") {
+        const div = document.createElement('div'); div.className = "drug-row";
+        div.innerHTML = `<input type="text" placeholder="Medicine Name" class="dn" value="${n}"><input type="text" placeholder="Freq" class="dr" value="${r}"><input type="text" placeholder="Days" class="dd" value="${d}"><input type="text" placeholder="Advice" class="dm" value="${rem}"><button class="rm-btn" onclick="this.parentElement.remove()">X</button>`;
+        document.getElementById('dList').appendChild(div);
     }
-
     function editPatient(opd) {
         const p = patients.find(x => x.opd_no == opd);
         document.getElementById('edit_opd').value = p.opd_no;
         document.getElementById('p_name').value = p.name; document.getElementById('p_age').value = p.age; document.getElementById('p_sex').value = p.sex; document.getElementById('p_vil').value = p.village; document.getElementById('p_phone').value = p.phone_number; document.getElementById('p_weight').value = p.weight; document.getElementById('p_bp').value = p.bp; document.getElementById('p_pulse').value = p.pulse; document.getElementById('p_spo2').value = p.spo2; document.getElementById('p_temp').value = p.temp;
-        document.getElementById('saveBtn').innerText = "Update Info";
-        document.getElementById('cancelBtn').style.display = "block";
-        window.scrollTo(0,0);
+        document.getElementById('saveBtn').innerText = "Update Info"; document.getElementById('cancelBtn').style.display = "block"; window.scrollTo(0,0);
     }
-
-    function resetForm() {
-        document.getElementById('edit_opd').value = "";
-        document.getElementById('saveBtn').innerText = "Save & Register Patient";
-        document.getElementById('cancelBtn').style.display = "none";
-        document.querySelectorAll('.grid input').forEach(i => i.value = "");
+    function resetForm() { document.getElementById('edit_opd').value = ""; document.getElementById('saveBtn').innerText = "Save & Register Patient"; document.getElementById('cancelBtn').style.display = "none"; document.querySelectorAll('.grid input').forEach(i => i.value = ""); }
+    function filterPatients() {
+        const term = document.getElementById('patientSearch').value.toLowerCase();
+        renderTable(patients.filter(p => p.name.toLowerCase().includes(term) || (p.phone_number && p.phone_number.toString().includes(term)) || p.opd_no.toLowerCase().includes(term)));
     }
-
     function closeModal() { document.getElementById('mTreat').style.display = "none"; }
     loadData();
 </script>
