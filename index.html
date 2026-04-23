@@ -2,76 +2,53 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SRR Hospital Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRR Hospital Management System</title>
     <style>
         :root { --primary: #1b5e20; --accent: #c62828; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 10px; }
-        .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 2px 15px rgba(0,0,0,0.1); }
+        body { font-family: 'Calibri', 'Arial', sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 11pt; color: #000; }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        /* Header Fix: Prevents overlap marked in your photos */
-        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--primary); padding-bottom: 15px; margin-bottom: 20px; }
-        .logo-side img { width: 90px; height: 90px; object-fit: contain; }
-        .center-side { text-align: center; flex: 1; padding: 0 15px; }
-        .center-side h1 { color: var(--accent); margin: 0; font-size: 22px; text-transform: uppercase; font-weight: 900; }
-        .center-side p { margin: 5px 0 0; font-size: 11px; font-weight: bold; color: #333; line-height: 1.3; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
+        .center-side { text-align: center; flex: 1; }
+        .center-side h1 { color: var(--accent); margin: 0; font-size: 24px; font-weight: bold; text-transform: uppercase; }
+        .doc-side { border: 2px solid #000; padding: 8px; text-align: right; background: #fffde7; min-width: 260px; border-radius: 4px; box-shadow: 2px 2px 0px #000; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 15px; }
+        input, select, textarea { width: 100%; padding: 6px; border: 1px solid #000; border-radius: 4px; font-family: 'Calibri'; font-size: 11pt; box-sizing: border-box; color: #000; }
         
-        /* Doctor Box to the Right */
-        .doc-side { border: 2px solid #000; padding: 8px; min-width: 250px; text-align: right; background: #fffde7; border-radius: 4px; box-shadow: 2px 2px 0px #000; }
-        .doc-side b { font-size: 15px; display: block; }
-        .doc-side span { font-size: 11px; font-weight: 700; display: block; }
-        .reg-no { color: var(--accent); border-top: 1px solid #000; margin-top: 5px; padding-top: 3px; }
+        /* Bright Contrast for Medications */
+        .med-table input { font-weight: bold; color: #000 !important; background: #fff; border: 2px solid #333; }
+        .med-table th { background: #263238; color: #fff; padding: 8px; font-size: 10pt; }
 
-        /* OPD Bar */
-        .opd-bar { background: #e8f5e9; padding: 12px; border-radius: 6px; margin-bottom: 20px; display: flex; justify-content: space-between; font-weight: bold; border: 1px solid #c8e6c9; color: var(--primary); }
-
-        /* Form Grid */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
-        .btn-reg { background: var(--primary); color: white; width: 100%; padding: 15px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-
-        /* Patient Table */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: #263238; color: white; padding: 12px; text-align: left; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
-        .btn-select { background: #0277bd; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-
-        /* ACTION MENU MODAL */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); }
-        .modal-content { background: white; margin: 5% auto; padding: 25px; width: 80%; max-width: 600px; border-radius: 12px; position: relative; text-align: center; }
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .menu-btn { padding: 15px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; color: white; font-size: 13px; text-transform: uppercase; }
+        .btn { padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Calibri'; text-transform: uppercase; }
+        .btn-reg { background: var(--primary); color: white; width: 100%; font-size: 12pt; }
         
-        /* Menu Colors */
-        .m-edit { background: #1565c0; }
-        .m-treat { background: #ef6c00; }
-        .m-invest { background: #6a1b9a; }
-        .m-presc { background: #2e7d32; }
-        .m-reg { background: #c62828; }
-        .m-prev { background: #37474f; }
-        .m-next { background: #00838f; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); overflow-y: auto; }
+        .modal-content { background: white; margin: 2% auto; padding: 20px; width: 95%; max-width: 800px; border-radius: 10px; }
         
-        .close-btn { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #666; }
+        .section-head { background: #e8f5e9; padding: 5px 10px; font-weight: bold; margin: 12px 0 5px 0; border-left: 5px solid var(--primary); color: #1b5e20; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .menu-btn { padding: 18px; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { background: #263238; color: white; padding: 10px; text-align: left; }
+        td { padding: 8px; border-bottom: 1px solid #eee; color: #000; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <div class="logo-side"><img src="logo.jpg" alt="Logo"></div>
+        <img src="logo.jpg" style="width:85px">
         <div class="center-side">
             <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
-            <p>SURARAM COLONY 1ST OM JANDA NTR ROAD<br>OPP: RAMALEELA MAIDANAM TG 500055</p>
+            <p style="font-size:10px; font-weight:bold;">SURARAM COLONY 1ST OM JANDA NTR ROAD OPP: RAMALEELA MAIDANAM TG 500055</p>
         </div>
         <div class="doc-side">
-            <b>DR. M. JAYACHANDER</b>
+            <b>DR. M. JAYACHANDER</b><br>
             <span>MBBS, M.D. (GENERAL MEDICINE)</span>
-            <span class="reg-no">REG NO: TSMC/FMR/43070</span>
         </div>
-    </div>
-
-    <div class="opd-bar">
-        <span>DATE: <span id="curDate"></span></span>
-        <span>NEXT OPD: <span id="nextOPD">...</span></span>
     </div>
 
     <div class="grid">
@@ -81,98 +58,128 @@
         <input type="text" id="p_addr" placeholder="Address">
         <input type="text" id="p_weight" placeholder="Weight">
         <input type="text" id="p_bp" placeholder="BP">
-        <input type="text" id="p_pr" placeholder="P.R.">
+        <input type="text" id="p_pr" placeholder="Pulse">
         <input type="text" id="p_spo2" placeholder="SpO2">
         <input type="text" id="p_temp" placeholder="Temp">
     </div>
-    
-    <button class="btn-reg" onclick="savePatient()">Register Patient</button>
+    <button class="btn btn-reg" id="submitBtn" onclick="savePatient('REGISTRATION')">Register Patient</button>
 
-    <input type="text" id="pSearch" style="width:100%; margin-top:20px; padding:12px; border:2px solid var(--primary); border-radius:8px;" placeholder="🔍 Search Patient Records..." onkeyup="filterTable()">
+    <input type="text" id="pSearch" style="width:100%; margin-top:20px; padding:12px; border:2px solid var(--primary);" placeholder="🔍 Search Patient Name..." onkeyup="filterTable()">
 
     <table>
-        <thead>
-            <tr><th>OPD ID</th><th>Name</th><th>Address</th><th>Action</th></tr>
-        </thead>
-        <tbody id="tbody">
-            <tr><td colspan="4" style="text-align:center;">Fetching database...</td></tr>
-        </tbody>
+        <thead><tr><th>OPD ID</th><th>Name</th><th>Action</th></tr></thead>
+        <tbody id="tbody"></tbody>
     </table>
 </div>
 
 <div id="actionModal" class="modal">
     <div class="modal-content">
-        <span class="close-btn" onclick="closeModal()">&times;</span>
-        <h2 id="menuPatientName" style="color: var(--primary); margin-top: 0;">Patient Name</h2>
-        <p id="menuPatientID" style="font-weight: bold; color: #666;">ID: SRR-1000</p>
-        
+        <h2 id="menuPatientName" style="color:var(--primary); border-bottom: 1px solid #ddd; padding-bottom:10px;"></h2>
         <div class="menu-grid">
-            <button class="menu-btn m-edit" onclick="action('EDIT')">Edit Patient Details</button>
-            <button class="menu-btn m-treat" onclick="action('TREAT')">Treat</button>
-            <button class="menu-btn m-invest" onclick="action('INVEST')">Investigations</button>
-            <button class="menu-btn m-presc" onclick="action('PRINT_PRES')">Print Prescription</button>
-            <button class="menu-btn m-reg" onclick="action('PRINT_REG')">Print Registration</button>
-            <button class="menu-btn m-prev" onclick="action('PREV_INVEST')">Previous Investigations</button>
-            <button class="menu-btn m-next" onclick="action('NEXT_VISIT')">Next Visit</button>
+            <button class="menu-btn" style="background:#1565c0;" onclick="openEdit()">EDIT DETAILS</button>
+            <button class="menu-btn" style="background:#ef6c00;" onclick="openTreat()">TREAT</button>
+            <button class="menu-btn" style="background:#6a1b9a;">INVESTIGATIONS</button>
+            <button class="menu-btn" style="background:#2e7d32;">PRINT PRESCRIPTION</button>
+            <button class="menu-btn" style="background:#c62828;">PRINT REGISTRATION</button>
         </div>
+        <button class="btn" style="width:100%; margin-top:15px; background:#ddd;" onclick="closeModal()">Close</button>
+    </div>
+</div>
+
+<div id="treatModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0;">Clinical Treatment: <span id="treatName"></span></h3>
+        
+        <div class="section-head">CHIEF COMPLAINTS</div>
+        <textarea id="t_complaints" rows="2" placeholder="Findings..."></textarea>
+
+        <div class="section-head">LAB / INVESTIGATIONS</div>
+        <textarea id="t_invest" rows="2" placeholder="Tests..."></textarea>
+
+        <div class="section-head">MEDICATION</div>
+        <table class="med-table">
+            <thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th><th></th></tr></thead>
+            <tbody id="medBody"></tbody>
+        </table>
+        <button class="btn" style="background:#0277bd; color:white; margin-top:10px; font-size:9pt;" onclick="addDrugRow()">+ ADD DRUG</button>
+
+        <div class="section-head">NOTES</div>
+        <textarea id="t_notes" rows="2" placeholder="Notes..."></textarea>
+
+        <button class="btn btn-reg" style="margin-top:20px;" onclick="saveTreatment()">SAVE CLINICAL DATA</button>
+        <button class="btn" style="width:100%; margin-top:10px; background:#ddd;" onclick="document.getElementById('treatModal').style.display='none'">Cancel</button>
     </div>
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwoniyghfNnNn2os_kcqBfbG9TBm4taob-i9MttARtkHfWiCMDV_rK-3wdT9Bp8sw7N/exec";
-    let patients = [];
-    let selectedPatient = null;
-
-    document.getElementById('curDate').innerText = new Date().toLocaleDateString('en-IN');
+    const API_URL = "https://script.google.com/macros/s/AKfycbzV-ESeeCJ5hFxSJusNYqxzj7bQKxWQOkjn1yIBx1G_vxc5cMBKmy-viBPzUzAbFYWx/exec";
+    let patients = [], selectedP = null;
 
     function loadData() {
         const script = document.createElement('script');
-        script.src = `${API_URL}?callback=handleResponse&ts=${new Date().getTime()}`;
+        script.src = `${API_URL}?callback=handleResponse&ts=${Date.now()}`;
         document.body.appendChild(script);
     }
 
-    function handleResponse(data) {
-        patients = data;
-        renderTable(patients);
-        if (patients.length > 0) {
-            const lastNo = parseInt(patients[patients.length - 1].opd_number.split('-')[1]) || 1000;
-            document.getElementById('nextOPD').innerText = "SRR-" + (lastNo + 1);
-        } else {
-            document.getElementById('nextOPD').innerText = "SRR-1001";
-        }
-    }
+    function handleResponse(data) { patients = data; renderTable(data); }
 
-    function renderTable(dataList) {
-        document.getElementById('tbody').innerHTML = dataList.map(p => `
-            <tr>
-                <td><b>${p.opd_number}</b></td>
-                <td style="text-transform:uppercase;">${p.name}</td>
-                <td>${p.address || '-'}</td>
-                <td><button class="btn-select" onclick="openMenu('${p.opd_number}')">Select</button></td>
-            </tr>
+    function renderTable(list) {
+        document.getElementById('tbody').innerHTML = list.map(p => `
+            <tr><td><b>${p.opd_number}</b></td><td>${p.name}</td>
+            <td><button onclick="openMenu('${p.opd_number}')">Select</button></td></tr>
         `).reverse().join('');
     }
 
     function openMenu(id) {
-        selectedPatient = patients.find(p => p.opd_number === id);
-        document.getElementById('menuPatientName').innerText = selectedPatient.name;
-        document.getElementById('menuPatientID').innerText = "ID: " + selectedPatient.opd_number;
+        selectedP = patients.find(p => p.opd_number === id);
+        document.getElementById('menuPatientName').innerText = selectedP.name;
         document.getElementById('actionModal').style.display = "block";
     }
 
-    function closeModal() {
-        document.getElementById('actionModal').style.display = "none";
+    function closeModal() { document.getElementById('actionModal').style.display = "none"; }
+
+    function openEdit() {
+        document.getElementById('p_name').value = selectedP.name;
+        document.getElementById('p_age').value = selectedP.age;
+        document.getElementById('p_sex').value = selectedP.sex;
+        document.getElementById('p_addr').value = selectedP.address;
+        document.getElementById('p_weight').value = selectedP.weight;
+        document.getElementById('p_bp').value = selectedP.bp;
+        document.getElementById('p_pr').value = selectedP.pr;
+        document.getElementById('p_spo2').value = selectedP.spo2;
+        document.getElementById('p_temp').value = selectedP.temp;
+        document.getElementById('submitBtn').innerText = "UPDATE DETAILS";
+        document.getElementById('submitBtn').onclick = () => savePatient('UPDATE_DETAILS');
+        closeModal();
+        window.scrollTo(0,0);
     }
 
-    function action(type) {
-        alert("You selected " + type + " for " + selectedPatient.name + ". Waiting for your next instructions to build this part!");
+    function openTreat() {
+        document.getElementById('treatName').innerText = selectedP.name;
+        document.getElementById('t_complaints').value = selectedP.complaints || "";
+        document.getElementById('t_invest').value = selectedP.lab || selectedP.investigations || "";
+        document.getElementById('t_notes').value = selectedP.notes || "";
+        document.getElementById('medBody').innerHTML = "";
+        addDrugRow();
+        document.getElementById('treatModal').style.display = "block";
+        closeModal();
     }
 
-    async function savePatient() {
+    function addDrugRow() {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><input type="text" class="m-n"></td>
+            <td><input type="text" class="m-d"></td>
+            <td><input type="text" class="m-r"></td>
+            <td><input type="text" class="m-rm"></td>
+            <td><button onclick="this.parentElement.parentElement.remove()" style="color:red; border:none; background:none; cursor:pointer; font-weight:bold;">×</button></td>`;
+        document.getElementById('medBody').appendChild(tr);
+    }
+
+    async function savePatient(type) {
         const data = {
-            type: "REGISTRATION",
-            opd: document.getElementById('nextOPD').innerText,
-            date: document.getElementById('curDate').innerText,
+            type: type,
+            opd: type === 'REGISTRATION' ? "SRR-"+Date.now().toString().slice(-4) : selectedP.opd_number,
             name: document.getElementById('p_name').value,
             age: document.getElementById('p_age').value,
             sex: document.getElementById('p_sex').value,
@@ -183,17 +190,38 @@
             spo2: document.getElementById('p_spo2').value,
             temp: document.getElementById('p_temp').value
         };
-        if(!data.name) return alert("Enter Name");
+        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+        alert("Success!"); location.reload();
+    }
 
-        fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) })
-        .then(() => { alert("Registered!"); location.reload(); });
+    async function saveTreatment() {
+        const rows = document.querySelectorAll('#medBody tr');
+        let medsArray = [];
+        rows.forEach(tr => {
+            const name = tr.querySelector('.m-n').value;
+            const dur = tr.querySelector('.m-d').value;
+            const route = tr.querySelector('.m-r').value;
+            const rem = tr.querySelector('.m-rm').value;
+            if(name) medsArray.push(`${name}|${dur}|${route}|${rem}`);
+        });
+
+        const data = {
+            type: "SAVE_TREATMENT",
+            opd: selectedP.opd_number,
+            complaints: document.getElementById('t_complaints').value,
+            investigations: document.getElementById('t_invest').value, // This goes to Col P
+            medications: medsArray.join(';'), // This goes to Col N
+            notes: document.getElementById('t_notes').value // This goes to Col O
+        };
+        
+        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+        alert("Clinical Data Saved to N, O, P!"); location.reload();
     }
 
     function filterTable() {
-        const t = document.getElementById('pSearch').value.toLowerCase();
-        renderTable(patients.filter(p => p.name.toLowerCase().includes(t) || p.opd_number.toLowerCase().includes(t)));
+        const val = document.getElementById('pSearch').value.toLowerCase();
+        renderTable(patients.filter(p => p.name.toLowerCase().includes(val)));
     }
-
     loadData();
 </script>
 </body>
