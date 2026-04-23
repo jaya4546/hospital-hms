@@ -13,7 +13,7 @@
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 12px; margin-bottom: 20px; }
         .logo { width: 85px; height: 85px; object-fit: contain; }
         .hosp-title { text-align: center; flex: 1; }
-        .hosp-title h1 { color: var(--accent); margin: 0; font-size: 20px; text-transform: uppercase; font-weight: 900; white-space: nowrap; }
+        .hosp-title h1 { color: var(--accent); margin: 0; font-size: 22px; text-transform: uppercase; font-weight: 900; white-space: nowrap; }
         
         .doc-box { border: 2px solid #000; padding: 8px; min-width: 250px; text-align: right; background: #fffde7; border-radius: 4px; box-shadow: 2px 2px 0px #000; line-height: 1.2; }
         .doc-box b { font-weight: 900; font-size: 15px; display: block; margin-bottom: 2px; }
@@ -41,21 +41,12 @@
         
         #printSection { display: none; }
 
-        /* PRINT STYLE OVERRIDES */
         @media print {
             @page { size: A4; margin: 0; }
             body * { visibility: hidden; }
             #printSection, #printSection * { visibility: visible; }
             #printSection { 
-                display: flex; 
-                flex-direction: column;
-                position: absolute; 
-                left: 0; top: 0; 
-                width: 100%; 
-                height: 100vh;
-                padding: 40px;
-                box-sizing: border-box;
-                background: white !important; 
+                display: flex; flex-direction: column; position: absolute; left: 0; top: 0; width: 100%; height: 100vh; padding: 40px; box-sizing: border-box; background: white !important; 
             }
             .print-table { border: 1px solid #ddd !important; }
             .print-table th, .print-table td { border: 1px solid #ddd !important; padding: 8px; }
@@ -166,13 +157,17 @@
     document.getElementById('curDate').innerText = new Date().toLocaleDateString('en-IN');
 
     async function loadData() {
-        const res = await fetch(API_URL);
-        patients = await res.json();
-        renderTable(patients);
-        if(patients.length > 0) {
-            const lastNo = parseInt(patients[patients.length-1].opd_no.split('-')[1]) || 1000;
-            document.getElementById('nextOPD').innerText = "SRR-" + (lastNo + 1);
-        } else { document.getElementById('nextOPD').innerText = "SRR-1001"; }
+        try {
+            const res = await fetch(API_URL);
+            patients = await res.json();
+            renderTable(patients);
+            if(patients.length > 0) {
+                const lastNo = parseInt(patients[patients.length-1].opd_no.split('-')[1]) || 1000;
+                document.getElementById('nextOPD').innerText = "SRR-" + (lastNo + 1);
+            } else { document.getElementById('nextOPD').innerText = "SRR-1001"; }
+        } catch (e) {
+            console.error("Data load error:", e);
+        }
     }
 
     function renderTable(dataList) {
@@ -295,7 +290,7 @@
         document.getElementById('labTotal').innerText = "₹ " + total;
     }
 
-    // --- PRINTING UTILS ---
+    // --- PRINTING ---
     function numberToWords(num) {
         const a = ['','One ','Two ','Three ','Four ','Five ','Six ','Seven ','Eight ','Nine ','Ten ','Eleven ','Twelve ','Thirteen ','Fourteen ','Fifteen ','Sixteen ','Seventeen ','Eighteen ','Nineteen '];
         const b = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
@@ -358,7 +353,7 @@
     function printRegistration(opd) {
         const p = patients.find(x => x.opd_no == opd);
         const html = `
-            <div id="printSection">
+            <div id="printBody">
                 ${getPrintHeader(p)}
                 <div style="flex:1;"></div>
                 ${getPrintFooter()}
@@ -371,7 +366,7 @@
         let total = 0;
         const rows = selectedLab.map((t, i) => { total += t.p; return `<tr><td>${i+1}</td><td>${t.n}</td><td style="text-align:right;">₹${t.p}</td></tr>`; }).join('');
         const html = `
-            <div id="printSection">
+            <div id="printBody">
                 ${getPrintHeader(p)}
                 <div style="flex:1;">
                     <h2 style="text-align:center; border-bottom:2px solid #ddd; padding-bottom:8px; margin-bottom:15px;">LAB INVESTIGATION BILL</h2>
@@ -399,7 +394,7 @@
         const drugRows = drugs.map(d => `<tr><td><b>${d.n}</b></td><td style="text-align:center;">${d.r}</td><td style="text-align:center;">${d.d}</td><td>${d.rem}</td></tr>`).join('');
         
         const html = `
-            <div id="printSection">
+            <div id="printBody">
                 ${getPrintHeader(p)}
                 <div style="flex:1;">
                     <div style="margin-bottom:8px;"><b>Complaints:</b> ${document.getElementById('mComp').value || '-'}</div>
@@ -416,18 +411,29 @@
         doPrint(html);
     }
 
-    function doPrint(html) { document.getElementById('printSection').innerHTML = html; window.print(); }
+    function doPrint(html) {
+        document.getElementById('printSection').innerHTML = html;
+        window.print();
+    }
+
     function addRow(n="", r="", d="", rem="") {
         const div = document.createElement('div'); div.className = "drug-row";
         div.innerHTML = `<input type="text" class="dn" placeholder="Medicine" value="${n}" style="flex:3;"><input type="text" class="dr" placeholder="Freq" value="${r}" style="flex:1;"><input type="text" class="dd" placeholder="Days" value="${d}" style="flex:1;"><input type="text" class="dm" placeholder="Advice" value="${rem}" style="flex:2;"><button onclick="this.parentElement.remove()" style="background:red; color:white; border:none; padding:5px; cursor:pointer;">x</button>`;
         document.getElementById('medList').appendChild(div);
     }
+
     function filterTable() {
         const t = document.getElementById('pSearch').value.toLowerCase();
         renderTable(patients.filter(p => p.name.toLowerCase().includes(t) || p.opd_no.toLowerCase().includes(t) || (p.phone_number && p.phone_number.includes(t))));
     }
+
     function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display = "none"); }
+    
+    // Initial Load
     loadData();
 </script>
+
+<div id="printSection" style="display:none;"></div>
+
 </body>
 </html>
