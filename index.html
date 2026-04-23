@@ -3,51 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRR Hospital Management System</title>
+    <title>SRR Hospital Management</title>
     <style>
-        :root { --primary: #1b5e20; --accent: #c62828; --bg: #f4f7f6; --lab: #0277bd; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 10px; }
+        :root { --primary: #1b5e20; --accent: #c62828; --bg: #f4f7f6; --lab: #0277bd; --edit: #1565c0; --treat: #ef6c00; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 10px; }
         .container { max-width: 1200px; margin: auto; background: white; padding: 20px; border-radius: 12px; border-top: 10px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* Header */
+        /* Header UI */
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 12px; margin-bottom: 20px; }
         .logo { width: 85px; height: 85px; object-fit: contain; }
         .hosp-title { text-align: center; flex: 1; }
         .hosp-title h1 { color: var(--accent); margin: 0; font-size: 22px; text-transform: uppercase; font-weight: 900; }
-        .address-text { font-size: 11px; font-weight: 600; margin-top: 4px; }
+        .address-text { font-size: 11px; font-weight: 600; margin-top: 4px; line-height: 1.4; }
         
-        .doc-box { border: 2.5px solid #000; padding: 6px 12px; background: #fffde7; text-align: right; border-radius: 4px; }
-        .doc-box b { font-size: 16px; display: block; }
+        .doc-box { border: 2.5px solid #000; padding: 6px 12px; min-width: 200px; text-align: right; background: #fffde7; border-radius: 4px; box-shadow: 2px 2px 0px #000; }
+        .doc-box b { font-weight: 900; font-size: 16px; display: block; }
 
-        .opd-bar { background: #e8f5e9; padding: 12px; border-radius: 6px; margin-bottom: 15px; display: flex; justify-content: space-between; font-weight: bold; }
-        
+        .opd-bar { background: #e8f5e9; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; color: var(--primary); display: flex; justify-content: space-between; border: 1px solid #c8e6c9; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
 
-        .btn { padding: 12px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; text-transform: uppercase; width: 100%; }
-        .btn-reg { background: var(--primary); }
+        /* Action Buttons */
+        .btn { padding: 10px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; text-transform: uppercase; }
+        .btn-reg { background: var(--primary); width: 100%; padding: 15px; }
+        .btn-edit { background: var(--edit); padding: 5px 10px; font-size: 12px; }
+        .btn-treat { background: var(--treat); padding: 5px 10px; font-size: 12px; }
+        .btn-lab { background: var(--lab); padding: 5px 10px; font-size: 12px; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: #263238; color: white; padding: 12px; text-align: left; }
-        td { padding: 12px; border-bottom: 1px solid #eee; }
+        th { background: #263238; color: white; padding: 12px; text-align: left; font-size: 13px; }
+        td { padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
 
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; padding: 20px; overflow-y: auto; }
-        .modal-body { background: white; max-width: 1000px; margin: auto; padding: 25px; border-radius: 10px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; padding: 20px; overflow-y: auto; }
+        .modal-body { background: white; max-width: 900px; margin: auto; padding: 25px; border-radius: 10px; }
         
-        /* Section Tabs styling */
-        .section-header { background: #eceff1; padding: 10px; margin: 20px 0 10px; border-left: 5px solid var(--lab); font-weight: bold; }
-        
-        .lab-box { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: #f1f8e9; padding: 15px; border-radius: 8px; }
-        .test-scroll { height: 200px; overflow-y: auto; border: 1px solid #ddd; background: white; padding: 5px; }
-        .test-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; cursor: pointer; }
-        .test-item:hover { background: #e3f2fd; }
-
+        .section-header { background: #eceff1; padding: 8px; margin: 15px 0; border-left: 5px solid var(--primary); font-weight: bold; }
         .drug-row { display: flex; gap: 5px; margin-bottom: 5px; }
+        
         #printSection { display: none; }
         @media print {
             body * { visibility: hidden; }
             #printSection, #printSection * { visibility: visible; }
-            #printSection { display: block; position: absolute; left: 0; top: 0; width: 100%; }
+            #printSection { display: block; position: absolute; left: 0; top: 0; width: 100%; background: white !important; }
         }
     </style>
 </head>
@@ -58,17 +55,17 @@
         <img src="logo.jpg" class="logo">
         <div class="hosp-title">
             <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
-            <div class="address-text">Suraram colony NTR road, Telangana 500055</div>
+            <div class="address-text">Suraram colony NTR road, opp: Ramaleela maidanam<br>Telangana 500055</div>
         </div>
         <div class="doc-box">
             <b>DR. M. JAYACHANDER</b>
-            <span>MBBS, MD (General Medicine)</span>
+            <span style="font-size:12px; font-weight:900;">MBBS, MD (General Medicine)</span>
         </div>
     </div>
 
     <div class="opd-bar">
         <span>📅 Date: <span id="curDate"></span></span>
-        <span>🆔 Next OPD: <span id="nextOPD">...</span></span>
+        <span>🆔 Next OPD ID: <span id="nextOPD">...</span></span>
     </div>
 
     <div class="grid">
@@ -84,55 +81,57 @@
         <input type="text" id="p_temp" placeholder="Temp">
     </div>
     
-    <button class="btn btn-reg" onclick="savePatient()">Register Patient</button>
-    <input type="text" id="pSearch" onkeyup="filterTable()" placeholder="🔍 Search Patients..." style="margin-top:20px; padding:12px; border:2px solid var(--primary);">
+    <input type="hidden" id="edit_opd">
+    <button id="saveBtn" class="btn btn-reg" onclick="savePatient()">Register Patient</button>
+    <button id="cancelBtn" class="btn" style="background:#7f8c8d; display:none; margin-top:10px; width:100%;" onclick="resetForm()">Cancel Editing</button>
+
+    <input type="text" id="pSearch" class="grid" style="margin-top:20px; border:2px solid var(--primary); grid-column: span 10;" placeholder="🔍 Search by Name, Phone, or OPD..." onkeyup="filterTable()">
 
     <table>
-        <thead><tr><th>OPD ID</th><th>Name</th><th>Phone</th><th>Actions</th></tr></thead>
+        <thead>
+            <tr><th>OPD ID</th><th>Name</th><th>Phone</th><th>Actions</th></tr>
+        </thead>
         <tbody id="tbody"></tbody>
     </table>
 </div>
 
 <div id="mTreat" class="modal">
     <div class="modal-body">
-        <h2 id="tTitle" style="color:var(--accent); border-bottom:2px solid #eee;">Clinical Assessment</h2>
-        
-        <div id="historyBox" style="background:#e3f2fd; padding:10px; margin-bottom:10px; border-radius:5px; display:none;">
-            <b>Previous Lab Tests:</b> <span id="prevLabText"></span>
-        </div>
-
+        <h2 id="tTitle" style="color:var(--accent); margin:0 0 15px 0;">Clinical Assessment</h2>
         <div class="grid" style="grid-template-columns: 1fr 1fr;">
-            <div><b>Chief Complaints</b><textarea id="mComp" rows="2"></textarea></div>
-            <div><b>Inv. Notes</b><textarea id="mInv" rows="2"></textarea></div>
+            <div><b>Complaints</b><textarea id="mComp" rows="2"></textarea></div>
+            <div><b>Investigation Result</b><textarea id="mInv" rows="2"></textarea></div>
         </div>
+        <div class="section-header">MEDICATIONS (Rx)</div>
+        <div id="medList"></div>
+        <button onclick="addRow()" style="background:#546e7a; color:white; border:none; padding:8px; margin-top:5px; cursor:pointer;">+ Add Drug</button>
+        <div style="margin-top:15px;"><b>Clinical Advice</b><textarea id="mNotes" rows="2"></textarea></div>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn" style="background:var(--primary); flex:1;" onclick="updateTreatment()">Save Clinical Data</button>
+            <button class="btn" style="background:var(--treat); flex:1;" onclick="printPrescription()">Print Prescription</button>
+            <button class="btn" style="background:#7f8c8d;" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+</div>
 
-        <div class="section-header">🧪 LABORATORY INVESTIGATIONS</div>
-        <div class="lab-box">
+<div id="mLab" class="modal">
+    <div class="modal-body">
+        <h2 id="lTitle" style="color:var(--lab); margin:0 0 15px 0;">Lab Investigations</h2>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
             <div>
-                <input type="text" id="labS" placeholder="Search Test..." onkeyup="searchLab()" style="margin-bottom:5px;">
-                <div class="test-scroll" id="labMenu"></div>
+                <input type="text" id="labS" placeholder="Search Test..." onkeyup="searchLab()" style="margin-bottom:10px;">
+                <div id="labMenu" style="height:250px; overflow-y:auto; border:1px solid #ddd; padding:5px;"></div>
             </div>
-            <div style="background:white; padding:10px; border-radius:5px; border:1px solid #ddd;">
-                <div id="selectedList" style="min-height:120px;"></div>
+            <div style="background:#f1f8e9; padding:15px; border-radius:8px;">
+                <div id="selList" style="min-height:150px;"></div>
                 <hr>
                 <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:18px;">
-                    <span>Total:</span><span id="labTotal">₹ 0</span>
+                    <span>Total Bill:</span><span id="labTotal">₹ 0</span>
                 </div>
-                <button class="btn" style="background:var(--lab); margin-top:10px;" onclick="printLabBill()">Print Lab Bill Only</button>
+                <button class="btn" style="background:var(--lab); width:100%; margin-top:15px;" onclick="printLabBill()">Print Lab Bill</button>
             </div>
         </div>
-
-        <div class="section-header">💊 MEDICATIONS (Rx)</div>
-        <div id="medList"></div>
-        <button onclick="addRow()" style="background:#546e7a; color:white; border:none; padding:8px; margin-top:5px; cursor:pointer;">+ Add Medicine</button>
-
-        <div style="margin-top:15px;"><b>Follow-up Advice</b><textarea id="mNotes" rows="2"></textarea></div>
-
-        <div style="display:flex; gap:10px; margin-top:20px;">
-            <button class="btn" style="background:var(--primary); flex:2;" onclick="saveTreatment()">Save & Close</button>
-            <button class="btn" style="background:#e67e22; flex:1;" onclick="printPrescription()">Print Full Rx</button>
-            <button class="btn" style="background:#7f8c8d; width:100px;" onclick="closeModal()">Cancel</button>
-        </div>
+        <button class="btn" style="background:#7f8c8d; margin-top:20px; width:100%;" onclick="closeModal()">Close</button>
     </div>
 </div>
 
@@ -148,121 +147,70 @@
         {n: "URINE CUE", p: 100}, {n: "VITAMIN D3", p: 1200}, {n: "CRP", p: 300}, {n: "T3 T4 TSH", p: 500}
     ];
 
-    let currentPatients = [];
+    let patients = [];
     let selectedLab = [];
 
     document.getElementById('curDate').innerText = new Date().toLocaleDateString('en-IN');
 
-    async function load() {
+    async function loadData() {
         const res = await fetch(API_URL);
-        currentPatients = await res.json();
-        render();
-        if(currentPatients.length > 0) {
-            const lastNo = parseInt(currentPatients[currentPatients.length-1].opd_no.split('-')[1]);
+        patients = await res.json();
+        renderTable(patients);
+        if(patients.length > 0) {
+            const lastNo = parseInt(patients[patients.length-1].opd_no.split('-')[1]);
             document.getElementById('nextOPD').innerText = "SRR-" + (lastNo + 1);
         } else { document.getElementById('nextOPD').innerText = "SRR-1001"; }
     }
 
-    function render() {
-        document.getElementById('tbody').innerHTML = currentPatients.map(p => `
+    function renderTable(dataList) {
+        document.getElementById('tbody').innerHTML = dataList.map(p => `
             <tr>
                 <td><b>${p.opd_no}</b></td>
-                <td>${p.name}</td>
-                <td>${p.phone_number || ''}</td>
-                <td><button onclick="openTreat('${p.opd_no}')" style="background:#e67e22; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Treat</button></td>
+                <td style="text-transform:uppercase;">${p.name}</td>
+                <td>${p.phone_number || '-'}</td>
+                <td>
+                    <button class="btn btn-edit" onclick="editPatient('${p.opd_no}')">Edit</button>
+                    <button class="btn btn-treat" onclick="openTreat('${p.opd_no}')">Treat</button>
+                    <button class="btn btn-lab" onclick="openLab('${p.opd_no}')">Investigation</button>
+                    <button class="btn" style="background:#555; padding:5px 10px; font-size:11px;" onclick="printRegistration('${p.opd_no}')">Reg Print</button>
+                </td>
             </tr>
         `).reverse().join('');
     }
 
-    function openTreat(opd) {
-        window.activeOPD = opd;
-        selectedLab = [];
-        updateLabBill();
-        searchLab();
-        
-        const p = currentPatients.find(x => x.opd_no == opd);
-        document.getElementById('tTitle').innerText = "Treating: " + p.name;
-        
-        // Load Existing Data
-        document.getElementById('mComp').value = p.complaints || "";
-        document.getElementById('mInv').value = p.investigations || "";
-        document.getElementById('mNotes').value = p.notes || "";
-        
-        if(p.lab_tests && p.lab_tests !== "[]") {
-            try {
-                const prev = JSON.parse(p.lab_tests);
-                document.getElementById('historyBox').style.display = "block";
-                document.getElementById('prevLabText').innerText = prev.map(t => t.n).join(", ");
-            } catch(e) { document.getElementById('historyBox').style.display = "none"; }
-        } else { document.getElementById('historyBox').style.display = "none"; }
-
-        document.getElementById('medList').innerHTML = "";
-        try {
-            const meds = JSON.parse(p.medications || "[]");
-            if(meds.length > 0) meds.forEach(m => addRow(m.n, m.r, m.d, m.rem));
-            else addRow();
-        } catch(e) { addRow(); }
-
-        document.getElementById('mTreat').style.display = "block";
+    // --- PATIENT EDITING ---
+    function editPatient(opd) {
+        const p = patients.find(x => x.opd_no == opd);
+        document.getElementById('edit_opd').value = p.opd_no;
+        document.getElementById('p_name').value = p.name;
+        document.getElementById('p_age').value = p.age;
+        document.getElementById('p_sex').value = p.sex;
+        document.getElementById('p_vil').value = p.village;
+        document.getElementById('p_phone').value = p.phone_number;
+        document.getElementById('p_weight').value = p.weight;
+        document.getElementById('p_bp').value = p.bp;
+        document.getElementById('p_pulse').value = p.pulse;
+        document.getElementById('p_spo2').value = p.spo2;
+        document.getElementById('p_temp').value = p.temp;
+        document.getElementById('saveBtn').innerText = "Update Patient Details";
+        document.getElementById('cancelBtn').style.display = "block";
+        window.scrollTo(0,0);
     }
 
-    async function saveTreatment() {
-        let drugs = [];
-        document.querySelectorAll('.drug-row').forEach(row => {
-            const n = row.querySelector('.dn').value;
-            if(n) drugs.push({ n: n, r: row.querySelector('.dr').value, d: row.querySelector('.dd').value, rem: row.querySelector('.dm').value });
-        });
-
-        const data = {
-            type: "TREATMENT",
-            opd: window.activeOPD,
-            complaints: document.getElementById('mComp').value,
-            investigations: document.getElementById('mInv').value,
-            drugs: drugs,
-            notes: document.getElementById('mNotes').value,
-            lab_tests: selectedLab
-        };
-
-        await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
-        closeModal();
-        load();
-    }
-
-    function searchLab() {
-        const s = document.getElementById('labS').value.toLowerCase();
-        document.getElementById('labMenu').innerHTML = labTests.filter(t => t.n.toLowerCase().includes(s)).map(t => `
-            <div class="test-item" onclick="addLab('${t.n}', ${t.p})"><span>${t.n}</span> <b>₹${t.p}</b></div>
-        `).join('');
-    }
-
-    function addLab(n, p) {
-        if(!selectedLab.find(x => x.n === n)) {
-            selectedLab.push({n, p});
-            updateLabBill();
-        }
-    }
-
-    function updateLabBill() {
-        let total = 0;
-        document.getElementById('selectedList').innerHTML = selectedLab.map((t, i) => {
-            total += t.p;
-            return `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                <span>${t.n}</span> <span>₹${t.p} <button onclick="selectedLab.splice(${i},1); updateLabBill();" style="color:red; border:none; background:none; cursor:pointer;">x</button></span>
-            </div>`;
-        }).join('');
-        document.getElementById('labTotal').innerText = "₹ " + total;
-    }
-
-    function addRow(n="", r="", d="", rem="") {
-        const div = document.createElement('div'); div.className = "drug-row";
-        div.innerHTML = `<input type="text" class="dn" placeholder="Medicine" value="${n}" style="flex:3;"><input type="text" class="dr" placeholder="Freq" value="${r}" style="flex:1;"><input type="text" class="dd" placeholder="Days" value="${d}" style="flex:1;"><input type="text" class="dm" placeholder="Advice" value="${rem}" style="flex:2;"><button onclick="this.parentElement.remove()" style="background:red; color:white; border:none; padding:5px;">x</button>`;
-        document.getElementById('medList').appendChild(div);
+    function resetForm() {
+        document.getElementById('edit_opd').value = "";
+        document.getElementById('saveBtn').innerText = "Register Patient";
+        document.getElementById('cancelBtn').style.display = "none";
+        document.querySelectorAll('.grid input').forEach(i => i.value = "");
     }
 
     async function savePatient() {
+        const opdId = document.getElementById('edit_opd').value || document.getElementById('nextOPD').innerText;
+        const type = document.getElementById('edit_opd').value ? "UPDATE_DETAILS" : "REGISTRATION";
+        
         const data = {
-            type: "REGISTRATION",
-            opd: document.getElementById('nextOPD').innerText,
+            type: type,
+            opd: opdId,
             date: document.getElementById('curDate').innerText,
             name: document.getElementById('p_name').value,
             age: document.getElementById('p_age').value,
@@ -277,12 +225,143 @@
         };
         if(!data.name) return alert("Enter Name");
         await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
-        load();
-        document.querySelectorAll('.grid input').forEach(i => i.value = "");
+        resetForm();
+        loadData();
     }
 
-    function closeModal() { document.getElementById('mTreat').style.display = "none"; }
-    load();
+    // --- TREATMENT ---
+    function openTreat(opd) {
+        window.activeOPD = opd;
+        const p = patients.find(x => x.opd_no == opd);
+        document.getElementById('tTitle').innerText = "Treating: " + p.name;
+        document.getElementById('mComp').value = p.complaints || "";
+        document.getElementById('mInv').value = p.investigations || "";
+        document.getElementById('mNotes').value = p.notes || "";
+        document.getElementById('medList').innerHTML = "";
+        try {
+            const meds = JSON.parse(p.medications || "[]");
+            if(meds.length > 0) meds.forEach(m => addRow(m.n, m.r, m.d, m.rem));
+            else addRow();
+        } catch(e) { addRow(); }
+        document.getElementById('mTreat').style.display = "block";
+    }
+
+    async function updateTreatment() {
+        let drugs = [];
+        document.querySelectorAll('.drug-row').forEach(row => {
+            const n = row.querySelector('.dn').value;
+            if(n) drugs.push({ n: n, r: row.querySelector('.dr').value, d: row.querySelector('.dd').value, rem: row.querySelector('.dm').value });
+        });
+        const data = {
+            type: "TREATMENT",
+            opd: window.activeOPD,
+            complaints: document.getElementById('mComp').value,
+            investigations: document.getElementById('mInv').value,
+            drugs: drugs,
+            notes: document.getElementById('mNotes').value,
+            lab_tests: selectedLab
+        };
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
+        closeModal(); loadData();
+    }
+
+    // --- INVESTIGATIONS ---
+    function openLab(opd) {
+        window.activeOPD = opd;
+        selectedLab = [];
+        updateLabBill();
+        searchLab();
+        document.getElementById('lTitle').innerText = "Lab for: " + patients.find(x => x.opd_no == opd).name;
+        document.getElementById('mLab').style.display = "block";
+    }
+
+    function searchLab() {
+        const s = document.getElementById('labS').value.toLowerCase();
+        document.getElementById('labMenu').innerHTML = labTests.filter(t => t.n.toLowerCase().includes(s)).map(t => `
+            <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee; cursor:pointer;" onclick="addLab('${t.n}', ${t.p})">
+                <span>${t.n}</span> <b>₹${t.p}</b>
+            </div>
+        `).join('');
+    }
+
+    function addLab(n, p) {
+        if(!selectedLab.find(x => x.n === n)) { selectedLab.push({n, p}); updateLabBill(); }
+    }
+
+    function updateLabBill() {
+        let total = 0;
+        document.getElementById('selList').innerHTML = selectedLab.map((t, i) => {
+            total += t.p;
+            return `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span>${t.n}</span> <span>₹${t.p} <button onclick="selectedLab.splice(${i},1); updateLabBill();" style="color:red; border:none; background:none; cursor:pointer;">x</button></span>
+            </div>`;
+        }).join('');
+        document.getElementById('labTotal').innerText = "₹ " + total;
+    }
+
+    // --- PRINTING FUNCTIONS ---
+    function getPrintHeader(p) {
+        return `
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:4px solid #1b5e20; padding-bottom:12px; margin-bottom:15px;">
+                <img src="logo.jpg" style="width:85px;">
+                <div style="text-align:center;">
+                    <h1 style="color:#c62828; margin:0; font-size:22px;">SRI RAJA RAJESHWARI HOSPITAL</h1>
+                    <p style="margin:0; font-weight:bold;">Suraram colony NTR road, Telangana 500055</p>
+                </div>
+                <div style="border:2px solid #000; padding:5px; background:#fffde7; text-align:right;">
+                    <b>DR. M. JAYACHANDER</b><br><small>MBBS, MD (Gen. Med)</small>
+                </div>
+            </div>
+            <div style="border:1px solid #000; padding:10px; margin-bottom:15px; display:grid; grid-template-columns:1fr 1fr; gap:10px; line-height:1.6;">
+                <div><b>OPD:</b> ${p.opd_no} | <b>DATE:</b> ${p.date}</div>
+                <div><b>NAME:</b> ${p.name} | <b>AGE/SEX:</b> ${p.age}/${p.sex}</div>
+                <div><b>VILLAGE:</b> ${p.village} | <b>WEIGHT:</b> ${p.weight}kg</div>
+                <div><b>VITALS:</b> BP:${p.bp} | P:${p.pulse} | SpO2:${p.spo2}% | T:${p.temp}</div>
+            </div>
+        `;
+    }
+
+    function printRegistration(opd) {
+        const p = patients.find(x => x.opd_no == opd);
+        const html = `<div style="padding:40px;">${getPrintHeader(p)}<h2 style="text-align:center; margin-top:50px;">REGISTRATION SLIP</h2></div>`;
+        doPrint(html);
+    }
+
+    function printLabBill() {
+        const p = patients.find(x => x.opd_no == window.activeOPD);
+        let total = 0;
+        const rows = selectedLab.map((t, i) => {
+            total += t.p;
+            return `<tr><td>${i+1}</td><td>${t.n}</td><td style="text-align:right;">₹${t.p}</td></tr>`;
+        }).join('');
+        const html = `<div style="padding:40px;">${getPrintHeader(p)}<h2 style="text-align:center;">LAB BILL</h2><table style="width:100%; border-collapse:collapse; margin-top:20px;" border="1"><thead><tr><th>#</th><th>Test</th><th>Price</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><th colspan="2" style="text-align:right;">Total:</th><th>₹${total}</th></tr></tfoot></table></div>`;
+        doPrint(html);
+    }
+
+    function printPrescription() {
+        const p = patients.find(x => x.opd_no == window.activeOPD);
+        let drugs = [];
+        document.querySelectorAll('.drug-row').forEach(row => {
+            const n = row.querySelector('.dn').value;
+            if(n) drugs.push({ n, r: row.querySelector('.dr').value, d: row.querySelector('.dd').value, rem: row.querySelector('.dm').value });
+        });
+        const rows = drugs.map(d => `<tr><td><b>${d.n}</b></td><td>${d.r}</td><td>${d.d}</td><td>${d.rem}</td></tr>`).join('');
+        const html = `<div style="padding:40px;">${getPrintHeader(p)}<h3 style="border-bottom:1px solid #000;">Rx (Medications)</h3><table style="width:100%; border-collapse:collapse;" border="1"><thead><tr><th>Medicine</th><th>Freq</th><th>Days</th><th>Advice</th></tr></thead><tbody>${rows}</tbody></table><div style="margin-top:20px;"><b>Advice:</b> ${document.getElementById('mNotes').value}</div></div>`;
+        doPrint(html);
+    }
+
+    function doPrint(html) { document.getElementById('printSection').innerHTML = html; window.print(); }
+    function addRow(n="", r="", d="", rem="") {
+        const div = document.createElement('div'); div.className = "drug-row";
+        div.innerHTML = `<input type="text" class="dn" placeholder="Medicine" value="${n}" style="flex:3;"><input type="text" class="dr" placeholder="Freq" value="${r}" style="flex:1;"><input type="text" class="dd" placeholder="Days" value="${d}" style="flex:1;"><input type="text" class="dm" placeholder="Advice" value="${rem}" style="flex:2;"><button onclick="this.parentElement.remove()" style="background:red; color:white; border:none; padding:5px;">x</button>`;
+        document.getElementById('medList').appendChild(div);
+    }
+    function filterTable() {
+        const t = document.getElementById('pSearch').value.toLowerCase();
+        renderTable(patients.filter(p => p.name.toLowerCase().includes(t) || p.opd_no.toLowerCase().includes(t) || (p.phone_number && p.phone_number.includes(t))));
+    }
+    function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display = "none"); }
+    loadData();
 </script>
 </body>
 </html>
