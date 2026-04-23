@@ -9,7 +9,7 @@
         body { font-family: 'Calibri', 'Arial', sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 11pt; color: #000; }
         .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        /* Main UI Styles */
+        /* UI Styles */
         .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
         .center-side { text-align: center; flex: 1; }
         .center-side h1 { color: var(--accent); margin: 0; font-size: 24px; font-weight: bold; text-transform: uppercase; }
@@ -34,19 +34,21 @@
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
             #printArea { display: block; position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
-            @page { margin: 0.5cm; }
+            .print-page { page-break-after: always; min-height: 100vh; position: relative; padding: 0.5cm; box-sizing: border-box; }
+            .print-page:last-child { page-break-after: auto; }
+            @page { margin: 0; }
         }
 
         .print-header { display: flex; align-items: center; border-bottom: 3px solid #1b5e20; padding-bottom: 5px; margin-bottom: 10px; }
         .print-hospital-name { text-align: center; flex: 1; padding: 0 10px; }
         .print-hospital-name h1 { color: #c62828; margin: 0; font-size: 22pt; white-space: nowrap; text-transform: uppercase; }
         .print-hospital-name p { margin: 2px 0; font-size: 8pt; font-weight: bold; }
-        .print-doc-box { border: 1.5px solid #000; padding: 5px; text-align: right; min-width: 200px; line-height: 1.2; border-radius: 4px; }
+        .print-doc-box { border: 1.5px solid #000; padding: 6px; text-align: right; min-width: 230px; line-height: 1.3; border-radius: 4px; }
 
         .print-data-box { border: 1px solid #000; padding: 8px; font-size: 11pt; }
         .print-vitals-box { border: 1px solid #000; border-top: none; padding: 8px; background: #f9f9f9; display: flex; justify-content: space-between; font-size: 10pt; }
 
-        .print-footer { position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; }
+        .print-footer { position: absolute; bottom: 0.5cm; left: 0.5cm; right: 0.5cm; text-align: center; }
         .signature-block { text-align: right; margin-bottom: 20px; padding-right: 20px; font-weight: bold; line-height: 1.2; }
         .not-valid-note { font-size: 8pt; font-weight: bold; margin-bottom: 2px; }
         .telugu-services { font-size: 9pt; color: #1b5e20; font-weight: bold; margin-bottom: 5px; border-top: 1px dashed #ccc; padding-top: 5px; }
@@ -90,38 +92,7 @@
     </table>
 </div>
 
-<div id="printArea">
-    <div class="print-header">
-        <img src="logo.jpg" style="width:80px;">
-        <div class="print-hospital-name">
-            <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
-            <p>SURARAM COLONY 1ST OM JANDA NTR ROAD OPP: RAMALEELA MAIDANAM TG 500055</p>
-        </div>
-        <div class="print-doc-box">
-            <b style="font-size: 13pt;">DR. M. JAYACHANDER</b><br>
-            <span style="font-size: 10pt; font-weight: bold;">MBBS, M.D. (GEN. MEDICINE)</span><br>
-            <span style="color: #c62828; font-size: 9pt; font-weight: bold;">Reg No: TSMC/FMR/43070</span>
-        </div>
-    </div>
-
-    <div id="printContent"></div>
-
-    <div class="print-footer">
-        <div class="signature-block">
-            DR. M. JAYACHANDER<br>
-            <span style="font-size: 9pt;">MBBS, M.D. (GENERAL MEDICINE)</span>
-        </div>
-        <div class="not-valid-note">Note: Not valid for medico legal purpose</div>
-        <div class="telugu-services">
-            మా ప్రత్యేక సేవలు: బిపి షుగర్ గుండె వ్యాధులు కాలేవ్యాధులు (జాండీస్) కిడ్నీ సమస్యలు నరాల వ్యాధులు (పక్షవాతం) వైరల్ ఫీవర్ వ్యాధులు జీర్ణకోశ వ్యాధులు (అల్సర్) ఊపిరితిత్తుల వ్యాధులు థైరాయిడ్ మరియు ఫిట్స్ చూడబడును
-        </div>
-        <div class="footer-banner">
-            <img src="https://cdn-icons-png.flaticon.com/512/3028/3028573.png" class="footer-icon">
-            <span>SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</span>
-            <img src="https://cdn-icons-png.flaticon.com/512/822/822143.png" class="footer-icon">
-        </div>
-    </div>
-</div>
+<div id="printArea"></div>
 
 <div id="actionModal" class="modal">
     <div class="modal-content">
@@ -184,8 +155,8 @@
     function closeModal() { document.getElementById('actionModal').style.display = "none"; }
 
     function openEdit() {
-        ['p_name','p_age','p_sex','p_addr','p_weight','p_bp','p_pr','p_spo2','p_temp'].forEach(id => {
-            document.getElementById(id).value = selectedP[id.replace('p_', '')] || "";
+        ['name','age','sex','address','weight','bp','pr','spo2','temp'].forEach(k => {
+            document.getElementById('p_'+k).value = selectedP[k] || "";
         });
         document.getElementById('submitBtn').innerText = "UPDATE DETAILS";
         document.getElementById('submitBtn').onclick = () => savePatient('UPDATE_DETAILS');
@@ -214,55 +185,95 @@
         document.getElementById('medBody').appendChild(tr);
     }
 
+    const getFullHeaderFooter = () => `
+        <div class="print-header">
+            <img src="logo.jpg" style="width:80px;">
+            <div class="print-hospital-name">
+                <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
+                <p>SURARAM COLONY 1ST OM JANDA NTR ROAD OPP: RAMALEELA MAIDANAM TG 500055</p>
+            </div>
+            <div class="print-doc-box">
+                <b style="font-size: 15pt;">DR. M. JAYACHANDER</b><br>
+                <b style="font-size: 11pt;">MBBS, M.D. (GENERAL MEDICINE)</b><br>
+                <span style="color: #c62828; font-size: 10pt; font-weight: bold;">Reg No: TSMC/FMR/43070</span>
+            </div>
+        </div>
+        <div class="print-footer">
+            <div class="signature-block">
+                DR. M. JAYACHANDER<br>
+                <span style="font-size: 10pt;">MBBS, M.D. (GENERAL MEDICINE)</span>
+            </div>
+            <div class="not-valid-note">Note: Not valid for medico legal purpose</div>
+            <div class="telugu-services">
+                మా ప్రత్యేక సేవలు: బిపి షుగర్ గుండె వ్యాధులు కాలేవ్యాధులు (జాండీస్) కిడ్నీ సమస్యలు నరాల వ్యాధులు (పక్షవాతం) వైరల్ ఫీవర్ వ్యాధులు జీర్ణకోశ వ్యాధులు (అల్సర్) ఊపిరితిత్తుల వ్యాధులు థైరాయిడ్ మరియు ఫిట్స్ చూడబడును
+            </div>
+            <div class="footer-banner">
+                <img src="https://cdn-icons-png.flaticon.com/512/3028/3028573.png" class="footer-icon">
+                <span>SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</span>
+                <img src="https://cdn-icons-png.flaticon.com/512/822/822143.png" class="footer-icon">
+            </div>
+        </div>
+    `;
+
     function generatePrint(type) {
-        let html = `
+        const meds = selectedP.medications ? selectedP.medications.split(';').filter(m => m.split('|')[0]) : [];
+        let pagesHtml = "";
+
+        // PAGE 1
+        let p1Content = `
             <div class="print-data-box">
-                <table style="width:100%; border-collapse:collapse;">
-                    <tr>
-                        <td style="border:none; width:50%;"><b>OPD ID:</b> ${selectedP.opd_number}</td>
-                        <td style="border:none; text-align:right;"><b>Date:</b> ${new Date().toLocaleDateString()}</td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" style="border:none; padding-top:5px;"><b>Name:</b> <span style="text-transform:uppercase; font-size:12pt;">${selectedP.name}</span></td>
-                    </tr>
-                    <tr>
-                        <td style="border:none;"><b>Age:</b> ${selectedP.age} | <b>Sex:</b> ${selectedP.sex}</td>
-                        <td style="border:none; text-align:right;"><b>Address:</b> ${selectedP.address}</td>
-                    </tr>
+                <table style="width:100%;">
+                    <tr><td><b>OPD ID:</b> ${selectedP.opd_number}</td><td style="text-align:right;"><b>Date:</b> ${new Date().toLocaleDateString()}</td></tr>
+                    <tr><td colspan="2"><b>Name:</b> <span style="text-transform:uppercase; font-size:12pt;">${selectedP.name}</span></td></tr>
+                    <tr><td><b>Age:</b> ${selectedP.age} | <b>Sex:</b> ${selectedP.sex}</td><td style="text-align:right;"><b>Address:</b> ${selectedP.address}</td></tr>
                 </table>
             </div>
             <div class="print-vitals-box">
-                <span><b>Weight:</b> ${selectedP.weight}kg</span>
-                <span><b>BP:</b> ${selectedP.bp}</span>
-                <span><b>Pulse:</b> ${selectedP.pr}</span>
-                <span><b>SpO2:</b> ${selectedP.spo2}%</span>
-                <span><b>Temp:</b> ${selectedP.temp}°F</span>
+                <span><b>Weight:</b> ${selectedP.weight}kg</span><span><b>BP:</b> ${selectedP.bp}</span><span><b>Pulse:</b> ${selectedP.pr}</span><span><b>SpO2:</b> ${selectedP.spo2}%</span><span><b>Temp:</b> ${selectedP.temp}°F</span>
             </div>
         `;
 
-        if(type === 'PRESCRIPTION') {
-            html += `
-                <div style="margin-top:15px;">
-                    <h3 style="color:var(--primary); margin:0;">R<sub>x</sub></h3>
-                    <table style="width:100%; margin-top:5px; border:1px solid #000;">
-                        <thead><tr style="background:#eee; border-bottom:1px solid #000;"><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead>
-                        <tbody>
-                            ${selectedP.medications ? selectedP.medications.split(';').map(m => {
-                                const p = m.split('|');
-                                return `<tr style="border-bottom:1px solid #eee;"><td><b>${p[0]}</b></td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td></tr>`;
-                            }).join('') : '<tr><td colspan="4">No medications</td></tr>'}
-                        </tbody>
-                    </table>
-                    <div style="margin-top:15px; font-size:10pt;">
-                        <div><b>Chief Complaints:</b> ${selectedP.complaints || 'None'}</div>
-                        <div style="margin-top:5px;"><b>Investigations:</b> ${selectedP.lab || selectedP.investigations || 'None'}</div>
-                        <div style="margin-top:5px;"><b>Notes:</b> ${selectedP.notes || 'None'}</div>
-                    </div>
-                </div>
+        if (type === 'PRESCRIPTION') {
+            p1Content += `
+                <div style="margin-top:10px;"><b>Chief Complaints:</b> ${selectedP.complaints || 'None'}</div>
+                <div style="margin-top:5px;"><b>Investigations:</b> ${selectedP.lab || selectedP.investigations || 'None'}</div>
+                <div style="margin-top:10px;"><h3 style="color:var(--primary); margin:0;">R<sub>x</sub></h3>
+                <table style="width:100%; margin-top:5px; border:1px solid #000;">
+                    <thead><tr style="background:#eee; border-bottom:1px solid #000;"><th>Drug Name</th><th>Duration</th><th>Route</th><th>Remarks</th></tr></thead>
+                    <tbody>
+                        ${meds.slice(0, 6).map(m => {
+                            const p = m.split('|');
+                            return `<tr style="border-bottom:1px solid #eee;"><td><b>${p[0]}</b></td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td></tr>`;
+                        }).join('')}
+                    </tbody>
+                </table></div>
+                ${meds.length <= 6 ? `<div style="margin-top:10px;"><b>Notes:</b> ${selectedP.notes || 'None'}</div>` : ''}
             `;
+        } else {
+            p1Content += `<h2 style="text-align:center; color:var(--primary); margin-top:40px;">REGISTRATION SLIP</h2>`;
         }
 
-        document.getElementById('printContent').innerHTML = html;
+        pagesHtml += `<div class="print-page">${getFullHeaderFooter()}${p1Content}</div>`;
+
+        // PAGE 2+ (If more than 6 meds)
+        if (type === 'PRESCRIPTION' && meds.length > 6) {
+            const remainingMeds = meds.slice(6);
+            pagesHtml += `<div class="print-page">${getFullHeaderFooter()}
+                <div style="margin-top:10px;"><h3 style="color:var(--primary); margin:0;">R<sub>x</sub> (Continued)</h3>
+                <table style="width:100%; margin-top:5px; border:1px solid #000;">
+                    <thead><tr style="background:#eee; border-bottom:1px solid #000;"><th>Drug Name</th><th>Duration</th><th>Route</th><th>Remarks</th></tr></thead>
+                    <tbody>
+                        ${remainingMeds.map(m => {
+                            const p = m.split('|');
+                            return `<tr style="border-bottom:1px solid #eee;"><td><b>${p[0]}</b></td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td></tr>`;
+                        }).join('')}
+                    </tbody>
+                </table></div>
+                <div style="margin-top:10px;"><b>Notes:</b> ${selectedP.notes || 'None'}</div>
+            </div>`;
+        }
+
+        document.getElementById('printArea').innerHTML = pagesHtml;
         window.print();
     }
 
