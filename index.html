@@ -16,13 +16,11 @@
         .hosp-title h1 { color: var(--accent); margin: 0; font-size: 20px; text-transform: uppercase; font-weight: 900; white-space: nowrap; }
         .address-text { font-size: 11px; color: #000; margin-top: 4px; line-height: 1.4; font-weight: 600; }
         
-        /* Doctor Box in Header */
         .doc-box { border: 2.5px solid #000; padding: 6px 12px; min-width: 200px; text-align: right; background: #fffde7; border-radius: 4px; box-shadow: 2px 2px 0px #000; }
         .doc-box b { font-weight: 900; font-size: 16px; display: block; text-transform: uppercase; }
-        .doc-box .qual { font-weight: 900; font-size: 13px; display: block; color: #1b5e20; } /* Bolded credentials */
+        .doc-box .qual { font-weight: 900; font-size: 13px; display: block; color: #1b5e20; }
         .doc-box .reg { font-weight: 900; font-size: 12px; display: block; color: var(--accent); border-top: 2px solid #000; margin-top: 3px; padding-top: 3px; }
 
-        /* Dashboard UI */
         .opd-bar { background: #e8f5e9; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; color: var(--primary); display: flex; justify-content: space-between; font-size: 14px; border: 1px solid #c8e6c9; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
@@ -36,7 +34,6 @@
         th { background: #263238; color: white; padding: 12px; text-align: left; font-size: 13px; }
         td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
 
-        /* Modal Settings */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; padding: 20px; overflow-y: auto; }
         .modal-body { background: white; max-width: 1000px; margin: auto; padding: 25px; border-radius: 10px; border-top: 10px solid #e67e22; }
         
@@ -47,7 +44,6 @@
         .dm { flex: 2; }
         .rm-btn { background: #c62828; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; }
 
-        /* PRINTING ENGINE STYLES */
         #printSection { display: none; background: white; }
         @media print {
             body * { visibility: hidden; }
@@ -226,7 +222,7 @@
 
     function getPrintHeader(p) {
         return `
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:4px solid #1b5e20; padding-bottom:12px; margin-bottom:20px; background:white;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:4px solid #1b5e20; padding-bottom:12px; margin-bottom:15px; background:white;">
                 <img src="logo.jpg" style="width:90px; height:90px; object-fit:contain;">
                 <div style="text-align:center; flex:1; overflow:hidden; padding:0 10px;">
                     <h1 style="color:#c62828; margin:0; font-size:22px; font-weight:900; white-space:nowrap;">SRI RAJA RAJESHWARI HOSPITAL</h1>
@@ -239,7 +235,7 @@
                 </div>
             </div>
             
-            <div style="display:flex; gap:15px; margin-bottom:20px;">
+            <div style="display:flex; gap:15px; margin-bottom:15px;">
                 <div style="flex:1.5; border:2px solid #000; padding:12px; border-radius:5px; line-height:1.6;">
                     <div style="display:grid; grid-template-columns: 1fr 1fr;">
                         <div><b>OPD NO:</b> ${p.opd_no}</div> <div><b>DATE:</b> ${p.date}</div>
@@ -255,14 +251,28 @@
         `;
     }
 
-    function getPrintFooter() {
+    function getClinicalFooter() {
         return `
-            <div style="margin-top:40px; border-top:3px solid #1b5e20; padding:15px; display:flex; align-items:center; justify-content:space-between; background:white;">
-                <span style="font-size:30px;">⚕️</span>
-                <div style="text-align:center; flex:1;">
-                    <h2 style="margin:0; color:#c62828; font-size:20px; font-weight:900; letter-spacing:1px; text-shadow:0.5px 0.5px #000;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</h2>
+            <div style="margin-top:auto; padding-top:10px;">
+                <div style="text-align:right; line-height:1.4; margin-bottom:10px;">
+                    <b style="font-size:18px; text-transform:uppercase;">DR. M. JAYACHANDER</b><br>
+                    <b style="font-size:14px; text-transform:uppercase;">MBBS, M.D. (GENERAL MEDICINE)</b>
                 </div>
-                <span style="font-size:30px;">💊</span>
+                
+                <div style="border-top:1px solid #ccc; padding-top:8px; margin-bottom:5px;">
+                   <div style="font-size:10px; font-weight:bold; color:#555; margin-bottom:4px;">(NOTE: Not valid for medico legal purpose)</div>
+                   <div style="font-size:11px; font-weight:bold; line-height:1.4; color:#000;">
+                       మా ప్రత్యేక సేవలు: బిపి షుగర్ గుండె వ్యాధులు కాలేవ్యాధులు (జాండీస్) కిడ్నీ సమస్యలు నరాల వ్యాధులు (పక్షవాతం) వైరల్ ఫీవర్ వ్యాధులు జీర్ణకోశ వ్యాధులు (అల్సర్) ఊపిరితిత్తుల వ్యాధులు థైరాయిడ్ మరియు ఫిట్స్ చూడబడును
+                   </div>
+                </div>
+
+                <div style="border-top:3px solid #1b5e20; padding:10px; display:flex; align-items:center; justify-content:space-between; background:white;">
+                    <span style="font-size:25px;">⚕️</span>
+                    <div style="text-align:center; flex:1;">
+                        <h2 style="margin:0; color:#c62828; font-size:18px; font-weight:900; letter-spacing:1px; text-shadow:0.5px 0.5px #000;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</h2>
+                    </div>
+                    <span style="font-size:25px;">💊</span>
+                </div>
             </div>
         `;
     }
@@ -290,28 +300,23 @@
                 </tr>`).join('');
 
             finalHtml += `
-                <div class="${i > 0 ? 'page-break' : ''}" style="padding:40px; min-height:1000px; display:flex; flex-direction:column; background:white;">
+                <div class="${i > 0 ? 'page-break' : ''}" style="padding:25px 40px; min-height:1050px; display:flex; flex-direction:column; background:white; box-sizing:border-box;">
                     ${getPrintHeader(p)}
                     <div style="flex:1;">
                         ${i === 0 ? `
-                        <div style="margin-bottom:10px;"><b>CHIEF COMPLAINTS:</b> ${document.getElementById('mComp').value}</div>
-                        <div style="margin-bottom:15px;"><b>INVESTIGATIONS:</b> ${document.getElementById('mInv').value}</div>
+                        <div style="margin-bottom:8px;"><b>CHIEF COMPLAINTS:</b> ${document.getElementById('mComp').value}</div>
+                        <div style="margin-bottom:12px;"><b>INVESTIGATIONS:</b> ${document.getElementById('mInv').value}</div>
                         ` : ''}
                         
-                        <h3 style="border-bottom:2px solid #000; margin-bottom:10px;">Rx (Medications) ${i > 0 ? '(Cont.)' : ''}</h3>
+                        <h3 style="border-bottom:2px solid #000; margin-bottom:8px; font-size:16px;">Rx (Medications) ${i > 0 ? '(Cont.)' : ''}</h3>
                         <table style="width:100%; border-collapse:collapse;">
                             <thead><tr style="background:#f2f2f2;"><th style="padding:10px; border:1px solid #000; text-align:left;">Drug Name</th><th style="padding:10px; border:1px solid #000;">Frequency</th><th style="padding:10px; border:1px solid #000;">Duration</th><th style="padding:10px; border:1px solid #000; text-align:left;">Advice</th></tr></thead>
                             <tbody>${drugRows}</tbody>
                         </table>
                         
-                        ${i === totalPages - 1 ? `<div style="margin-top:20px;"><b>CLINICAL ADVICE:</b> ${document.getElementById('mNotes').value}</div>` : ''}
+                        ${i === totalPages - 1 ? `<div style="margin-top:15px;"><b>CLINICAL ADVICE:</b> ${document.getElementById('mNotes').value}</div>` : ''}
                     </div>
-                    
-                    <div style="text-align:right; margin-bottom:20px; line-height:1.4;">
-                        <b style="font-size:18px; text-transform:uppercase;">DR. M. JAYACHANDER</b><br>
-                        <b style="font-size:14px; text-transform:uppercase;">MBBS, M.D. (GENERAL MEDICINE)</b>
-                    </div>
-                    ${getPrintFooter()}
+                    ${getClinicalFooter()}
                 </div>
             `;
         }
@@ -321,15 +326,11 @@
     function printRegistration() {
         const p = patients.find(x => x.opd_no == window.activeOPD);
         const content = `
-            <div style="padding:40px; min-height:1000px; display:flex; flex-direction:column; background:white;">
+            <div style="padding:25px 40px; min-height:1050px; display:flex; flex-direction:column; background:white; box-sizing:border-box;">
                 ${getPrintHeader(p)}
                 <div style="flex:1; margin:20px 0;">
                     </div>
-                <div style="text-align:right; margin-bottom:20px; line-height:1.4;">
-                    <b style="font-size:18px; text-transform:uppercase;">DR. M. JAYACHANDER</b><br>
-                    <b style="font-size:14px; text-transform:uppercase;">MBBS, M.D. (GENERAL MEDICINE)</b>
-                </div>
-                ${getPrintFooter()}
+                ${getClinicalFooter()}
             </div>
         `;
         doPrint(content);
