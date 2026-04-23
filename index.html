@@ -12,14 +12,15 @@
         /* Hospital Header UI */
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 12px; margin-bottom: 20px; }
         .logo { width: 85px; height: 85px; object-fit: contain; }
-        .hosp-title { text-align: center; flex: 1; overflow: hidden; }
-        .hosp-title h1 { color: var(--accent); margin: 0; font-size: 24px; text-transform: uppercase; font-weight: 900; white-space: nowrap; } /* Single line forced */
-        .address-text { font-size: 12px; color: #000; margin-top: 6px; line-height: 1.5; font-weight: 600; }
+        .hosp-title { text-align: center; flex: 1; overflow: hidden; padding: 0 10px; }
+        .hosp-title h1 { color: var(--accent); margin: 0; font-size: 20px; text-transform: uppercase; font-weight: 900; white-space: nowrap; } /* Reduced font size */
+        .address-text { font-size: 11px; color: #000; margin-top: 4px; line-height: 1.4; font-weight: 600; }
         
-        .doc-box { border: 3px solid #000; padding: 10px; min-width: 220px; text-align: right; background: #fffde7; border-radius: 4px; box-shadow: 3px 3px 0px #000; }
+        /* Slimmer Doctor Box */
+        .doc-box { border: 2.5px solid #000; padding: 6px 12px; min-width: 200px; text-align: right; background: #fffde7; border-radius: 4px; box-shadow: 2px 2px 0px #000; }
         .doc-box b { font-weight: 900; font-size: 16px; display: block; text-transform: uppercase; }
         .doc-box .qual { font-weight: 800; font-size: 13px; display: block; color: #1b5e20; }
-        .doc-box .reg { font-weight: 900; font-size: 12px; display: block; color: var(--accent); border-top: 2px solid #000; margin-top: 4px; padding-top: 4px; }
+        .doc-box .reg { font-weight: 900; font-size: 12px; display: block; color: var(--accent); border-top: 2px solid #000; margin-top: 3px; padding-top: 3px; }
 
         /* Dashboard UI */
         .opd-bar { background: #e8f5e9; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; color: var(--primary); display: flex; justify-content: space-between; font-size: 14px; border: 1px solid #c8e6c9; }
@@ -208,16 +209,16 @@
 
     function getPrintHeader(p) {
         return `
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:4px solid #1b5e20; padding-bottom:15px; margin-bottom:20px; background:white;">
-                <img src="logo.jpg" style="width:100px; height:100px; object-fit:contain;">
-                <div style="text-align:center; flex:1; overflow:hidden;">
-                    <h1 style="color:#c62828; margin:0; font-size:28px; font-weight:900; white-space:nowrap;">SRI RAJA RAJESHWARI HOSPITAL</h1>
-                    <p style="margin:5px 0; font-weight:bold; font-size:14px;">Suraram colony NTR road, opp: Ramaleela maidanam, Telangana 500055</p>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:4px solid #1b5e20; padding-bottom:12px; margin-bottom:20px; background:white;">
+                <img src="logo.jpg" style="width:90px; height:90px; object-fit:contain;">
+                <div style="text-align:center; flex:1; overflow:hidden; padding:0 10px;">
+                    <h1 style="color:#c62828; margin:0; font-size:22px; font-weight:900; white-space:nowrap;">SRI RAJA RAJESHWARI HOSPITAL</h1>
+                    <p style="margin:4px 0; font-weight:bold; font-size:13px;">Suraram colony NTR road, opp: Ramaleela maidanam, Telangana 500055</p>
                 </div>
-                <div style="text-align:right; border:2px solid #000; padding:10px; background:#fffde7; border-radius:5px; min-width:230px;">
-                    <b style="font-size:18px;">DR. M. JAYACHANDER</b><br>
-                    <span style="font-size:13px;">MBBS, MD (General Medicine)</span><br>
-                    <span style="font-size:13px; color:#c62828;">REG NO: TSMC/FMR/43070</span>
+                <div style="text-align:right; border:2.5px solid #000; padding:6px 12px; background:#fffde7; border-radius:5px; min-width:210px;">
+                    <b style="font-size:16px;">DR. M. JAYACHANDER</b><br>
+                    <span style="font-size:12px;">MBBS, MD (General Medicine)</span><br>
+                    <span style="font-size:12px; color:#c62828;">REG NO: TSMC/FMR/43070</span>
                 </div>
             </div>
             
@@ -242,7 +243,7 @@
             <div style="margin-top:40px; border-top:3px solid #1b5e20; padding:15px; display:flex; align-items:center; justify-content:space-between; background:white;">
                 <span style="font-size:30px;">⚕️</span>
                 <div style="text-align:center; flex:1;">
-                    <h2 style="margin:0; color:#c62828; font-size:22px; font-weight:900; letter-spacing:1px; text-shadow:0.5px 0.5px #000;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</h2>
+                    <h2 style="margin:0; color:#c62828; font-size:20px; font-weight:900; letter-spacing:1px; text-shadow:0.5px 0.5px #000;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</h2>
                 </div>
                 <span style="font-size:30px;">💊</span>
             </div>
