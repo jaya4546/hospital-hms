@@ -13,11 +13,11 @@
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 12px; margin-bottom: 20px; }
         .logo { width: 85px; height: 85px; object-fit: contain; }
         .hosp-title { text-align: center; flex: 1; }
-        .hosp-title h1 { color: var(--accent); margin: 0; font-size: 22px; text-transform: uppercase; font-weight: 900; }
+        .hosp-title h1 { color: var(--accent); margin: 0; font-size: 20px; text-transform: uppercase; font-weight: 900; white-space: nowrap; }
         
-        .doc-box { border: 2.5px solid #000; padding: 6px 12px; min-width: 220px; text-align: right; background: #fffde7; border-radius: 4px; box-shadow: 2px 2px 0px #000; }
-        .doc-box b { font-weight: 900; font-size: 16px; display: block; }
-        .doc-box span { font-size: 12px; font-weight: 800; display: block; }
+        .doc-box { border: 2px solid #000; padding: 8px; min-width: 250px; text-align: right; background: #fffde7; border-radius: 4px; box-shadow: 2px 2px 0px #000; line-height: 1.2; }
+        .doc-box b { font-weight: 900; font-size: 15px; display: block; margin-bottom: 2px; }
+        .doc-box span { font-size: 11px; font-weight: 700; display: block; }
 
         .opd-bar { background: #e8f5e9; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; color: var(--primary); display: flex; justify-content: space-between; border: 1px solid #c8e6c9; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
@@ -43,11 +43,22 @@
 
         /* PRINT STYLE OVERRIDES */
         @media print {
+            @page { size: A4; margin: 0; }
             body * { visibility: hidden; }
             #printSection, #printSection * { visibility: visible; }
-            #printSection { display: block; position: absolute; left: 0; top: 0; width: 100%; background: white !important; }
+            #printSection { 
+                display: flex; 
+                flex-direction: column;
+                position: absolute; 
+                left: 0; top: 0; 
+                width: 100%; 
+                height: 100vh;
+                padding: 40px;
+                box-sizing: border-box;
+                background: white !important; 
+            }
             .print-table { border: 1px solid #ddd !important; }
-            .print-table th, .print-table td { border: 1px solid #ddd !important; padding: 10px; }
+            .print-table th, .print-table td { border: 1px solid #ddd !important; padding: 8px; }
         }
     </style>
 </head>
@@ -58,7 +69,7 @@
         <img src="logo.jpg" class="logo">
         <div class="hosp-title">
             <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
-            <div style="font-size: 11px; font-weight: 700;">Suraram colony NTR road, opp: Ramaleela maidanam, Telangana 500055</div>
+            <div style="font-size: 10px; font-weight: 700;">Suraram colony NTR road, Telangana 500055</div>
         </div>
         <div class="doc-box">
             <b>DR. M. JAYACHANDER</b>
@@ -106,7 +117,7 @@
         </div>
         <div class="section-header">MEDICATIONS (Rx)</div>
         <div id="medList"></div>
-        <button onclick="addRow()" style="background:#546e7a; color:white; border:none; padding:8px; margin-top:5px; cursor:pointer;">+ Add Drug Row</button>
+        <button onclick="addRow()" style="background:#546e7a; color:white; border:none; padding:8px; margin-top:5px; cursor:pointer;">+ Add Medicine</button>
         <div style="margin-top:15px;"><b>Clinical Advice</b><textarea id="mNotes" rows="2"></textarea></div>
         <div style="display:flex; gap:10px; margin-top:20px;">
             <button class="btn" style="background:var(--primary); flex:1;" onclick="updateTreatment()">Save Clinical Data</button>
@@ -140,7 +151,7 @@
 <div id="printSection"></div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxbRYLjR310D-MnDEWNBaKozTl8718oXK02RRy5JmhzoW5uMUKY1ZBuqCERW0Hja3vL/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbxbRYLjR310D-MnDEWNBaKozTl8718oXK02RRy5JmhzoW5uMUKY1ZBaqCERW0Hja3vL/exec";
     
     const labTests = [
         {n: "CBP", p: 250}, {n: "ESR", p: 100}, {n: "M.P", p: 250}, {n: "WIDAL", p: 250}, 
@@ -305,16 +316,16 @@
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:4px solid #1b5e20; padding-bottom:12px; margin-bottom:15px; background:white;">
                 <img src="logo.jpg" style="width:90px; height:90px; object-fit:contain;">
                 <div style="text-align:center; flex:1; padding:0 10px;">
-                    <h1 style="color:#c62828; margin:0; font-size:24px; font-weight:900;">SRI RAJA RAJESHWARI HOSPITAL</h1>
-                    <p style="margin:4px 0; font-weight:bold; font-size:13px;">Suraram colony NTR road, opp: Ramaleela maidanam, Telangana 500055</p>
+                    <h1 style="color:#c62828; margin:0; font-size:22px; font-weight:900; white-space:nowrap;">SRI RAJA RAJESHWARI HOSPITAL</h1>
+                    <p style="margin:4px 0; font-weight:bold; font-size:12px;">Suraram colony NTR road, opp: Ramaleela maidanam, Telangana 500055</p>
                 </div>
-                <div style="text-align:right; border:2.5px solid #000; padding:6px 12px; background:#fffde7; border-radius:5px; min-width:220px;">
+                <div style="text-align:right; border:2px solid #000; padding:10px; background:#fffde7; border-radius:5px; min-width:250px; line-height:1.2;">
                     <b style="font-size:16px;">DR. M. JAYACHANDER</b>
-                    <span style="font-size:12px; font-weight:bold;">MBBS, MD (General Medicine)</span>
-                    <span style="font-size:12px; font-weight:bold; color:#c62828; border-top:1.5px solid #000; margin-top:3px;">REG NO: TSMC/FMR/43070</span>
+                    <span style="font-size:12px; font-weight:bold; display:block;">MBBS, MD (General Medicine)</span>
+                    <span style="font-size:12px; font-weight:bold; color:#c62828; border-top:1.5px solid #000; margin-top:4px; display:block; padding-top:2px;">REG NO: TSMC/FMR/43070</span>
                 </div>
             </div>
-            <div style="border:1.5px solid #ddd; padding:12px; margin-bottom:15px; display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:14px; line-height:1.6;">
+            <div style="border:1.5px solid #ddd; padding:10px; margin-bottom:15px; display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:13px; line-height:1.5;">
                 <div><b>OPD NO:</b> ${p.opd_no} | <b>DATE:</b> ${p.date}</div>
                 <div><b>NAME:</b> ${p.name} | <b>AGE/SEX:</b> ${p.age} / ${p.sex}</div>
                 <div><b>VILLAGE:</b> ${p.village} | <b>WEIGHT:</b> ${p.weight || '-'} kg</div>
@@ -325,22 +336,20 @@
 
     function getPrintFooter() {
         return `
-            <div style="margin-top:auto; padding-top:20px;">
-                <div style="text-align:right; margin-bottom:20px; padding-right:10px;">
+            <div style="margin-top:auto; width:100%;">
+                <div style="text-align:right; margin-bottom:25px; padding-right:15px;">
                     <br><br>
-                    <b style="font-size:16px; border-top:1px solid #000; padding-top:5px;">DR. M. JAYACHANDER</b><br>
+                    <b style="font-size:15px; border-top:1px solid #000; padding-top:5px;">DR. M. JAYACHANDER</b><br>
                     <small>MBBS, M.D. (GENERAL MEDICINE)</small>
                 </div>
-                <div style="border-top:1px solid #ddd; padding-top:8px; margin-bottom:10px;">
+                <div style="border-top:1px solid #ddd; padding-top:5px; margin-bottom:10px;">
                    <div style="font-size:10px; font-weight:bold; color:#666;">(NOTE: Not valid for medico legal purpose)</div>
                    <div style="font-size:11px; font-weight:bold; line-height:1.4; margin-top:5px;">
                        మా ప్రత్యేక సేవలు: బిపి షుగర్ గుండె వ్యాధులు కాలేవ్యాధులు (జాండీస్) కిడ్నీ సమస్యలు నరాల వ్యాధులు (పక్షవాతం) వైరల్ ఫీవర్ వ్యాధులు జీర్ణకోశ వ్యాధులు (అల్సర్) ఊరితిత్తుల వ్యాధులు థైరాయిడ్ మరియు ఫిట్స్ చూడబడును
                    </div>
                 </div>
-                <div style="border-top:3px solid #1b5e20; padding:10px; display:flex; align-items:center; justify-content:space-between;">
-                    <div style="text-align:center; flex:1;">
-                        <h2 style="margin:0; color:#c62828; font-size:18px; font-weight:900;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</h2>
-                    </div>
+                <div style="border-top:3px solid #1b5e20; padding:10px; text-align:center;">
+                    <h2 style="margin:0; color:#c62828; font-size:18px; font-weight:900;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</h2>
                 </div>
             </div>
         `;
@@ -349,11 +358,9 @@
     function printRegistration(opd) {
         const p = patients.find(x => x.opd_no == opd);
         const html = `
-            <div style="padding:30px 50px; min-height:1000px; display:flex; flex-direction:column; background:white;">
+            <div id="printSection">
                 ${getPrintHeader(p)}
-                <div style="flex:1;">
-                    <h3 style="border-bottom:1px solid #ddd; padding-bottom:5px;">Case Record</h3>
-                </div>
+                <div style="flex:1;"></div>
                 ${getPrintFooter()}
             </div>`;
         doPrint(html);
@@ -364,11 +371,11 @@
         let total = 0;
         const rows = selectedLab.map((t, i) => { total += t.p; return `<tr><td>${i+1}</td><td>${t.n}</td><td style="text-align:right;">₹${t.p}</td></tr>`; }).join('');
         const html = `
-            <div style="padding:30px 50px; min-height:1000px; display:flex; flex-direction:column; background:white;">
+            <div id="printSection">
                 ${getPrintHeader(p)}
                 <div style="flex:1;">
-                    <h2 style="text-align:center; border-bottom:2px solid #ddd; padding-bottom:10px;">LAB INVESTIGATION BILL</h2>
-                    <table class="print-table" style="width:100%; border-collapse:collapse; margin-top:15px;">
+                    <h2 style="text-align:center; border-bottom:2px solid #ddd; padding-bottom:8px; margin-bottom:15px;">LAB INVESTIGATION BILL</h2>
+                    <table class="print-table" style="width:100%; border-collapse:collapse;">
                         <thead style="background:#f9f9f9;"><tr><th>#</th><th>Test Name</th><th style="text-align:right;">Price</th></tr></thead>
                         <tbody>${rows}</tbody>
                         <tfoot style="font-weight:bold; background:#f9f9f9;">
@@ -392,17 +399,17 @@
         const drugRows = drugs.map(d => `<tr><td><b>${d.n}</b></td><td style="text-align:center;">${d.r}</td><td style="text-align:center;">${d.d}</td><td>${d.rem}</td></tr>`).join('');
         
         const html = `
-            <div style="padding:30px 50px; min-height:1000px; display:flex; flex-direction:column; background:white;">
+            <div id="printSection">
                 ${getPrintHeader(p)}
                 <div style="flex:1;">
-                    <div style="margin-bottom:10px;"><b>Complaints:</b> ${document.getElementById('mComp').value || '-'}</div>
-                    <div style="margin-bottom:15px;"><b>Investigations:</b> ${document.getElementById('mInv').value || '-'}</div>
-                    <h3 style="border-bottom:1.5px solid #ddd; margin-bottom:10px; font-size:16px;">Rx (Medications)</h3>
+                    <div style="margin-bottom:8px;"><b>Complaints:</b> ${document.getElementById('mComp').value || '-'}</div>
+                    <div style="margin-bottom:10px;"><b>Investigations:</b> ${document.getElementById('mInv').value || '-'}</div>
+                    <h3 style="border-bottom:1.5px solid #ddd; margin-bottom:10px; font-size:15px;">Rx (Medications)</h3>
                     <table class="print-table" style="width:100%; border-collapse:collapse;">
                         <thead style="background:#f9f9f9;"><tr><th style="text-align:left;">Medicine Name</th><th>Frequency</th><th>Days</th><th style="text-align:left;">Advice</th></tr></thead>
                         <tbody>${drugRows}</tbody>
                     </table>
-                    <div style="margin-top:20px;"><b>Advice:</b> ${document.getElementById('mNotes').value || '-'}</div>
+                    <div style="margin-top:15px;"><b>Advice:</b> ${document.getElementById('mNotes').value || '-'}</div>
                 </div>
                 ${getPrintFooter()}
             </div>`;
