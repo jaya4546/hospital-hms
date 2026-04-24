@@ -9,7 +9,7 @@
         body { font-family: 'Calibri', sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 12pt; color: #000; }
         .container { max-width: 1150px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        /* UI Styles - Reverted to Original */
+        /* UI Styles */
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
         .center-side { text-align: center; flex: 2; }
         .center-side h1 { color: var(--accent); margin: 0; font-size: 28px; font-weight: bold; text-transform: uppercase; white-space: nowrap; }
@@ -21,7 +21,6 @@
         .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
         .btn-reg { background: var(--primary); color: white; width: 100%; font-size: 14pt; }
         
-        /* Modals - Reverted to Original Bold Buttons */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); overflow-y: auto; }
         .modal-content { background: white; margin: 2% auto; padding: 25px; width: 95%; max-width: 950px; border-radius: 10px; }
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
@@ -36,7 +35,7 @@
         th { background: #263238; color: white; padding: 12px; text-align: left; }
         td { padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; }
 
-        /* --- FINAL PRINT CORRECTION --- */
+        /* --- PRINT RECTIFICATION --- */
         #printArea { display: none; }
         @media print {
             body * { visibility: hidden; }
@@ -45,21 +44,27 @@
             
             .print-page { 
                 page-break-after: always; 
-                height: 297mm; /* Full A4 Height */
-                display: flex; 
-                flex-direction: column; 
-                padding: 1cm; 
-                box-sizing: border-box; 
-                background: white; 
+                position: relative;
+                min-height: 98vh; /* Uses viewport height to ensure footer stays down */
+                padding: 0.5cm;
+                box-sizing: border-box;
             }
-            .print-content-body { flex-grow: 1; } /* This pushes the footer to the bottom */
-            
-            .watermark { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); opacity: 0.07; width: 500px; z-index: -1; }
+
+            /* FORCE FOOTER TO ABSOLUTE BOTTOM OF PRINTED PAGE */
+            .print-footer-container { 
+                position: absolute; 
+                bottom: 10px; 
+                left: 0; 
+                width: 100%; 
+                padding: 0 0.5cm;
+                box-sizing: border-box;
+            }
+
+            .watermark { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); opacity: 0.07; width: 500px; z-index: -1; }
             .print-text-wrap { white-space: pre-wrap; font-weight: bold; display: block; font-size: 16pt; margin-top: 5px; }
-            @page { margin: 0; size: A4; }
+            @page { margin: 0.5cm; }
         }
 
-        /* Header & Data Reverted to Original Style */
         .print-header { display: flex; align-items: center; border-bottom: 5px solid #1b5e20; padding-bottom: 10px; margin-bottom: 20px; }
         .print-hospital-name { text-align: center; flex: 1; }
         .print-hospital-name h1 { color: #c62828; margin: 0; font-size: 34pt; text-transform: uppercase; white-space: nowrap; font-weight: 900; }
@@ -72,18 +77,16 @@
         .med-print-table th { background: #333 !important; color: #fff !important; padding: 10px; border: 1px solid #000; font-size: 16pt; -webkit-print-color-adjust: exact; }
         .med-print-table td { padding: 10px; border: 1px solid #000; font-size: 16pt; font-weight: bold; }
 
-        /* FOOTER & SIGNATURE FIXED TO BOTTOM */
-        .print-footer-container { margin-top: auto; width: 100%; }
         .signature-right { text-align: right; padding-right: 20px; margin-bottom: 5px; }
-        .full-width-line { border-top: 3px solid #000; width: 100%; margin-bottom: 15px; }
+        .full-width-line { border-top: 3px solid #000; width: 100%; margin-bottom: 10px; }
         
-        .med-legal-note { font-size: 13pt; font-weight: 900; color: #000; text-align: center; margin-bottom: 5px; text-decoration: underline; }
-        .telugu-file-note { font-size: 14pt; color: #c62828; font-weight: bold; text-align: center; margin-bottom: 8px; }
-        .telugu-services { font-size: 12.5pt; color: #1b5e20; font-weight: bold; text-align: center; margin-bottom: 12px; line-height: 1.5; padding: 0 10px; }
+        .med-legal-note { font-size: 12pt; font-weight: 900; color: #000; text-align: center; margin-bottom: 3px; text-decoration: underline; }
+        .telugu-file-note { font-size: 13pt; color: #c62828; font-weight: bold; text-align: center; margin-bottom: 5px; }
+        .telugu-services { font-size: 11pt; color: #1b5e20; font-weight: bold; text-align: center; margin-bottom: 10px; line-height: 1.4; }
         
         .footer-banner-container { display: flex; align-items: center; justify-content: center; gap: 20px; }
-        .footer-banner { background: linear-gradient(to right, #0d47a1, #1976d2) !important; color: white !important; padding: 15px; flex: 1; text-align: center; font-weight: bold; font-size: 16pt; -webkit-print-color-adjust: exact; border-radius: 10px; }
-        .footer-ai-img { width: 60px; height: 60px; }
+        .footer-banner { background: #1976d2 !important; color: white !important; padding: 12px; flex: 1; text-align: center; font-weight: bold; font-size: 15pt; -webkit-print-color-adjust: exact; border-radius: 8px; }
+        .footer-ai-img { width: 50px; height: 50px; }
     </style>
 </head>
 <body>
@@ -246,15 +249,8 @@
             document.getElementById('printArea').innerHTML = getFullPageSetup(info);
         } else {
             const meds = JSON.parse(selectedP.medications || "[]");
-            const first8 = meds.slice(0, 8);
-            const remaining = meds.slice(8);
-            let p1 = info + `<p><b>Complaints:</b> <span class="print-text-wrap">${selectedP.complaints || '---'}</span></p><p><b>Investigations:</b> <span class="print-text-wrap">${selectedP.investigations || '---'}</span></p><h3 style="border-bottom:2px solid #000; font-size:18pt;">Rx (Medications)</h3><table class="med-print-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${first8.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody></table>${remaining.length === 0 ? `<p><b>Notes:</b> <span class="print-text-wrap">${selectedP.notes || '---'}</span></p>` : ''}`;
-            let finalHtml = getFullPageSetup(p1);
-            if(remaining.length > 0) {
-                let p2 = info + `<h3 style="border-bottom:2px solid #000; font-size:18pt;">Rx (Continued)</h3><table class="med-print-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${remaining.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody></table><p><b>Notes:</b> <span class="print-text-wrap">${selectedP.notes || '---'}</span></p>`;
-                finalHtml += getFullPageSetup(p2);
-            }
-            document.getElementById('printArea').innerHTML = finalHtml;
+            let p1 = info + `<p><b>Complaints:</b> <span class="print-text-wrap">${selectedP.complaints || '---'}</span></p><p><b>Investigations:</b> <span class="print-text-wrap">${selectedP.investigations || '---'}</span></p><h3 style="border-bottom:2px solid #000; font-size:18pt;">Rx (Medications)</h3><table class="med-print-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${meds.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody></table><p><b>Notes:</b> <span class="print-text-wrap">${selectedP.notes || '---'}</span></p>`;
+            document.getElementById('printArea').innerHTML = getFullPageSetup(p1);
         }
         window.print();
     }
