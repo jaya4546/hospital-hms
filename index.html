@@ -37,8 +37,6 @@
             .print-page { page-break-after: always; min-height: 100vh; position: relative; padding: 0.5cm; box-sizing: border-box; overflow: hidden; }
             .print-page:last-child { page-break-after: auto; }
             @page { margin: 0; }
-            
-            /* Watermark Logic */
             .watermark { 
                 position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); 
                 opacity: 0.1; width: 400px; z-index: -1; pointer-events: none; 
@@ -56,7 +54,7 @@
         .print-doc-degree { font-size: 11pt; font-weight: bold; }
         .print-doc-reg { color: #c62828; font-size: 10pt; font-weight: bold; }
 
-        .print-data-box { border: 1px solid #000; padding: 8px; font-size: 11pt; position: relative; background: rgba(255,255,255,0); }
+        .print-data-box { border: 1px solid #000; padding: 8px; font-size: 11pt; position: relative; }
         .print-vitals-box { border: 1px solid #000; border-top: none; padding: 8px; background: #f9f9f9; display: flex; justify-content: space-between; font-size: 11pt; -webkit-print-color-adjust: exact; }
 
         .print-footer { position: absolute; bottom: 0.5cm; left: 0.5cm; right: 0.5cm; text-align: center; }
@@ -88,6 +86,7 @@
         <input type="text" id="p_name" placeholder="Patient Name">
         <input type="number" id="p_age" placeholder="Age">
         <select id="p_sex"><option>Male</option><option>Female</option></select>
+        <input type="text" id="p_phone" placeholder="Phone Number">
         <input type="text" id="p_addr" placeholder="Address">
         <input type="text" id="p_weight" placeholder="Weight">
         <input type="text" id="p_bp" placeholder="BP">
@@ -168,7 +167,7 @@
     function closeModal() { document.getElementById('actionModal').style.display = "none"; }
 
     function openEdit() {
-        ['name','age','sex','address','weight','bp','pr','spo2','temp'].forEach(k => {
+        ['name','age','sex','phone','address','weight','bp','pr','spo2','temp'].forEach(k => {
             document.getElementById('p_'+k).value = selectedP[k] || "";
         });
         document.getElementById('submitBtn').innerText = "UPDATE DETAILS";
@@ -239,7 +238,8 @@
                 <table style="width:100%;">
                     <tr><td><b>OPD ID:</b> ${selectedP.opd_number}</td><td style="text-align:right;"><b>Date:</b> ${new Date().toLocaleDateString()}</td></tr>
                     <tr><td colspan="2"><b>Name:</b> <span style="text-transform:uppercase; font-size:13pt;">${selectedP.name}</span></td></tr>
-                    <tr><td><b>Age:</b> ${selectedP.age} | <b>Sex:</b> ${selectedP.sex}</td><td style="text-align:right;"><b>Address:</b> ${selectedP.address}</td></tr>
+                    <tr><td><b>Age/Sex:</b> ${selectedP.age} / ${selectedP.sex}</td><td style="text-align:right;"><b>Phone:</b> ${selectedP.phone || 'N/A'}</td></tr>
+                    <tr><td colspan="2"><b>Address:</b> ${selectedP.address}</td></tr>
                 </table>
             </div>
             <div class="print-vitals-box">
@@ -267,7 +267,6 @@
 
         pagesHtml += `<div class="print-page">${getFullHeaderFooter()}${p1Content}</div>`;
 
-        // PAGE 2+ (Pagination)
         if (type === 'PRESCRIPTION' && meds.length > 6) {
             const remainingMeds = meds.slice(6);
             pagesHtml += `<div class="print-page">${getFullHeaderFooter()}
@@ -290,7 +289,20 @@
     }
 
     async function savePatient(type) {
-        const data = { type: type, opd: type === 'REGISTRATION' ? "SRR-"+Date.now().toString().slice(-4) : selectedP.opd_number, name: document.getElementById('p_name').value, age: document.getElementById('p_age').value, sex: document.getElementById('p_sex').value, address: document.getElementById('p_addr').value, weight: document.getElementById('p_weight').value, bp: document.getElementById('p_bp').value, pr: document.getElementById('p_pr').value, spo2: document.getElementById('p_spo2').value, temp: document.getElementById('p_temp').value };
+        const data = { 
+            type: type, 
+            opd: type === 'REGISTRATION' ? "SRR-"+Date.now().toString().slice(-4) : selectedP.opd_number, 
+            name: document.getElementById('p_name').value, 
+            age: document.getElementById('p_age').value, 
+            sex: document.getElementById('p_sex').value, 
+            phone: document.getElementById('p_phone').value,
+            address: document.getElementById('p_addr').value, 
+            weight: document.getElementById('p_weight').value, 
+            bp: document.getElementById('p_bp').value, 
+            pr: document.getElementById('p_pr').value, 
+            spo2: document.getElementById('p_spo2').value, 
+            temp: document.getElementById('p_temp').value 
+        };
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
         alert("Success!"); location.reload();
     }
