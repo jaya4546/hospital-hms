@@ -45,15 +45,15 @@
             .print-page { 
                 page-break-after: always; 
                 position: relative;
-                min-height: 98vh; /* Uses viewport height to ensure footer stays down */
+                height: 295mm; /* Locked to A4 Height for multi-page alignment */
                 padding: 0.5cm;
                 box-sizing: border-box;
+                background: white;
             }
 
-            /* FORCE FOOTER TO ABSOLUTE BOTTOM OF PRINTED PAGE */
             .print-footer-container { 
                 position: absolute; 
-                bottom: 10px; 
+                bottom: 15px; 
                 left: 0; 
                 width: 100%; 
                 padding: 0 0.5cm;
@@ -62,7 +62,7 @@
 
             .watermark { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); opacity: 0.07; width: 500px; z-index: -1; }
             .print-text-wrap { white-space: pre-wrap; font-weight: bold; display: block; font-size: 16pt; margin-top: 5px; }
-            @page { margin: 0.5cm; }
+            @page { margin: 0; size: A4; }
         }
 
         .print-header { display: flex; align-items: center; border-bottom: 5px solid #1b5e20; padding-bottom: 10px; margin-bottom: 20px; }
@@ -117,9 +117,7 @@
         <input type="text" id="p_temp" placeholder="Temp">
     </div>
     <button class="btn btn-reg" id="submitBtn" onclick="savePatient('REGISTRATION')">Register Patient</button>
-
     <input type="text" id="pSearch" style="width:100%; margin-top:20px; padding:15px;" placeholder="🔍 Search Patient Name..." onkeyup="filterTable()">
-
     <table>
         <thead><tr><th>OPD ID</th><th>Name</th><th>Action</th></tr></thead>
         <tbody id="tbody"></tbody>
@@ -245,12 +243,43 @@
 
     function generatePrint(type) {
         const info = `<div class="print-data-box"><div>OPD ID: ${selectedP.opd_number}<br><br>Name: <span style="font-size:22pt; text-transform:uppercase;">${selectedP.name}</span><br><br>Phone: ${selectedP.phone || 'N/A'}</div><div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br><br>Age / Sex: ${selectedP.age} / ${selectedP.sex}<br><br>Address: ${selectedP.address}</div></div><div class="print-vitals-box"><span>Weight: ${selectedP.weight}kg</span><span>BP: ${selectedP.bp}</span><span>Pulse: ${selectedP.pr}</span><span>SpO2: ${selectedP.spo2}%</span><span>Temp: ${selectedP.temp}°F</span></div>`;
+        
         if (type === 'REGISTRATION') {
             document.getElementById('printArea').innerHTML = getFullPageSetup(info);
         } else {
             const meds = JSON.parse(selectedP.medications || "[]");
-            let p1 = info + `<p><b>Complaints:</b> <span class="print-text-wrap">${selectedP.complaints || '---'}</span></p><p><b>Investigations:</b> <span class="print-text-wrap">${selectedP.investigations || '---'}</span></p><h3 style="border-bottom:2px solid #000; font-size:18pt;">Rx (Medications)</h3><table class="med-print-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${meds.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody></table><p><b>Notes:</b> <span class="print-text-wrap">${selectedP.notes || '---'}</span></p>`;
-            document.getElementById('printArea').innerHTML = getFullPageSetup(p1);
+            
+            // PAGE 1: Contains Patient Info, Vitals, History, and First 6 Drugs
+            const first6 = meds.slice(0, 6);
+            const remaining = meds.slice(6);
+
+            let page1Content = info + `
+                <p><b>Complaints:</b> <span class="print-text-wrap">${selectedP.complaints || '---'}</span></p>
+                <p><b>Investigations:</b> <span class="print-text-wrap">${selectedP.investigations || '---'}</span></p>
+                <h3 style="border-bottom:2px solid #000; font-size:18pt; margin-top:10px;">Rx (Medications)</h3>
+                <table class="med-print-table">
+                    <thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead>
+                    <tbody>${first6.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody>
+                </table>
+                ${remaining.length === 0 ? `<p style="margin-top:20px;"><b>Notes:</b> <span class="print-text-wrap">${selectedP.notes || '---'}</span></p>` : ''}
+            `;
+
+            let finalHtml = getFullPageSetup(page1Content);
+
+            // PAGE 2 (If needed): Contains Patient Info and Remaining Drugs Only
+            if (remaining.length > 0) {
+                let page2Content = info + `
+                    <h3 style="border-bottom:2px solid #000; font-size:18pt; margin-top:15px;">Rx (Continued)</h3>
+                    <table class="med-print-table">
+                        <thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead>
+                        <tbody>${remaining.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody>
+                    </table>
+                    <p style="margin-top:20px;"><b>Notes:</b> <span class="print-text-wrap">${selectedP.notes || '---'}</span></p>
+                `;
+                finalHtml += getFullPageSetup(page2Content);
+            }
+
+            document.getElementById('printArea').innerHTML = finalHtml;
         }
         window.print();
     }
