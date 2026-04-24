@@ -42,22 +42,25 @@
             #printArea, #printArea * { visibility: visible; }
             #printArea { display: block; position: absolute; left: 0; top: 0; width: 100%; }
             
+            /* FORCE FOOTER TO BOTTOM USING FLEXBOX */
             .print-page { 
                 page-break-after: always; 
-                position: relative;
-                height: 295mm; /* Locked to A4 Height for multi-page alignment */
-                padding: 0.5cm;
+                height: 295mm; /* Physical A4 height limit */
+                display: flex;
+                flex-direction: column;
+                padding: 1cm;
                 box-sizing: border-box;
                 background: white;
             }
 
+            .print-main-body { 
+                flex-grow: 1; /* This pushes the footer down to the bottom */
+            }
+
             .print-footer-container { 
-                position: absolute; 
-                bottom: 15px; 
-                left: 0; 
                 width: 100%; 
-                padding: 0 0.5cm;
-                box-sizing: border-box;
+                margin-top: auto; /* Acts as a secondary push to bottom */
+                padding-bottom: 10px;
             }
 
             .watermark { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); opacity: 0.07; width: 500px; z-index: -1; }
@@ -220,7 +223,7 @@
                     <div style="color:#c62828; font-size:13pt; font-weight:bold;">Reg No: TSMC/FMR/43070</div>
                 </div>
             </div>
-            <div class="print-content-body">
+            <div class="print-main-body">
                 ${pContent}
             </div>
             <div class="print-footer-container">
@@ -248,8 +251,6 @@
             document.getElementById('printArea').innerHTML = getFullPageSetup(info);
         } else {
             const meds = JSON.parse(selectedP.medications || "[]");
-            
-            // PAGE 1: Contains Patient Info, Vitals, History, and First 6 Drugs
             const first6 = meds.slice(0, 6);
             const remaining = meds.slice(6);
 
@@ -266,7 +267,6 @@
 
             let finalHtml = getFullPageSetup(page1Content);
 
-            // PAGE 2 (If needed): Contains Patient Info and Remaining Drugs Only
             if (remaining.length > 0) {
                 let page2Content = info + `
                     <h3 style="border-bottom:2px solid #000; font-size:18pt; margin-top:15px;">Rx (Continued)</h3>
@@ -278,7 +278,6 @@
                 `;
                 finalHtml += getFullPageSetup(page2Content);
             }
-
             document.getElementById('printArea').innerHTML = finalHtml;
         }
         window.print();
