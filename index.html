@@ -9,7 +9,7 @@
         body { font-family: 'Calibri', sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 12pt; color: #000; }
         .container { max-width: 1150px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        /* UI Header - Hospital Name on One Line */
+        /* UI Header */
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
         .center-side { text-align: center; flex: 2; padding: 0 10px; }
         .center-side h1 { color: var(--accent); margin: 0; font-size: 28px; font-weight: bold; text-transform: uppercase; white-space: nowrap; }
@@ -21,32 +21,31 @@
         .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-family: 'Calibri'; }
         .btn-reg { background: var(--primary); color: white; width: 100%; font-size: 14pt; }
         
-        /* Modal Styles */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); overflow-y: auto; }
         .modal-content { background: white; margin: 2% auto; padding: 25px; width: 95%; max-width: 950px; border-radius: 10px; }
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
         .menu-btn { padding: 20px; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12pt; }
         
-        /* Medication Table - Dark Borders for Visibility */
+        /* Medication Table Styling */
         .med-table { width: 100%; border-collapse: collapse; margin: 10px 0; border: 2px solid #000; }
         .med-table th { background: #333; color: #fff; padding: 8px; border: 1px solid #000; font-size: 11pt; }
         .med-table td { padding: 5px; border: 1px solid #000; background: #fff; }
-        .med-table input { border: none; font-weight: bold; font-size: 11pt; background: transparent; width: 100%; }
+        .med-table input { border: none; font-weight: bold; font-size: 11pt; background: transparent; width: 100%; color: #000; }
         .remove-btn { color: #c62828; font-weight: bold; cursor: pointer; font-size: 20pt; text-align: center; width: 40px; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th { background: #263238; color: white; padding: 12px; text-align: left; }
         td { padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; }
 
-        /* PRINT STYLES */
+        /* PRINT LOGIC */
         #printArea { display: none; }
         @media print {
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
             #printArea { display: block; position: absolute; left: 0; top: 0; width: 100%; }
-            .print-page { page-break-after: always; min-height: 297mm; position: relative; padding: 0.8cm; box-sizing: border-box; }
+            .print-page { page-break-after: always; min-height: 297mm; position: relative; padding: 0.8cm; box-sizing: border-box; color: #000; }
             .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.08; width: 450px; z-index: -1; }
-            .print-text-wrap { white-space: pre-wrap; word-wrap: break-word; font-weight: bold; }
+            .print-text-wrap { white-space: pre-wrap; word-wrap: break-word; font-weight: bold; display: block; min-height: 1em; }
             @page { margin: 0; size: A4; }
         }
 
@@ -121,7 +120,7 @@
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
             <div>
                 <label><b>Chief Complaints:</b></label>
-                <textarea id="t_complaints" rows="3" oninput="autoSaveTreat()"></textarea>
+                <textarea id="t_complaints" rows="3" oninput="autoSaveTreat()" placeholder="Press Enter for new line..."></textarea>
             </div>
             <div>
                 <label><b>Investigations:</b></label>
@@ -153,11 +152,12 @@
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzIB9zBxrRCRDW3inSvHF_5zX9__VR-zmifZO2i2yBbJcFqEORMxmJbaKWmndBmbcda/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbyfNhispHi-YANtpsaA2ya63zV7XwO-9lOoAd6fI5iY4QXPW6jAebunJ8UYLe6qlV-V/exec";
     let patients = [], selectedP = null;
 
-    // --- Data Persistence ---
+    // Persistence: Save data to browser as user types
     function autoSaveTreat() {
+        if(!selectedP) return;
         const treatData = {
             complaints: document.getElementById('t_complaints').value,
             investigations: document.getElementById('t_investigations').value,
@@ -170,25 +170,34 @@
                 rem: tr.querySelector('.m-rem').value
             }))
         };
-        localStorage.setItem('tempTreat', JSON.stringify(treatData));
+        localStorage.setItem('tempTreat_' + selectedP.opd_number, JSON.stringify(treatData));
     }
 
     function loadSavedTreat() {
-        const saved = localStorage.getItem('tempTreat');
+        const saved = localStorage.getItem('tempTreat_' + selectedP.opd_number);
+        document.getElementById('medBody').innerHTML = "";
         if (saved) {
             const data = JSON.parse(saved);
             document.getElementById('t_complaints').value = data.complaints || "";
             document.getElementById('t_investigations').value = data.investigations || "";
             document.getElementById('t_history').value = data.history || "";
             document.getElementById('t_notes').value = data.notes || "";
-            document.getElementById('medBody').innerHTML = "";
             if(data.meds && data.meds.length > 0) {
                 data.meds.forEach(m => addMedRow(m));
             } else { addMedRow(); }
-        } else { addMedRow(); }
+        } else {
+            // If no temporary save, load from database (if available)
+            document.getElementById('t_complaints').value = selectedP.complaints || "";
+            document.getElementById('t_investigations').value = selectedP.investigations || "";
+            document.getElementById('t_history').value = selectedP.history || "";
+            document.getElementById('t_notes').value = selectedP.notes || "";
+            try {
+                const dbMeds = JSON.parse(selectedP.medications || "[]");
+                if(dbMeds.length > 0) dbMeds.forEach(m => addMedRow(m)); else addMedRow();
+            } catch(e) { addMedRow(); }
+        }
     }
 
-    // --- Core Logic ---
     function loadData() {
         const script = document.createElement('script');
         script.src = `${API_URL}?callback=handleResponse&ts=${Date.now()}`;
@@ -221,10 +230,10 @@
     function addMedRow(data = {n:'', d:'', r:'', rem:''}) {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><input type="text" class="m-name" value="${data.n}" oninput="autoSaveTreat()"></td>
-            <td><input type="text" class="m-dur" value="${data.d}" oninput="autoSaveTreat()"></td>
-            <td><input type="text" class="m-route" value="${data.r}" oninput="autoSaveTreat()"></td>
-            <td><input type="text" class="m-rem" value="${data.rem}" oninput="autoSaveTreat()"></td>
+            <td><input type="text" class="m-name" value="${data.n || ''}" oninput="autoSaveTreat()"></td>
+            <td><input type="text" class="m-dur" value="${data.d || ''}" oninput="autoSaveTreat()"></td>
+            <td><input type="text" class="m-route" value="${data.r || ''}" oninput="autoSaveTreat()"></td>
+            <td><input type="text" class="m-rem" value="${data.rem || ''}" oninput="autoSaveTreat()"></td>
             <td class="remove-btn" onclick="this.parentElement.remove(); autoSaveTreat();">×</td>
         `;
         document.getElementById('medBody').appendChild(tr);
@@ -249,8 +258,8 @@
         };
         
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-        alert("Success!");
-        localStorage.removeItem('tempTreat');
+        alert("Treatment Saved Successfully!");
+        localStorage.removeItem('tempTreat_' + selectedP.opd_number);
         location.reload();
     }
 
@@ -339,11 +348,11 @@
                 <div style="margin-top:20px; font-size:13pt;">
                     <div style="margin-bottom:10px;"><b>Chief Complaints:</b> <div class="print-text-wrap">${complaints || '---'}</div></div>
                     <div style="margin-bottom:10px;"><b>Investigations:</b> <div class="print-text-wrap">${investigations || '---'}</div></div>
-                    <div style="margin-bottom:10px;"><b>Past History:</b> <div>${history || '---'}</div></div>
+                    <div style="margin-bottom:10px;"><b>Past History:</b> <div class="print-text-wrap">${history || '---'}</div></div>
                     <h3 style="border-bottom:2px solid #000; margin-bottom:5px;">Rx (Medications)</h3>
                     <table class="med-table" style="font-size:12pt;">
                         <thead><tr style="background:#ddd !important; -webkit-print-color-adjust: exact;"><th style="color:#000;">Drug Name</th><th style="color:#000;">Duration</th><th style="color:#000;">Route</th><th style="color:#000;">Remarks</th></tr></thead>
-                        <tbody>${meds.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody>
+                        <tbody>${meds.length > 0 ? meds.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('') : '<tr><td colspan="4">---</td></tr>'}</tbody>
                     </table>
                     <div style="margin-top:15px;"><b>Notes/Advice:</b> <div class="print-text-wrap">${notes || '---'}</div></div>
                 </div>`;
