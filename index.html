@@ -6,48 +6,68 @@
     <title>SRR Hospital Management System</title>
     <style>
         :root { --primary: #1b5e20; --accent: #c62828; --bg: #f4f7f6; }
-        body { font-family: 'Calibri', sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 11pt; color: #000; }
+        body { font-family: 'Calibri', sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 12pt; color: #000; }
         .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .header { display: flex; justify-content: space-between; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
+        
+        /* UI Header */
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
         .center-side { text-align: center; flex: 1; }
-        .center-side h1 { color: var(--accent); margin: 0; font-size: 24px; text-transform: uppercase; }
-        .doc-side { border: 2px solid #000; padding: 8px; text-align: right; background: #fffde7; min-width: 260px; border-radius: 4px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-bottom: 15px; }
-        input, select { width: 100%; padding: 6px; border: 1px solid #000; border-radius: 4px; box-sizing: border-box; }
-        .btn { padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
-        .btn-reg { background: var(--primary); color: white; width: 100%; }
+        .center-side h1 { color: var(--accent); margin: 0; font-size: 28px; font-weight: bold; text-transform: uppercase; }
+        .doc-side { border: 2.5px solid #000; padding: 10px; text-align: right; background: #fffde7; min-width: 280px; border-radius: 4px; box-shadow: 3px 3px 0px #000; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #000; border-radius: 4px; font-size: 11pt; font-family: 'Calibri'; }
+        .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-family: 'Calibri'; }
+        .btn-reg { background: var(--primary); color: white; width: 100%; font-size: 14pt; }
+        
+        /* Modal Styles */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); overflow-y: auto; }
-        .modal-content { background: white; margin: 2% auto; padding: 20px; width: 90%; max-width: 800px; border-radius: 10px; }
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-        .menu-btn { padding: 18px; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 95%; max-width: 850px; border-radius: 10px; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .menu-btn { padding: 20px; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12pt; }
+        
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { background: #263238; color: white; padding: 10px; text-align: left; }
-        td { padding: 8px; border-bottom: 1px solid #eee; }
+        th { background: #263238; color: white; padding: 12px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; }
 
+        /* PRINT STYLES - RESTORED FULL LOGIC */
         #printArea { display: none; }
         @media print {
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
-            #printArea { display: block; position: absolute; left: 0; top: 0; width: 100%; }
-            .print-page { padding: 0.5cm; position: relative; }
-            .watermark { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); opacity: 0.1; width: 400px; z-index: -1; }
+            #printArea { display: block; position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+            .print-page { page-break-after: always; min-height: 100vh; position: relative; padding: 0.8cm; box-sizing: border-box; }
+            .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.08; width: 450px; z-index: -1; pointer-events: none; }
             @page { margin: 0; }
         }
-        .print-data-box { border: 1px solid #000; padding: 8px; margin-top: 10px; }
-        .print-data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .print-vitals-box { border: 1px solid #000; border-top: none; padding: 8px; display: flex; justify-content: space-between; font-weight: bold; }
+
+        .print-header { display: flex; align-items: center; border-bottom: 4px solid #1b5e20; padding-bottom: 8px; margin-bottom: 15px; width: 100%; }
+        .print-hospital-name { text-align: center; flex: 1; }
+        .print-hospital-name h1 { color: #c62828; margin: 0; font-size: 32pt; text-transform: uppercase; letter-spacing: -1px; }
+        .print-doc-box { border: 2px solid #000; padding: 10px; text-align: right; min-width: 280px; border-radius: 6px; line-height: 1.2; }
+        
+        .print-data-box { border: 1.5px solid #000; padding: 12px; font-size: 13pt; margin-top: 10px; }
+        .print-data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .print-vitals-box { border: 1.5px solid #000; border-top: none; padding: 12px; background: #f2f2f2 !important; display: flex; justify-content: space-between; font-size: 13pt; -webkit-print-color-adjust: exact; }
+
+        .print-footer { position: absolute; bottom: 0.8cm; left: 0.8cm; right: 0.8cm; text-align: center; }
+        .footer-banner { background: #1565c0 !important; color: white !important; padding: 12px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 16pt; -webkit-print-color-adjust: exact; border-radius: 8px; }
+        .footer-icon { width: 50px; height: 50px; background: white; border-radius: 50%; padding: 4px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <img src="logo.jpg" style="width:85px">
+        <img src="logo.jpg" style="width:90px">
         <div class="center-side">
             <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
-            <p style="font-size:10px; font-weight:bold;">SURARAM COLONY, HYDERABAD 500055</p>
+            <p style="font-size:11px; font-weight:bold;">SURARAM COLONY 1ST OM JANDA NTR ROAD OPP: RAMALEELA MAIDANAM TG 500055</p>
         </div>
-        <div class="doc-side"><b>DR. M. JAYACHANDER</b><br><span>MBBS, M.D. (GENERAL MEDICINE)</span></div>
+        <div class="doc-side">
+            <b style="font-size: 18px;">DR. M. JAYACHANDER</b><br>
+            <span style="font-size: 14px;">MBBS, M.D. (GENERAL MEDICINE)</span>
+        </div>
     </div>
 
     <div class="grid">
@@ -64,7 +84,7 @@
     </div>
     <button class="btn btn-reg" id="submitBtn" onclick="savePatient('REGISTRATION')">Register Patient</button>
 
-    <input type="text" id="pSearch" style="width:100%; margin-top:20px; padding:12px; border:2px solid var(--primary);" placeholder="🔍 Search Patient..." onkeyup="filterTable()">
+    <input type="text" id="pSearch" style="width:100%; margin-top:20px; padding:15px; border:3px solid var(--primary); border-radius: 8px;" placeholder="🔍 Search Patient Name..." onkeyup="filterTable()">
 
     <table>
         <thead><tr><th>OPD ID</th><th>Name</th><th>Action</th></tr></thead>
@@ -76,13 +96,13 @@
 
 <div id="actionModal" class="modal">
     <div class="modal-content">
-        <h2 id="menuPatientName"></h2>
+        <h2 id="menuPatientName" style="color: var(--primary); border-bottom: 2px solid #ccc; padding-bottom: 10px;"></h2>
         <div class="menu-grid">
             <button class="menu-btn" style="background:#1565c0;" onclick="openEdit()">EDIT DETAILS</button>
             <button class="menu-btn" style="background:#2e7d32;" onclick="generatePrint('PRESCRIPTION')">PRINT PRESCRIPTION</button>
             <button class="menu-btn" style="background:#c62828;" onclick="generatePrint('REGISTRATION')">PRINT REGISTRATION</button>
         </div>
-        <button class="btn" style="width:100%; margin-top:15px; background:#ddd;" onclick="resetForm()">Close</button>
+        <button class="btn" style="width:100%; margin-top:20px; background:#666; color: white;" onclick="resetForm()">Close</button>
     </div>
 </div>
 
@@ -100,20 +120,21 @@
 
     function renderTable(list) {
         document.getElementById('tbody').innerHTML = list.map(p => `
-            <tr><td><b>${p.opd_number}</b></td><td>${p.name}</td>
-            <td><button onclick="openMenu('${p.opd_number}')">Select</button></td></tr>
+            <tr><td><b style="color:var(--accent);">${p.opd_number}</b></td><td>${p.name}</td>
+            <td><button class="btn" style="background:var(--primary); color:white; padding:5px 15px;" onclick="openMenu('${p.opd_number}')">Select</button></td></tr>
         `).reverse().join('');
     }
 
     function openMenu(id) {
         selectedP = patients.find(p => p.opd_number === id);
-        document.getElementById('menuPatientName').innerText = selectedP.name;
+        document.getElementById('menuPatientName').innerText = "Patient: " + selectedP.name;
         document.getElementById('actionModal').style.display = "block";
     }
 
     function resetForm() {
         ['name','age','sex','phone','address','weight','bp','pr','spo2','temp'].forEach(k => {
-            document.getElementById('p_'+k).value = (k==='sex'?'Male':'');
+            const el = document.getElementById('p_'+k);
+            if(el) el.value = (k==='sex'?'Male':'');
         });
         document.getElementById('submitBtn').innerText = "Register Patient";
         document.getElementById('submitBtn').onclick = () => savePatient('REGISTRATION');
@@ -122,7 +143,8 @@
 
     function openEdit() {
         ['name','age','sex','phone','address','weight','bp','pr','spo2','temp'].forEach(k => {
-            document.getElementById('p_'+k).value = selectedP[k] || "";
+            const el = document.getElementById('p_'+k);
+            if(el) el.value = selectedP[k] || "";
         });
         document.getElementById('submitBtn').innerText = "UPDATE DETAILS";
         document.getElementById('submitBtn').onclick = () => savePatient('UPDATE_DETAILS');
@@ -146,40 +168,59 @@
             temp: document.getElementById('p_temp').value 
         };
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-        alert("Action Successful!"); resetForm(); location.reload();
+        alert("Success!"); resetForm(); location.reload();
     }
 
+    const getFullHeaderFooter = () => `
+        <img src="logo.jpg" class="watermark">
+        <div class="print-header">
+            <img src="logo.jpg" style="width:85px;">
+            <div class="print-hospital-name">
+                <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
+                <p style="font-size:10pt; font-weight:bold; margin-top:5px;">SURARAM COLONY 1ST OM JANDA NTR ROAD OPP: RAMALEELA MAIDANAM TG 500055</p>
+            </div>
+            <div class="print-doc-box">
+                <div style="font-size:20pt; font-weight:bold;">DR. M. JAYACHANDER</div>
+                <div style="font-size:13pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
+                <div style="color:#c62828; font-size:12pt; font-weight:bold;">Reg No: TSMC/FMR/43070</div>
+            </div>
+        </div>
+        <div class="print-footer">
+            <div style="text-align:right; margin-bottom:30px; font-weight:bold; font-size:14pt;">DR. M. JAYACHANDER<br><span style="font-size:11pt;">MBBS, M.D. (GENERAL MEDICINE)</span></div>
+            <div style="font-size:12pt; color:#1b5e20; font-weight:bold; border-top:2px dashed #ccc; padding-top:8px; margin-bottom:10px;">మా ప్రత్యేక సేవలు: బిపి షుగర్ గుండె వ్యాధులు కాలేవ్యాధులు కిడ్నీ సమస్యలు పక్షవాతం థైరాయిడ్ చూడబడును</div>
+            <div class="footer-banner">
+                <img src="https://cdn-icons-png.flaticon.com/512/3028/3028573.png" class="footer-icon">
+                <span>SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</span>
+                <img src="https://cdn-icons-png.flaticon.com/512/822/822143.png" class="footer-icon">
+            </div>
+        </div>
+    `;
+
     function generatePrint(type) {
-        const content = `
-            <div class="print-page">
-                <img src="logo.jpg" class="watermark">
-                <div class="print-header">
-                    <img src="logo.jpg" style="width:70px;">
-                    <div style="flex:1; text-align:center;">
-                        <h1 style="color:#c62828; margin:0; font-size:22pt;">SRI RAJA RAJESHWARI HOSPITAL</h1>
-                        <p style="margin:0; font-size:9pt; font-weight:bold;">HYDERABAD - 500055</p>
+        let pContent = `
+            <div class="print-data-box">
+                <div class="print-data-grid">
+                    <div>
+                        <b>OPD ID:</b> ${selectedP.opd_number}<br><br>
+                        <b>Name:</b> <span style="text-transform:uppercase; font-size:16pt;">${selectedP.name}</span><br><br>
+                        <b>Phone:</b> ${selectedP.phone || 'N/A'}
+                    </div>
+                    <div style="text-align:right;">
+                        <b>Date:</b> ${new Date().toLocaleDateString()}<br><br>
+                        <b>Age/Sex:</b> ${selectedP.age} / ${selectedP.sex}<br><br>
+                        <b>Address:</b> ${selectedP.address}
                     </div>
                 </div>
-                <div class="print-data-box">
-                    <div class="print-data-grid">
-                        <div>
-                            <b>OPD ID:</b> ${selectedP.opd_number}<br>
-                            <b>Name:</b> ${selectedP.name}<br>
-                            <b>Phone:</b> ${selectedP.phone || 'N/A'}
-                        </div>
-                        <div style="text-align:right;">
-                            <b>Date:</b> ${new Date().toLocaleDateString()}<br>
-                            <b>Age/Sex:</b> ${selectedP.age} / ${selectedP.sex}<br>
-                            <b>Address:</b> ${selectedP.address}
-                        </div>
-                    </div>
-                </div>
-                <div class="print-vitals-box">
-                    <span>Wt: ${selectedP.weight}kg</span><span>BP: ${selectedP.bp}</span>
-                    <span>PR: ${selectedP.pr}</span><span>SpO2: ${selectedP.spo2}%</span><span>T: ${selectedP.temp}°F</span>
-                </div>
-            </div>`;
-        document.getElementById('printArea').innerHTML = content;
+            </div>
+            <div class="print-vitals-box">
+                <span><b>Weight:</b> ${selectedP.weight}kg</span>
+                <span><b>BP:</b> ${selectedP.bp}</span>
+                <span><b>Pulse:</b> ${selectedP.pr}</span>
+                <span><b>SpO2:</b> ${selectedP.spo2}%</span>
+                <span><b>Temp:</b> ${selectedP.temp}°F</span>
+            </div>
+        `;
+        document.getElementById('printArea').innerHTML = `<div class="print-page">${getFullHeaderFooter()}${pContent}</div>`;
         window.print();
     }
 
