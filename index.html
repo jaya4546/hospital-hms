@@ -112,26 +112,6 @@
     </div>
 </div>
 
-<div id="treatModal" class="modal">
-    <div class="modal-content">
-        <h3>Treatment: <span id="treatName"></span></h3>
-        <div class="section-head">CHIEF COMPLAINTS</div>
-        <textarea id="t_complaints" rows="2"></textarea>
-        <div class="section-head">LAB / INVESTIGATIONS</div>
-        <textarea id="t_invest" rows="2"></textarea>
-        <div class="section-head">MEDICATION</div>
-        <table class="med-table">
-            <thead><tr><th>Drug Name</th><th>Duration</th><th>Route</th><th>Remarks</th><th></th></tr></thead>
-            <tbody id="medBody"></tbody>
-        </table>
-        <button class="btn" style="background:#0277bd; color:white; margin-top:10px;" onclick="addDrugRow()">+ ADD DRUG</button>
-        <div class="section-head">NOTES</div>
-        <textarea id="t_notes" rows="2"></textarea>
-        <button class="btn btn-reg" style="margin-top:20px;" onclick="saveTreatment()">SAVE CLINICAL DATA</button>
-        <button class="btn" style="width:100%; margin-top:10px; background:#ddd;" onclick="document.getElementById('treatModal').style.display='none'">Close</button>
-    </div>
-</div>
-
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzV-ESeeCJ5hFxSJusNYqxzj7bQKxWQOkjn1yIBx1G_vxc5cMBKmy-viBPzUzAbFYWx/exec";
     let patients = [], selectedP = null;
@@ -168,36 +148,40 @@
     }
 
     function openEdit() {
-        ['name','age','sex','phone','address','weight','bp','pr','spo2','temp'].forEach(k => {
-            const el = document.getElementById('p_'+(k === 'address' ? 'addr' : k));
-            if(el) el.value = selectedP[k] || "";
-        });
+        document.getElementById('p_name').value = selectedP.name || "";
+        document.getElementById('p_age').value = selectedP.age || "";
+        document.getElementById('p_sex').value = selectedP.sex || "Male";
+        document.getElementById('p_phone').value = selectedP.phone || "";
+        document.getElementById('p_addr').value = selectedP.address || "";
+        document.getElementById('p_weight').value = selectedP.weight || "";
+        document.getElementById('p_bp').value = selectedP.bp || "";
+        document.getElementById('p_pr').value = selectedP.pr || "";
+        document.getElementById('p_spo2').value = selectedP.spo2 || "";
+        document.getElementById('p_temp').value = selectedP.temp || "";
+        
         document.getElementById('submitBtn').innerText = "UPDATE DETAILS";
         document.getElementById('submitBtn').onclick = () => savePatient('UPDATE_DETAILS');
         document.getElementById('actionModal').style.display = "none";
         window.scrollTo(0,0);
     }
 
-    function openTreat() {
-        document.getElementById('treatName').innerText = selectedP.name;
-        document.getElementById('t_complaints').value = selectedP.complaints || "";
-        document.getElementById('t_invest').value = selectedP.lab || selectedP.investigations || "";
-        document.getElementById('t_notes').value = selectedP.notes || "";
-        document.getElementById('medBody').innerHTML = "";
-        if (selectedP.medications) {
-            selectedP.medications.split(';').forEach(m => {
-                const p = m.split('|');
-                if (p[0]) addDrugRow(p[0], p[1], p[2], p[3]);
-            });
-        } else { addDrugRow(); }
-        document.getElementById('treatModal').style.display = "block";
-        document.getElementById('actionModal').style.display = "none";
-    }
-
-    function addDrugRow(n="", d="", r="", rm="") {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td><input type="text" class="m-n" value="${n}"></td><td><input type="text" class="m-d" value="${d}"></td><td><input type="text" class="m-r" value="${r}"></td><td><input type="text" class="m-rm" value="${rm}"></td><td><button onclick="this.parentElement.parentElement.remove()" style="color:red;">×</button></td>`;
-        document.getElementById('medBody').appendChild(tr);
+    async function savePatient(type) {
+        const data = { 
+            type: type, 
+            opd: type === 'REGISTRATION' ? "SRR-"+Date.now().toString().slice(-4) : selectedP.opd_number, 
+            name: document.getElementById('p_name').value, 
+            age: document.getElementById('p_age').value, 
+            sex: document.getElementById('p_sex').value, 
+            phone: document.getElementById('p_phone').value, 
+            address: document.getElementById('p_addr').value, 
+            weight: document.getElementById('p_weight').value, 
+            bp: document.getElementById('p_bp').value, 
+            pr: document.getElementById('p_pr').value, 
+            spo2: document.getElementById('p_spo2').value, 
+            temp: document.getElementById('p_temp').value 
+        };
+        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+        alert("Action Successful!"); resetForm(); location.reload();
     }
 
     const getFullHeaderFooter = () => `
@@ -227,7 +211,6 @@
     `;
 
     function generatePrint(type) {
-        const meds = selectedP.medications ? selectedP.medications.split(';').filter(m => m.split('|')[0]) : [];
         let p1Content = `
             <div class="print-data-box">
                 <div class="print-data-grid">
@@ -240,55 +223,8 @@
                 <span><b>Wt:</b> ${selectedP.weight}kg</span><span><b>BP:</b> ${selectedP.bp}</span><span><b>PR:</b> ${selectedP.pr}</span><span><b>SpO2:</b> ${selectedP.spo2}%</span><span><b>T:</b> ${selectedP.temp}°F</span>
             </div>
         `;
-
-        if (type === 'PRESCRIPTION') {
-            p1Content += `
-                <div style="margin-top:10px;"><b>Chief Complaints:</b> ${selectedP.complaints || 'None'}</div>
-                <div style="margin-top:5px;"><b>Investigations:</b> ${selectedP.lab || selectedP.investigations || 'None'}</div>
-                <div style="margin-top:10px;"><h3 style="color:var(--primary); margin:0;">R<sub>x</sub></h3>
-                <table style="width:100%; border:1px solid #000;">
-                    <tr style="background:#eee;"><th>Drug Name</th><th>Duration</th><th>Route</th><th>Remarks</th></tr>
-                    ${meds.slice(0, 6).map(m => { const p = m.split('|'); return `<tr><td><b>${p[0]}</b></td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td></tr>`; }).join('')}
-                </table></div>
-                ${meds.length <= 6 ? `<div style="margin-top:10px;"><b>Notes:</b> ${selectedP.notes || 'None'}</div>` : ''}
-            `;
-        }
-
-        let html = `<div class="print-page">${getFullHeaderFooter()}${p1Content}</div>`;
-        if (type === 'PRESCRIPTION' && meds.length > 6) {
-            html += `<div class="print-page">${getFullHeaderFooter()}<h3>R<sub>x</sub> (Cont.)</h3>
-                <table style="width:100%; border:1px solid #000;">
-                    <tr style="background:#eee;"><th>Drug Name</th><th>Duration</th><th>Route</th><th>Remarks</th></tr>
-                    ${meds.slice(6).map(m => { const p = m.split('|'); return `<tr><td><b>${p[0]}</b></td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td></tr>`; }).join('')}
-                </table><div style="margin-top:10px;"><b>Notes:</b> ${selectedP.notes || 'None'}</div></div>`;
-        }
-        document.getElementById('printArea').innerHTML = html;
+        document.getElementById('printArea').innerHTML = `<div class="print-page">${getFullHeaderFooter()}${p1Content}</div>`;
         window.print();
-    }
-
-    async function savePatient(type) {
-        const data = { 
-            type: type, 
-            opd: type === 'REGISTRATION' ? "SRR-"+Date.now().toString().slice(-4) : selectedP.opd_number, 
-            name: document.getElementById('p_name').value, age: document.getElementById('p_age').value, sex: document.getElementById('p_sex').value, 
-            phone: document.getElementById('p_phone').value, address: document.getElementById('p_addr').value, 
-            weight: document.getElementById('p_weight').value, bp: document.getElementById('p_bp').value, 
-            pr: document.getElementById('p_pr').value, spo2: document.getElementById('p_spo2').value, temp: document.getElementById('p_temp').value 
-        };
-        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-        alert("Action Successful!"); resetForm(); location.reload();
-    }
-
-    async function saveTreatment() {
-        const rows = document.querySelectorAll('#medBody tr');
-        let medsArray = [];
-        rows.forEach(tr => {
-            const n = tr.querySelector('.m-n').value;
-            if(n) medsArray.push(`${n}|${tr.querySelector('.m-d').value}|${tr.querySelector('.m-r').value}|${tr.querySelector('.m-rm').value}`);
-        });
-        const data = { type: "SAVE_TREATMENT", opd: selectedP.opd_number, complaints: document.getElementById('t_complaints').value, investigations: document.getElementById('t_invest').value, medications: medsArray.join(';'), notes: document.getElementById('t_notes').value };
-        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-        alert("Clinical Data Saved!"); location.reload();
     }
 
     function filterTable() {
