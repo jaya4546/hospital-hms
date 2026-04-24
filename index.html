@@ -35,37 +35,40 @@
         th { background: #263238; color: white; padding: 12px; text-align: left; }
         td { padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; }
 
-        /* --- FORCED PRINT LAYOUT --- */
+        /* --- PRINT RECTIFICATION --- */
         #printArea { display: none; }
         @media print {
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
             #printArea { display: block; position: absolute; left: 0; top: 0; width: 100%; }
-            
-            .print-page { 
-                page-break-after: always; 
-                height: 296mm; /* Full A4 height */
-                width: 210mm;
-                display: grid;
-                grid-template-rows: auto 1fr auto; /* Header, Body(expand), Footer(bottom) */
-                padding: 1cm;
-                box-sizing: border-box;
-                background: white;
+
+            /* Wrap the entire page in a 100% height container */
+            .print-page-wrapper {
+                width: 100%;
+                min-height: 98vh;
+                display: flex;
+                flex-direction: column;
+                page-break-after: always;
                 position: relative;
+                padding: 20px;
+                box-sizing: border-box;
             }
 
-            .print-footer-container { 
-                grid-row-start: 3; /* Strictly force to the 3rd row (bottom) */
+            .print-main-content {
+                flex: 1 0 auto; /* This section grows to fill space, pushing footer down */
+            }
+
+            .print-footer-container {
+                flex-shrink: 0;
+                margin-top: 50px; /* Safety gap so it never mixes with medications */
                 width: 100%;
-                padding-top: 10px;
             }
 
             .watermark { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); opacity: 0.07; width: 500px; z-index: -1; }
             .print-text-wrap { white-space: pre-wrap; font-weight: bold; display: block; font-size: 16pt; margin-top: 5px; }
-            @page { margin: 0; size: A4; }
+            @page { margin: 1cm; }
         }
 
-        /* Styles for Print Elements */
         .print-header { display: flex; align-items: center; border-bottom: 5px solid #1b5e20; padding-bottom: 10px; margin-bottom: 20px; }
         .print-hospital-name { text-align: center; flex: 1; }
         .print-hospital-name h1 { color: #c62828; margin: 0; font-size: 34pt; text-transform: uppercase; white-space: nowrap; font-weight: 900; }
@@ -207,22 +210,24 @@
     }
 
     const getFullPageSetup = (pContent) => `
-        <div class="print-page">
+        <div class="print-page-wrapper">
             <img src="logo.jpg" class="watermark">
-            <div class="print-header">
-                <img src="logo.jpg" style="width:100px;">
-                <div class="print-hospital-name">
-                    <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
-                    <p style="font-size:11pt; font-weight:bold; margin-top:5px;">SURARAM COLONY TG 500055</p>
+            <div class="print-main-content">
+                <div class="print-header">
+                    <img src="logo.jpg" style="width:100px;">
+                    <div class="print-hospital-name">
+                        <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
+                        <p style="font-size:11pt; font-weight:bold; margin-top:5px;">SURARAM COLONY TG 500055</p>
+                    </div>
+                    <div class="print-doc-box">
+                        <div style="font-size:22pt; font-weight:900;">DR. M. JAYACHANDER</div>
+                        <div style="font-size:13pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
+                        <div style="color:#c62828; font-size:13pt; font-weight:bold;">Reg No: TSMC/FMR/43070</div>
+                    </div>
                 </div>
-                <div class="print-doc-box">
-                    <div style="font-size:22pt; font-weight:900;">DR. M. JAYACHANDER</div>
-                    <div style="font-size:13pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
-                    <div style="color:#c62828; font-size:13pt; font-weight:bold;">Reg No: TSMC/FMR/43070</div>
+                <div class="actual-content">
+                    ${pContent}
                 </div>
-            </div>
-            <div class="print-main-body">
-                ${pContent}
             </div>
             <div class="print-footer-container">
                 <div class="signature-right">
