@@ -9,7 +9,7 @@
         body { font-family: 'Calibri', 'Arial', sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 11pt; color: #000; }
         .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        /* UI Styles - Not disturbed */
+        /* UI Styles */
         .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
         .center-side { text-align: center; flex: 1; }
         .center-side h1 { color: var(--accent); margin: 0; font-size: 24px; font-weight: bold; text-transform: uppercase; }
@@ -28,30 +28,36 @@
         th { background: #263238; color: white; padding: 10px; text-align: left; }
         td { padding: 8px; border-bottom: 1px solid #eee; color: #000; }
 
-        /* PRINT STYLES - Updated for Font 14 */
+        /* PRINT STYLES */
         #printArea { display: none; }
         @media print {
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
             #printArea { display: block; position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
-            .print-page { page-break-after: always; min-height: 100vh; position: relative; padding: 0.5cm; box-sizing: border-box; }
+            .print-page { page-break-after: always; min-height: 100vh; position: relative; padding: 0.5cm; box-sizing: border-box; overflow: hidden; }
             .print-page:last-child { page-break-after: auto; }
             @page { margin: 0; }
+            
+            /* Watermark Logic */
+            .watermark { 
+                position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); 
+                opacity: 0.1; width: 400px; z-index: -1; pointer-events: none; 
+                display: block !important; -webkit-print-color-adjust: exact;
+            }
         }
 
         .print-header { display: flex; align-items: center; border-bottom: 3px solid #1b5e20; padding-bottom: 5px; margin-bottom: 10px; width: 100%; }
-        .print-hospital-name { text-align: center; flex: 1; overflow: hidden; }
+        .print-hospital-name { text-align: center; flex: 1; }
         .print-hospital-name h1 { color: #c62828; margin: 0; font-size: 24pt; white-space: nowrap; text-transform: uppercase; letter-spacing: -0.5px; }
         .print-hospital-name p { margin: 2px 0; font-size: 9pt; font-weight: bold; }
         
-        /* Adjusted Doctor Box to fit Hospital Name in one line */
         .print-doc-box { border: 1.5px solid #000; padding: 6px; text-align: right; min-width: 250px; line-height: 1.2; border-radius: 4px; }
         .print-doc-name { font-size: 16pt; font-weight: bold; }
         .print-doc-degree { font-size: 11pt; font-weight: bold; }
         .print-doc-reg { color: #c62828; font-size: 10pt; font-weight: bold; }
 
-        .print-data-box { border: 1px solid #000; padding: 8px; font-size: 11pt; }
-        .print-vitals-box { border: 1px solid #000; border-top: none; padding: 8px; background: #f9f9f9; display: flex; justify-content: space-between; font-size: 11pt; }
+        .print-data-box { border: 1px solid #000; padding: 8px; font-size: 11pt; position: relative; background: rgba(255,255,255,0); }
+        .print-vitals-box { border: 1px solid #000; border-top: none; padding: 8px; background: #f9f9f9; display: flex; justify-content: space-between; font-size: 11pt; -webkit-print-color-adjust: exact; }
 
         .print-footer { position: absolute; bottom: 0.5cm; left: 0.5cm; right: 0.5cm; text-align: center; }
         .signature-block { text-align: right; margin-bottom: 20px; padding-right: 20px; font-weight: bold; line-height: 1.2; }
@@ -193,6 +199,7 @@
     }
 
     const getFullHeaderFooter = () => `
+        <img src="logo.jpg" class="watermark">
         <div class="print-header">
             <img src="logo.jpg" style="width:75px;">
             <div class="print-hospital-name">
@@ -256,8 +263,6 @@
                 </table></div>
                 ${meds.length <= 6 ? `<div style="margin-top:10px;"><b>Notes:</b> ${selectedP.notes || 'None'}</div>` : ''}
             `;
-        } else {
-            p1Content += `<h2 style="text-align:center; color:var(--primary); margin-top:40px;">REGISTRATION SLIP</h2>`;
         }
 
         pagesHtml += `<div class="print-page">${getFullHeaderFooter()}${p1Content}</div>`;
