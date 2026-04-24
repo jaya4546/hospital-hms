@@ -9,28 +9,32 @@
         body { font-family: 'Calibri', sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 12pt; color: #000; }
         .container { max-width: 1150px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        /* UI Header - Hospital Name on One Line */
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
         .center-side { text-align: center; flex: 2; padding: 0 10px; }
         .center-side h1 { color: var(--accent); margin: 0; font-size: 28px; font-weight: bold; text-transform: uppercase; white-space: nowrap; }
         .doc-side { border: 2.5px solid #000; padding: 10px; text-align: right; background: #fffde7; min-width: 280px; border-radius: 4px; box-shadow: 3px 3px 0px #000; }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
-        input, select { width: 100%; padding: 8px; border: 1px solid #000; border-radius: 4px; font-size: 11pt; font-family: 'Calibri'; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #000; border-radius: 4px; font-size: 11pt; font-family: 'Calibri'; box-sizing: border-box; }
+        
         .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-family: 'Calibri'; }
         .btn-reg { background: var(--primary); color: white; width: 100%; font-size: 14pt; }
         
-        /* Modal Styles */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); overflow-y: auto; }
-        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 95%; max-width: 850px; border-radius: 10px; }
+        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 95%; max-width: 900px; border-radius: 10px; }
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
         .menu-btn { padding: 20px; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12pt; }
         
+        /* Medication Table */
+        .med-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        .med-table th { background: #eee; font-size: 10pt; padding: 5px; border: 1px solid #ccc; }
+        .med-table td { padding: 5px; border: 1px solid #ccc; }
+        .remove-btn { color: red; font-weight: bold; cursor: pointer; font-size: 16pt; text-align: center; }
+
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th { background: #263238; color: white; padding: 12px; text-align: left; }
         td { padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; }
 
-        /* PRINT STYLES */
         #printArea { display: none; }
         @media print {
             body * { visibility: hidden; }
@@ -45,7 +49,6 @@
         .print-hospital-name { text-align: center; flex: 1; }
         .print-hospital-name h1 { color: #c62828; margin: 0; font-size: 32pt; text-transform: uppercase; white-space: nowrap; }
         .print-doc-box { border: 2px solid #000; padding: 10px; text-align: right; min-width: 280px; border-radius: 6px; }
-        
         .print-data-box { border: 1.5px solid #000; padding: 12px; font-size: 13pt; }
         .print-data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .print-vitals-box { border: 1.5px solid #000; border-top: none; padding: 12px; background: #f2f2f2 !important; display: flex; justify-content: space-between; font-size: 13pt; -webkit-print-color-adjust: exact; }
@@ -99,12 +102,48 @@
         <h2 id="menuPatientName" style="color: var(--primary); border-bottom: 2px solid #ccc; padding-bottom: 10px;"></h2>
         <div class="menu-grid">
             <button class="menu-btn" style="background:#1565c0;" onclick="openEdit()">EDIT DETAILS</button>
-            <button class="menu-btn" style="background:#ef6c00;" onclick="alert('Treat Functionality: Add Medications/Notes')">TREAT</button>
-            <button class="menu-btn" style="background:#6a1b9a;" onclick="alert('Test Functionality: Add Investigations')">TEST</button>
+            <button class="menu-btn" style="background:#ef6c00;" onclick="openTreat()">TREAT</button>
             <button class="menu-btn" style="background:#2e7d32;" onclick="generatePrint('PRESCRIPTION')">PRINT PRESCRIPTION</button>
             <button class="menu-btn" style="background:#c62828;" onclick="generatePrint('REGISTRATION')">PRINT REGISTRATION</button>
         </div>
         <button class="btn" style="width:100%; margin-top:20px; background:#666; color: white;" onclick="resetForm()">Close</button>
+    </div>
+</div>
+
+<div id="treatModal" class="modal">
+    <div class="modal-content">
+        <h2 style="color: #ef6c00;">Patient Treatment</h2>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+            <div>
+                <label><b>Chief Complaints:</b></label>
+                <textarea id="t_complaints" rows="3"></textarea>
+            </div>
+            <div>
+                <label><b>Investigations:</b></label>
+                <textarea id="t_investigations" rows="3"></textarea>
+            </div>
+        </div>
+        <div style="margin-top:10px;">
+            <label><b>Past History:</b></label>
+            <input type="text" id="t_history">
+        </div>
+
+        <h3 style="margin-bottom:5px; border-bottom:1px solid #ccc;">Medications</h3>
+        <table class="med-table">
+            <thead><tr><th>Drug Name</th><th>Duration</th><th>Route</th><th>Remarks</th><th></th></tr></thead>
+            <tbody id="medBody"></tbody>
+        </table>
+        <button class="btn" style="background:#2196f3; color:white; padding:5px 15px;" onclick="addMedRow()">+ Add Drug</button>
+
+        <div style="margin-top:15px;">
+            <label><b>Notes:</b></label>
+            <textarea id="t_notes" rows="2"></textarea>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn" style="background:var(--primary); color:white; flex:1;" onclick="saveTreatment()">Save Treatment</button>
+            <button class="btn" style="background:#666; color:white; flex:1;" onclick="document.getElementById('treatModal').style.display='none'">Cancel</button>
+        </div>
     </div>
 </div>
 
@@ -131,6 +170,47 @@
         selectedP = patients.find(p => p.opd_number === id);
         document.getElementById('menuPatientName').innerText = "Patient: " + selectedP.name;
         document.getElementById('actionModal').style.display = "block";
+    }
+
+    function openTreat() {
+        document.getElementById('actionModal').style.display = "none";
+        document.getElementById('treatModal').style.display = "block";
+        document.getElementById('medBody').innerHTML = "";
+        addMedRow();
+    }
+
+    function addMedRow() {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><input type="text" class="m-name"></td>
+            <td><input type="text" class="m-dur"></td>
+            <td><input type="text" class="m-route"></td>
+            <td><input type="text" class="m-rem"></td>
+            <td class="remove-btn" onclick="this.parentElement.remove()">×</td>
+        `;
+        document.getElementById('medBody').appendChild(tr);
+    }
+
+    async function saveTreatment() {
+        const meds = Array.from(document.querySelectorAll('#medBody tr')).map(tr => ({
+            n: tr.querySelector('.m-name').value,
+            d: tr.querySelector('.m-dur').value,
+            r: tr.querySelector('.m-route').value,
+            rem: tr.querySelector('.m-rem').value
+        })).filter(m => m.n !== "");
+
+        const data = {
+            type: "SAVE_TREATMENT",
+            opd: selectedP.opd_number,
+            complaints: document.getElementById('t_complaints').value,
+            investigations: document.getElementById('t_investigations').value,
+            history: document.getElementById('t_history').value,
+            medications: JSON.stringify(meds),
+            notes: document.getElementById('t_notes').value
+        };
+        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+        alert("Treatment Saved!");
+        location.reload();
     }
 
     function resetForm() {
@@ -189,7 +269,8 @@
         </div>
         <div class="print-footer">
             <div style="text-align:right; margin-bottom:30px; font-weight:bold; font-size:14pt;">DR. M. JAYACHANDER<br><span style="font-size:11pt;">MBBS, M.D. (GENERAL MEDICINE)</span></div>
-            <div style="font-size:12pt; color:#1b5e20; font-weight:bold; border-top:2px dashed #ccc; padding-top:8px; margin-bottom:10px;">మా ప్రత్యేక సేవలు: బిపి షుగర్ గుండె వ్యాధులు కాలేవ్యాధులు కిడ్నీ సమస్యలు పక్షవాతం థైరాయిడ్ చూడబడును</div>
+            <div style="font-size:12pt; color:#1b5e20; font-weight:bold; border-top:2px dashed #ccc; padding-top:8px; margin-bottom:5px;">మా ప్రత్యేక సేవలు: బిపి, షుగర్, గుండె వ్యాధులు, కాలేయ వ్యాధులు, కిడ్నీ సమస్యలు, పక్షవాతం, థైరాయిడ్ చూడబడును.</div>
+            <div style="font-size:11pt; color:black; font-weight:bold; margin-bottom:10px;">NOTE: దయచేసి ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తీసుకురావలెను.</div>
             <div class="footer-banner">
                 <img src="https://cdn-icons-png.flaticon.com/512/3028/3028573.png" class="footer-icon">
                 <span>SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</span>
