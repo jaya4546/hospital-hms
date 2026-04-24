@@ -37,32 +37,24 @@
             .print-page { page-break-after: always; min-height: 100vh; position: relative; padding: 0.5cm; box-sizing: border-box; overflow: hidden; }
             .print-page:last-child { page-break-after: auto; }
             @page { margin: 0; }
-            .watermark { 
-                position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); 
-                opacity: 0.1; width: 400px; z-index: -1; pointer-events: none; 
-                display: block !important; -webkit-print-color-adjust: exact;
-            }
+            .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); opacity: 0.1; width: 400px; z-index: -1; pointer-events: none; display: block !important; -webkit-print-color-adjust: exact; }
         }
 
         .print-header { display: flex; align-items: center; border-bottom: 3px solid #1b5e20; padding-bottom: 5px; margin-bottom: 10px; width: 100%; }
         .print-hospital-name { text-align: center; flex: 1; }
         .print-hospital-name h1 { color: #c62828; margin: 0; font-size: 24pt; white-space: nowrap; text-transform: uppercase; letter-spacing: -0.5px; }
         .print-hospital-name p { margin: 2px 0; font-size: 9pt; font-weight: bold; }
-        
         .print-doc-box { border: 1.5px solid #000; padding: 6px; text-align: right; min-width: 250px; line-height: 1.2; border-radius: 4px; }
         .print-doc-name { font-size: 16pt; font-weight: bold; }
         .print-doc-degree { font-size: 11pt; font-weight: bold; }
-        .print-doc-reg { color: #c62828; font-size: 10pt; font-weight: bold; }
-
-        .print-data-box { border: 1px solid #000; padding: 8px; font-size: 11pt; position: relative; }
+        
+        .print-data-box { border: 1px solid #000; padding: 8px; font-size: 11pt; }
+        .print-data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
         .print-vitals-box { border: 1px solid #000; border-top: none; padding: 8px; background: #f9f9f9; display: flex; justify-content: space-between; font-size: 11pt; -webkit-print-color-adjust: exact; }
 
         .print-footer { position: absolute; bottom: 0.5cm; left: 0.5cm; right: 0.5cm; text-align: center; }
         .signature-block { text-align: right; margin-bottom: 20px; padding-right: 20px; font-weight: bold; line-height: 1.2; }
         .sig-name { font-size: 14pt; }
-        .sig-deg { font-size: 11pt; }
-        .not-valid-note { font-size: 8pt; font-weight: bold; margin-bottom: 2px; }
-        .telugu-services { font-size: 10pt; color: #1b5e20; font-weight: bold; margin-bottom: 5px; border-top: 1px dashed #ccc; padding-top: 5px; }
         .footer-banner { background: #1565c0; color: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 15pt; -webkit-print-color-adjust: exact; }
         .footer-icon { width: 45px; height: 45px; background: white; border-radius: 50%; padding: 3px; }
     </style>
@@ -116,7 +108,7 @@
             <button class="menu-btn" style="background:#2e7d32;" onclick="generatePrint('PRESCRIPTION')">PRINT PRESCRIPTION</button>
             <button class="menu-btn" style="background:#c62828;" onclick="generatePrint('REGISTRATION')">PRINT REGISTRATION</button>
         </div>
-        <button class="btn" style="width:100%; margin-top:15px; background:#ddd;" onclick="closeModal()">Close</button>
+        <button class="btn" style="width:100%; margin-top:15px; background:#ddd;" onclick="resetForm()">Close</button>
     </div>
 </div>
 
@@ -129,13 +121,14 @@
         <textarea id="t_invest" rows="2"></textarea>
         <div class="section-head">MEDICATION</div>
         <table class="med-table">
-            <thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th><th></th></tr></thead>
+            <thead><tr><th>Drug Name</th><th>Duration</th><th>Route</th><th>Remarks</th><th></th></tr></thead>
             <tbody id="medBody"></tbody>
         </table>
         <button class="btn" style="background:#0277bd; color:white; margin-top:10px;" onclick="addDrugRow()">+ ADD DRUG</button>
         <div class="section-head">NOTES</div>
         <textarea id="t_notes" rows="2"></textarea>
         <button class="btn btn-reg" style="margin-top:20px;" onclick="saveTreatment()">SAVE CLINICAL DATA</button>
+        <button class="btn" style="width:100%; margin-top:10px; background:#ddd;" onclick="document.getElementById('treatModal').style.display='none'">Close</button>
     </div>
 </div>
 
@@ -164,15 +157,25 @@
         document.getElementById('actionModal').style.display = "block";
     }
 
-    function closeModal() { document.getElementById('actionModal').style.display = "none"; }
+    function resetForm() {
+        ['name','age','sex','phone','addr','weight','bp','pr','spo2','temp'].forEach(k => {
+            const el = document.getElementById('p_'+k);
+            if(el) el.value = (k === 'sex') ? "Male" : "";
+        });
+        document.getElementById('submitBtn').innerText = "Register Patient";
+        document.getElementById('submitBtn').onclick = () => savePatient('REGISTRATION');
+        document.getElementById('actionModal').style.display = "none";
+    }
 
     function openEdit() {
         ['name','age','sex','phone','address','weight','bp','pr','spo2','temp'].forEach(k => {
-            document.getElementById('p_'+k).value = selectedP[k] || "";
+            const el = document.getElementById('p_'+(k === 'address' ? 'addr' : k));
+            if(el) el.value = selectedP[k] || "";
         });
         document.getElementById('submitBtn').innerText = "UPDATE DETAILS";
         document.getElementById('submitBtn').onclick = () => savePatient('UPDATE_DETAILS');
-        closeModal();
+        document.getElementById('actionModal').style.display = "none";
+        window.scrollTo(0,0);
     }
 
     function openTreat() {
@@ -188,7 +191,7 @@
             });
         } else { addDrugRow(); }
         document.getElementById('treatModal').style.display = "block";
-        closeModal();
+        document.getElementById('actionModal').style.display = "none";
     }
 
     function addDrugRow(n="", d="", r="", rm="") {
@@ -208,18 +211,13 @@
             <div class="print-doc-box">
                 <div class="print-doc-name">DR. M. JAYACHANDER</div>
                 <div class="print-doc-degree">MBBS, M.D. (GENERAL MEDICINE)</div>
-                <div class="print-doc-reg">Reg No: TSMC/FMR/43070</div>
+                <div style="color: #c62828; font-size: 10pt; font-weight: bold;">Reg No: TSMC/FMR/43070</div>
             </div>
         </div>
         <div class="print-footer">
-            <div class="signature-block">
-                <span class="sig-name">DR. M. JAYACHANDER</span><br>
-                <span class="sig-deg">MBBS, M.D. (GENERAL MEDICINE)</span>
-            </div>
-            <div class="not-valid-note">Note: Not valid for medico legal purpose</div>
-            <div class="telugu-services">
-                మా ప్రత్యేక సేవలు: బిపి షుగర్ గుండె వ్యాధులు కాలేవ్యాధులు (జాండీస్) కిడ్నీ సమస్యలు నరాల వ్యాధులు (పక్షవాతం) వైరల్ ఫీవర్ వ్యాధులు జీర్ణకోశ వ్యాధులు (అల్సర్) ఊపిరితిత్తుల వ్యాధులు థైరాయిడ్ మరియు ఫిట్స్ చూడబడును
-            </div>
+            <div class="signature-block"><span class="sig-name">DR. M. JAYACHANDER</span><br>MBBS, M.D. (GENERAL MEDICINE)</div>
+            <div style="font-size: 8pt; font-weight: bold;">Note: Not valid for medico legal purpose</div>
+            <div style="font-size: 10pt; color: #1b5e20; font-weight: bold; border-top: 1px dashed #ccc; padding-top: 5px;">మా ప్రత్యేక సేవలు: బిపి షుగర్ గుండె వ్యాధులు కాలేవ్యాధులు కిడ్నీ సమస్యలు పక్షవాతం థైరాయిడ్ చూడబడును</div>
             <div class="footer-banner">
                 <img src="https://cdn-icons-png.flaticon.com/512/3028/3028573.png" class="footer-icon">
                 <span>SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</span>
@@ -230,20 +228,16 @@
 
     function generatePrint(type) {
         const meds = selectedP.medications ? selectedP.medications.split(';').filter(m => m.split('|')[0]) : [];
-        let pagesHtml = "";
-
-        // PAGE 1
         let p1Content = `
             <div class="print-data-box">
-                <table style="width:100%;">
-                    <tr><td><b>OPD ID:</b> ${selectedP.opd_number}</td><td style="text-align:right;"><b>Date:</b> ${new Date().toLocaleDateString()}</td></tr>
-                    <tr><td colspan="2"><b>Name:</b> <span style="text-transform:uppercase; font-size:13pt;">${selectedP.name}</span></td></tr>
-                    <tr><td><b>Age/Sex:</b> ${selectedP.age} / ${selectedP.sex}</td><td style="text-align:right;"><b>Phone:</b> ${selectedP.phone || 'N/A'}</td></tr>
-                    <tr><td colspan="2"><b>Address:</b> ${selectedP.address}</td></tr>
-                </table>
+                <div class="print-data-grid">
+                    <div><b>OPD ID:</b> ${selectedP.opd_number}</div><div style="text-align:right;"><b>Date:</b> ${new Date().toLocaleDateString()}</div>
+                    <div><b>Name:</b> <span style="text-transform:uppercase;">${selectedP.name}</span></div><div style="text-align:right;"><b>Age/Sex:</b> ${selectedP.age} / ${selectedP.sex}</div>
+                    <div><b>Phone:</b> ${selectedP.phone || 'N/A'}</div><div style="text-align:right;"><b>Address:</b> ${selectedP.address}</div>
+                </div>
             </div>
             <div class="print-vitals-box">
-                <span><b>Weight:</b> ${selectedP.weight}kg</span><span><b>BP:</b> ${selectedP.bp}</span><span><b>Pulse:</b> ${selectedP.pr}</span><span><b>SpO2:</b> ${selectedP.spo2}%</span><span><b>Temp:</b> ${selectedP.temp}°F</span>
+                <span><b>Wt:</b> ${selectedP.weight}kg</span><span><b>BP:</b> ${selectedP.bp}</span><span><b>PR:</b> ${selectedP.pr}</span><span><b>SpO2:</b> ${selectedP.spo2}%</span><span><b>T:</b> ${selectedP.temp}°F</span>
             </div>
         `;
 
@@ -252,39 +246,23 @@
                 <div style="margin-top:10px;"><b>Chief Complaints:</b> ${selectedP.complaints || 'None'}</div>
                 <div style="margin-top:5px;"><b>Investigations:</b> ${selectedP.lab || selectedP.investigations || 'None'}</div>
                 <div style="margin-top:10px;"><h3 style="color:var(--primary); margin:0;">R<sub>x</sub></h3>
-                <table style="width:100%; margin-top:5px; border:1px solid #000;">
-                    <thead><tr style="background:#eee; border-bottom:1px solid #000;"><th>Drug Name</th><th>Duration</th><th>Route</th><th>Remarks</th></tr></thead>
-                    <tbody>
-                        ${meds.slice(0, 6).map(m => {
-                            const p = m.split('|');
-                            return `<tr style="border-bottom:1px solid #eee;"><td><b>${p[0]}</b></td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td></tr>`;
-                        }).join('')}
-                    </tbody>
+                <table style="width:100%; border:1px solid #000;">
+                    <tr style="background:#eee;"><th>Drug Name</th><th>Duration</th><th>Route</th><th>Remarks</th></tr>
+                    ${meds.slice(0, 6).map(m => { const p = m.split('|'); return `<tr><td><b>${p[0]}</b></td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td></tr>`; }).join('')}
                 </table></div>
                 ${meds.length <= 6 ? `<div style="margin-top:10px;"><b>Notes:</b> ${selectedP.notes || 'None'}</div>` : ''}
             `;
         }
 
-        pagesHtml += `<div class="print-page">${getFullHeaderFooter()}${p1Content}</div>`;
-
+        let html = `<div class="print-page">${getFullHeaderFooter()}${p1Content}</div>`;
         if (type === 'PRESCRIPTION' && meds.length > 6) {
-            const remainingMeds = meds.slice(6);
-            pagesHtml += `<div class="print-page">${getFullHeaderFooter()}
-                <div style="margin-top:10px;"><h3 style="color:var(--primary); margin:0;">R<sub>x</sub> (Continued)</h3>
-                <table style="width:100%; margin-top:5px; border:1px solid #000;">
-                    <thead><tr style="background:#eee; border-bottom:1px solid #000;"><th>Drug Name</th><th>Duration</th><th>Route</th><th>Remarks</th></tr></thead>
-                    <tbody>
-                        ${remainingMeds.map(m => {
-                            const p = m.split('|');
-                            return `<tr style="border-bottom:1px solid #eee;"><td><b>${p[0]}</b></td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td></tr>`;
-                        }).join('')}
-                    </tbody>
-                </table></div>
-                <div style="margin-top:10px;"><b>Notes:</b> ${selectedP.notes || 'None'}</div>
-            </div>`;
+            html += `<div class="print-page">${getFullHeaderFooter()}<h3>R<sub>x</sub> (Cont.)</h3>
+                <table style="width:100%; border:1px solid #000;">
+                    <tr style="background:#eee;"><th>Drug Name</th><th>Duration</th><th>Route</th><th>Remarks</th></tr>
+                    ${meds.slice(6).map(m => { const p = m.split('|'); return `<tr><td><b>${p[0]}</b></td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td></tr>`; }).join('')}
+                </table><div style="margin-top:10px;"><b>Notes:</b> ${selectedP.notes || 'None'}</div></div>`;
         }
-
-        document.getElementById('printArea').innerHTML = pagesHtml;
+        document.getElementById('printArea').innerHTML = html;
         window.print();
     }
 
@@ -292,19 +270,13 @@
         const data = { 
             type: type, 
             opd: type === 'REGISTRATION' ? "SRR-"+Date.now().toString().slice(-4) : selectedP.opd_number, 
-            name: document.getElementById('p_name').value, 
-            age: document.getElementById('p_age').value, 
-            sex: document.getElementById('p_sex').value, 
-            phone: document.getElementById('p_phone').value,
-            address: document.getElementById('p_addr').value, 
-            weight: document.getElementById('p_weight').value, 
-            bp: document.getElementById('p_bp').value, 
-            pr: document.getElementById('p_pr').value, 
-            spo2: document.getElementById('p_spo2').value, 
-            temp: document.getElementById('p_temp').value 
+            name: document.getElementById('p_name').value, age: document.getElementById('p_age').value, sex: document.getElementById('p_sex').value, 
+            phone: document.getElementById('p_phone').value, address: document.getElementById('p_addr').value, 
+            weight: document.getElementById('p_weight').value, bp: document.getElementById('p_bp').value, 
+            pr: document.getElementById('p_pr').value, spo2: document.getElementById('p_spo2').value, temp: document.getElementById('p_temp').value 
         };
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-        alert("Success!"); location.reload();
+        alert("Action Successful!"); resetForm(); location.reload();
     }
 
     async function saveTreatment() {
