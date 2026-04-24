@@ -7,12 +7,12 @@
     <style>
         :root { --primary: #1b5e20; --accent: #c62828; --bg: #f4f7f6; }
         body { font-family: 'Calibri', sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 12pt; color: #000; }
-        .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .container { max-width: 1150px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        /* UI Header */
-        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
-        .center-side { text-align: center; flex: 1; }
-        .center-side h1 { color: var(--accent); margin: 0; font-size: 28px; font-weight: bold; text-transform: uppercase; }
+        /* UI Header - Hospital Name on One Line */
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
+        .center-side { text-align: center; flex: 2; padding: 0 10px; }
+        .center-side h1 { color: var(--accent); margin: 0; font-size: 28px; font-weight: bold; text-transform: uppercase; white-space: nowrap; }
         .doc-side { border: 2.5px solid #000; padding: 10px; text-align: right; background: #fffde7; min-width: 280px; border-radius: 4px; box-shadow: 3px 3px 0px #000; }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
@@ -30,23 +30,23 @@
         th { background: #263238; color: white; padding: 12px; text-align: left; }
         td { padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; }
 
-        /* PRINT STYLES - RESTORED FULL LOGIC */
+        /* PRINT STYLES */
         #printArea { display: none; }
         @media print {
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
-            #printArea { display: block; position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+            #printArea { display: block; position: absolute; left: 0; top: 0; width: 100%; }
             .print-page { page-break-after: always; min-height: 100vh; position: relative; padding: 0.8cm; box-sizing: border-box; }
-            .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.08; width: 450px; z-index: -1; pointer-events: none; }
+            .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.08; width: 450px; z-index: -1; }
             @page { margin: 0; }
         }
 
         .print-header { display: flex; align-items: center; border-bottom: 4px solid #1b5e20; padding-bottom: 8px; margin-bottom: 15px; width: 100%; }
         .print-hospital-name { text-align: center; flex: 1; }
-        .print-hospital-name h1 { color: #c62828; margin: 0; font-size: 32pt; text-transform: uppercase; letter-spacing: -1px; }
-        .print-doc-box { border: 2px solid #000; padding: 10px; text-align: right; min-width: 280px; border-radius: 6px; line-height: 1.2; }
+        .print-hospital-name h1 { color: #c62828; margin: 0; font-size: 32pt; text-transform: uppercase; white-space: nowrap; }
+        .print-doc-box { border: 2px solid #000; padding: 10px; text-align: right; min-width: 280px; border-radius: 6px; }
         
-        .print-data-box { border: 1.5px solid #000; padding: 12px; font-size: 13pt; margin-top: 10px; }
+        .print-data-box { border: 1.5px solid #000; padding: 12px; font-size: 13pt; }
         .print-data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .print-vitals-box { border: 1.5px solid #000; border-top: none; padding: 12px; background: #f2f2f2 !important; display: flex; justify-content: space-between; font-size: 13pt; -webkit-print-color-adjust: exact; }
 
@@ -99,6 +99,8 @@
         <h2 id="menuPatientName" style="color: var(--primary); border-bottom: 2px solid #ccc; padding-bottom: 10px;"></h2>
         <div class="menu-grid">
             <button class="menu-btn" style="background:#1565c0;" onclick="openEdit()">EDIT DETAILS</button>
+            <button class="menu-btn" style="background:#ef6c00;" onclick="alert('Treat Functionality: Add Medications/Notes')">TREAT</button>
+            <button class="menu-btn" style="background:#6a1b9a;" onclick="alert('Test Functionality: Add Investigations')">TEST</button>
             <button class="menu-btn" style="background:#2e7d32;" onclick="generatePrint('PRESCRIPTION')">PRINT PRESCRIPTION</button>
             <button class="menu-btn" style="background:#c62828;" onclick="generatePrint('REGISTRATION')">PRINT REGISTRATION</button>
         </div>
