@@ -21,13 +21,7 @@
         .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
         .btn-reg { background: var(--primary); color: white; width: 100%; font-size: 14pt; }
         
-        /* Modals */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); overflow-y: auto; }
-        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 95%; max-width: 950px; border-radius: 10px; }
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-        .menu-btn { padding: 20px; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        
-        /* Medication Table */
+        /* Med Table UI */
         .med-table { width: 100%; border-collapse: collapse; margin: 10px 0; border: 2px solid #000; table-layout: fixed; }
         .med-table th { background: #333; color: #fff; padding: 10px; border: 1px solid #000; font-size: 14pt; }
         .med-table td { padding: 5px; border: 1px solid #000; background: #fff; }
@@ -37,7 +31,7 @@
         th { background: #263238; color: white; padding: 12px; text-align: left; }
         td { padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; }
 
-        /* --- PRINT RECTIFICATION --- */
+        /* --- FINAL PRINT RECTIFICATION --- */
         #printArea { display: none; }
         @media print {
             body * { visibility: hidden; }
@@ -46,44 +40,53 @@
             
             .print-page { 
                 page-break-after: always; 
-                height: 295mm; 
+                height: 290mm; /* Adjusted for A4 height */
                 display: flex; 
                 flex-direction: column; 
-                padding: 1cm; 
+                padding: 0.8cm; 
                 box-sizing: border-box; 
                 background: white; 
+                position: relative;
             }
-            .print-content-body { flex: 1; } /* This pushes the footer down */
+            .print-content-body { flex-grow: 1; } /* Pushes footer to absolute bottom */
             
             .watermark { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); opacity: 0.07; width: 500px; z-index: -1; }
-            .print-text-wrap { white-space: pre-wrap; font-weight: bold; display: block; font-size: 16pt; margin-top: 5px; }
             @page { margin: 0; size: A4; }
         }
 
-        .print-header { display: flex; align-items: center; border-bottom: 5px solid #1b5e20; padding-bottom: 10px; margin-bottom: 20px; }
+        .print-header { display: flex; align-items: center; border-bottom: 5px solid #1b5e20; padding-bottom: 10px; margin-bottom: 15px; }
         .print-hospital-name { text-align: center; flex: 1; }
         .print-hospital-name h1 { color: #c62828; margin: 0; font-size: 34pt; text-transform: uppercase; white-space: nowrap; font-weight: 900; }
-        .print-doc-box { border: 2.5px solid #000; padding: 15px; text-align: center; min-width: 350px; border-radius: 8px; }
+        .print-doc-box { border: 2.5px solid #000; padding: 10px; text-align: center; min-width: 350px; border-radius: 8px; }
         
-        .print-data-box { border: 2px solid #000; padding: 15px; font-size: 16pt; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 15px; font-weight: bold; }
-        .print-vitals-box { border: 2px solid #000; border-top: none; padding: 15px; background: #f1f8e9 !important; display: flex; justify-content: space-between; font-size: 16pt; -webkit-print-color-adjust: exact; font-weight: 900; margin-bottom: 20px; }
+        .print-data-box { border: 2px solid #000; padding: 15px; font-size: 16pt; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 10px; font-weight: bold; }
+        .print-vitals-box { border: 2px solid #000; border-top: none; padding: 10px; background: #f1f8e9 !important; display: flex; justify-content: space-between; font-size: 16pt; -webkit-print-color-adjust: exact; font-weight: 900; margin-bottom: 15px; }
         
-        .med-print-table { width: 100%; border-collapse: collapse; border: 2px solid #000; }
-        .med-print-table th { background: #eee !important; padding: 10px; border: 1px solid #000; font-size: 16pt; -webkit-print-color-adjust: exact; }
-        .med-print-table td { padding: 10px; border: 1px solid #000; font-size: 16pt; font-weight: bold; }
+        /* Fixed Light Color Table Header */
+        .med-print-table { width: 100%; border-collapse: collapse; border: 2.5px solid #000; }
+        .med-print-table th { 
+            background: #000 !important; /* Changed to Solid Black */
+            color: #fff !important; 
+            padding: 12px; 
+            border: 1px solid #000; 
+            font-size: 16pt; 
+            font-weight: 900;
+            -webkit-print-color-adjust: exact; 
+        }
+        .med-print-table td { padding: 12px; border: 1.5px solid #000; font-size: 16pt; font-weight: bold; color: #000; }
 
-        /* FOOTER & SIGNATURE FIXED TO BOTTOM */
-        .print-footer-container { margin-top: auto; } /* Forces this block to bottom of page */
+        /* FOOTER AT ABSOLUTE BOTTOM */
+        .print-footer-container { margin-top: auto; padding-top: 10px; }
         .signature-right { text-align: right; padding-right: 20px; margin-bottom: 5px; }
-        .full-width-line { border-top: 3px solid #000; width: 100%; margin-bottom: 15px; }
+        .full-width-line { border-top: 3px solid #000; width: 100%; margin-bottom: 10px; }
         
-        .med-legal-note { font-size: 13pt; font-weight: 900; color: #000; text-align: center; margin-bottom: 5px; text-decoration: underline; }
-        .telugu-file-note { font-size: 14pt; color: #c62828; font-weight: bold; text-align: center; margin-bottom: 8px; }
-        .telugu-services { font-size: 12.5pt; color: #1b5e20; font-weight: bold; text-align: center; margin-bottom: 12px; line-height: 1.5; padding: 0 10px; }
+        .med-legal-note { font-size: 13pt; font-weight: 900; color: #000; text-align: center; margin-bottom: 3px; text-decoration: underline; }
+        .telugu-file-note { font-size: 14pt; color: #c62828; font-weight: bold; text-align: center; margin-bottom: 5px; }
+        .telugu-services { font-size: 12.5pt; color: #1b5e20; font-weight: bold; text-align: center; margin-bottom: 10px; line-height: 1.4; }
         
         .footer-banner-container { display: flex; align-items: center; justify-content: center; gap: 20px; }
-        .footer-banner { background: linear-gradient(to right, #0d47a1, #1976d2) !important; color: white !important; padding: 15px; flex: 1; text-align: center; font-weight: bold; font-size: 16pt; -webkit-print-color-adjust: exact; border-radius: 10px; }
-        .footer-ai-img { width: 60px; height: 60px; }
+        .footer-banner { background: #1976d2 !important; color: white !important; padding: 12px; flex: 1; text-align: center; font-weight: bold; font-size: 16pt; -webkit-print-color-adjust: exact; border-radius: 8px; }
+        .footer-ai-img { width: 55px; height: 55px; }
     </style>
 </head>
 <body>
@@ -93,7 +96,7 @@
         <img src="logo.jpg" style="width:90px">
         <div class="center-side">
             <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
-            <p style="font-size:11px; font-weight:bold;">SURARAM COLONYTG 500055</p>
+            <p style="font-size:11px; font-weight:bold;">SURARAM COLONY TG 500055</p>
         </div>
         <div class="doc-side">
             <b style="font-size: 20px;">DR. M. JAYACHANDER</b><br>
@@ -101,11 +104,11 @@
         </div>
     </div>
 
-    <div class="grid" id="regForm">
+    <div class="grid">
         <input type="text" id="p_name" placeholder="Patient Name">
         <input type="number" id="p_age" placeholder="Age">
         <select id="p_sex"><option>Male</option><option>Female</option></select>
-        <input type="text" id="p_phone" placeholder="Phone Number">
+        <input type="text" id="p_phone" placeholder="Phone">
         <input type="text" id="p_address" placeholder="Address">
         <input type="text" id="p_weight" placeholder="Weight">
         <input type="text" id="p_bp" placeholder="BP">
@@ -114,9 +117,7 @@
         <input type="text" id="p_temp" placeholder="Temp">
     </div>
     <button class="btn btn-reg" id="submitBtn" onclick="savePatient('REGISTRATION')">Register Patient</button>
-
-    <input type="text" id="pSearch" style="width:100%; margin-top:20px; padding:15px; border:3px solid var(--primary); border-radius: 8px;" placeholder="🔍 Search Patient Name..." onkeyup="filterTable()">
-
+    <input type="text" id="pSearch" style="width:100%; margin-top:20px; padding:12px;" placeholder="🔍 Search Patient Name..." onkeyup="filterTable()">
     <table>
         <thead><tr><th>OPD ID</th><th>Name</th><th>Action</th></tr></thead>
         <tbody id="tbody"></tbody>
@@ -134,13 +135,13 @@
             <button class="menu-btn" style="background:#2e7d32;" onclick="generatePrint('PRESCRIPTION')">PRINT PRESCRIPTION</button>
             <button class="menu-btn" style="background:#c62828;" onclick="generatePrint('REGISTRATION')">PRINT REGISTRATION</button>
         </div>
-        <button class="btn" style="width:100%; margin-top:20px; background:#666; color: white;" onclick="resetForm()">Close</button>
+        <button class="btn" style="width:100%; margin-top:20px; background:#666; color:white;" onclick="resetForm()">Close</button>
     </div>
 </div>
 
 <div id="treatModal" class="modal">
     <div class="modal-content">
-        <h2 style="color: #ef6c00;">Patient Treatment</h2>
+        <h2 style="color:#ef6c00;">Patient Treatment</h2>
         <div><label><b>1. Complaints:</b></label><textarea id="t_complaints" rows="2"></textarea></div>
         <div><label><b>2. Investigations:</b></label><textarea id="t_investigations" rows="2"></textarea></div>
         <div><label><b>3. Past History:</b></label><textarea id="t_history" rows="2"></textarea></div>
@@ -170,10 +171,7 @@
     }
     function handleResponse(data) { patients = data; renderTable(data); }
     function renderTable(list) {
-        document.getElementById('tbody').innerHTML = list.map(p => `
-            <tr><td><b>${p.opd_number}</b></td><td>${p.name}</td>
-            <td><button class="btn" style="background:var(--primary); color:white; padding:5px 15px;" onclick="openMenu('${p.opd_number}')">Select</button></td></tr>
-        `).reverse().join('');
+        document.getElementById('tbody').innerHTML = list.map(p => `<tr><td><b>${p.opd_number}</b></td><td>${p.name}</td><td><button class="btn" style="background:var(--primary); color:white;" onclick="openMenu('${p.opd_number}')">Select</button></td></tr>`).reverse().join('');
     }
     function openMenu(id) {
         selectedP = patients.find(p => p.opd_number === id);
@@ -182,12 +180,10 @@
     }
 
     function openEdit() {
-        const fields = ['name','age','sex','phone','address','weight','bp','pr','spo2','temp'];
-        fields.forEach(f => document.getElementById('p_'+f).value = selectedP[f] || "");
+        ['name','age','sex','phone','address','weight','bp','pr','spo2','temp'].forEach(f => document.getElementById('p_'+f).value = selectedP[f] || "");
         document.getElementById('submitBtn').innerText = "UPDATE DETAILS";
         document.getElementById('submitBtn').onclick = () => savePatient('UPDATE_DETAILS');
         document.getElementById('actionModal').style.display = "none";
-        window.scrollTo(0,0);
     }
 
     function openTreat() {
@@ -220,7 +216,7 @@
                 <img src="logo.jpg" style="width:100px;">
                 <div class="print-hospital-name">
                     <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
-                    <p style="font-size:11pt; font-weight:bold; margin-top:5px;">SURARAM COLONYTG 500055</p>
+                    <p style="font-size:11pt; font-weight:bold;">SURARAM COLONY TG 500055</p>
                 </div>
                 <div class="print-doc-box">
                     <div style="font-size:22pt; font-weight:900;">DR. M. JAYACHANDER</div>
@@ -239,11 +235,9 @@
                     <div style="font-size:12pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
                 </div>
                 <div class="full-width-line"></div>
-                
                 <div class="med-legal-note">NOTE: (NOT VALID FOR MEDICO LEGAL PURPOSE)</div>
                 <div class="telugu-file-note">దయచేసి ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తీసుకురావలెను</div>
                 <div class="telugu-services">మా ప్రత్యేక సేవలు: బిపి, షుగర్ ,గుండె వ్యాధులు, కాలేవ్యాధులు (జాండీస్) కిడ్నీ సమస్యలు ,నరాల వ్యాధులు (పక్షవాతం) వైరల్ ఫీవర్ వ్యాధులు, జీర్ణకోశ వ్యాధులు (అల్సర్), ఊపిరితిత్తుల వ్యాధులు, థైరాయిడ్ మరియు ఫిట్స్ చూడబడును.</div>
-                
                 <div class="footer-banner-container">
                     <img src="https://cdn-icons-png.flaticon.com/512/4320/4320337.png" class="footer-ai-img">
                     <div class="footer-banner">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div>
@@ -278,7 +272,6 @@
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
         location.reload();
     }
-
     function filterTable() { renderTable(patients.filter(p => p.name.toLowerCase().includes(document.getElementById('pSearch').value.toLowerCase()))); }
     function closeTreat() { document.getElementById('treatModal').style.display = "none"; }
     function resetForm() { document.getElementById('actionModal').style.display = "none"; }
