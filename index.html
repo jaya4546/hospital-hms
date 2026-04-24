@@ -15,21 +15,22 @@
         .doc-side { border: 2.5px solid #000; padding: 10px; text-align: right; background: #fffde7; min-width: 280px; border-radius: 4px; box-shadow: 3px 3px 0px #000; }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
-        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #000; border-radius: 4px; font-size: 11pt; font-family: 'Calibri'; box-sizing: border-box; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1.5px solid #000; border-radius: 4px; font-size: 11pt; font-family: 'Calibri'; box-sizing: border-box; color: #000; }
         
         .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-family: 'Calibri'; }
         .btn-reg { background: var(--primary); color: white; width: 100%; font-size: 14pt; }
         
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); overflow-y: auto; }
-        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 95%; max-width: 900px; border-radius: 10px; }
+        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 95%; max-width: 950px; border-radius: 10px; }
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
         .menu-btn { padding: 20px; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12pt; }
         
-        /* Medication Table */
-        .med-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-        .med-table th { background: #eee; font-size: 10pt; padding: 5px; border: 1px solid #ccc; }
-        .med-table td { padding: 5px; border: 1px solid #ccc; }
-        .remove-btn { color: red; font-weight: bold; cursor: pointer; font-size: 16pt; text-align: center; }
+        /* Medication Table - Darkened for Visualisation */
+        .med-table { width: 100%; border-collapse: collapse; margin: 10px 0; border: 2px solid #000; }
+        .med-table th { background: #333; color: #fff; padding: 8px; border: 1px solid #000; font-size: 11pt; }
+        .med-table td { padding: 5px; border: 1px solid #000; background: #fff; }
+        .med-table input { border: none; font-weight: bold; font-size: 11pt; background: transparent; }
+        .remove-btn { color: #c62828; font-weight: bold; cursor: pointer; font-size: 20pt; text-align: center; width: 40px; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th { background: #263238; color: white; padding: 12px; text-align: left; }
@@ -40,9 +41,10 @@
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
             #printArea { display: block; position: absolute; left: 0; top: 0; width: 100%; }
-            .print-page { page-break-after: always; min-height: 100vh; position: relative; padding: 0.8cm; box-sizing: border-box; }
+            .print-page { page-break-after: always; min-height: 297mm; position: relative; padding: 0.8cm; box-sizing: border-box; }
             .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.08; width: 450px; z-index: -1; }
-            @page { margin: 0; }
+            .print-text-wrap { white-space: pre-wrap; word-wrap: break-word; } /* Allows Enter/Line breaks to show */
+            @page { margin: 0; size: A4; }
         }
 
         .print-header { display: flex; align-items: center; border-bottom: 4px solid #1b5e20; padding-bottom: 8px; margin-bottom: 15px; width: 100%; }
@@ -116,16 +118,16 @@
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
             <div>
                 <label><b>Chief Complaints:</b></label>
-                <textarea id="t_complaints" rows="3"></textarea>
+                <textarea id="t_complaints" rows="3" oninput="autoSaveTreat()"></textarea>
             </div>
             <div>
                 <label><b>Investigations:</b></label>
-                <textarea id="t_investigations" rows="3"></textarea>
+                <textarea id="t_investigations" rows="3" oninput="autoSaveTreat()"></textarea>
             </div>
         </div>
         <div style="margin-top:10px;">
             <label><b>Past History:</b></label>
-            <input type="text" id="t_history">
+            <input type="text" id="t_history" oninput="autoSaveTreat()">
         </div>
 
         <h3 style="margin-bottom:5px; border-bottom:1px solid #ccc;">Medications</h3>
@@ -137,12 +139,12 @@
 
         <div style="margin-top:15px;">
             <label><b>Notes:</b></label>
-            <textarea id="t_notes" rows="2"></textarea>
+            <textarea id="t_notes" rows="2" oninput="autoSaveTreat()"></textarea>
         </div>
 
         <div style="display:flex; gap:10px; margin-top:20px;">
             <button class="btn" style="background:var(--primary); color:white; flex:1;" onclick="saveTreatment()">Save Treatment</button>
-            <button class="btn" style="background:#666; color:white; flex:1;" onclick="document.getElementById('treatModal').style.display='none'">Cancel</button>
+            <button class="btn" style="background:#666; color:white; flex:1;" onclick="closeTreat()">Cancel</button>
         </div>
     </div>
 </div>
@@ -151,6 +153,43 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbzV-ESeeCJ5hFxSJusNYqxzj7bQKxWQOkjn1yIBx1G_vxc5cMBKmy-viBPzUzAbFYWx/exec";
     let patients = [], selectedP = null;
 
+    // --- Persistence Management (LocalStorage) ---
+    function autoSaveTreat() {
+        const treatData = {
+            complaints: document.getElementById('t_complaints').value,
+            investigations: document.getElementById('t_investigations').value,
+            history: document.getElementById('t_history').value,
+            notes: document.getElementById('t_notes').value,
+            meds: Array.from(document.querySelectorAll('#medBody tr')).map(tr => ({
+                n: tr.querySelector('.m-name').value,
+                d: tr.querySelector('.m-dur').value,
+                r: tr.querySelector('.m-route').value,
+                rem: tr.querySelector('.m-rem').value
+            }))
+        };
+        localStorage.setItem('tempTreat', JSON.stringify(treatData));
+    }
+
+    function loadSavedTreat() {
+        const saved = localStorage.getItem('tempTreat');
+        if (saved) {
+            const data = JSON.parse(saved);
+            document.getElementById('t_complaints').value = data.complaints || "";
+            document.getElementById('t_investigations').value = data.investigations || "";
+            document.getElementById('t_history').value = data.history || "";
+            document.getElementById('t_notes').value = data.notes || "";
+            document.getElementById('medBody').innerHTML = "";
+            if(data.meds && data.meds.length > 0) {
+                data.meds.forEach(m => addMedRow(m));
+            } else { addMedRow(); }
+        } else {
+            addMedRow();
+        }
+    }
+
+    function clearSavedTreat() { localStorage.removeItem('tempTreat'); }
+
+    // --- Core Functions ---
     function loadData() {
         const script = document.createElement('script');
         script.src = `${API_URL}?callback=handleResponse&ts=${Date.now()}`;
@@ -175,18 +214,21 @@
     function openTreat() {
         document.getElementById('actionModal').style.display = "none";
         document.getElementById('treatModal').style.display = "block";
-        document.getElementById('medBody').innerHTML = "";
-        addMedRow();
+        loadSavedTreat();
     }
 
-    function addMedRow() {
+    function closeTreat() {
+        document.getElementById('treatModal').style.display = "none";
+    }
+
+    function addMedRow(data = {n:'', d:'', r:'', rem:''}) {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><input type="text" class="m-name"></td>
-            <td><input type="text" class="m-dur"></td>
-            <td><input type="text" class="m-route"></td>
-            <td><input type="text" class="m-rem"></td>
-            <td class="remove-btn" onclick="this.parentElement.remove()">×</td>
+            <td><input type="text" class="m-name" value="${data.n}" oninput="autoSaveTreat()"></td>
+            <td><input type="text" class="m-dur" value="${data.d}" oninput="autoSaveTreat()"></td>
+            <td><input type="text" class="m-route" value="${data.r}" oninput="autoSaveTreat()"></td>
+            <td><input type="text" class="m-rem" value="${data.rem}" oninput="autoSaveTreat()"></td>
+            <td class="remove-btn" onclick="this.parentElement.remove(); autoSaveTreat();">×</td>
         `;
         document.getElementById('medBody').appendChild(tr);
     }
@@ -209,7 +251,8 @@
             notes: document.getElementById('t_notes').value
         };
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-        alert("Treatment Saved!");
+        alert("Treatment Saved Successfully!");
+        clearSavedTreat();
         location.reload();
     }
 
@@ -253,6 +296,7 @@
         alert("Success!"); resetForm(); location.reload();
     }
 
+    // --- Header & Footer Generator ---
     const getFullHeaderFooter = () => `
         <img src="logo.jpg" class="watermark">
         <div class="print-header">
@@ -279,6 +323,7 @@
         </div>
     `;
 
+    // --- Dynamic Print Generation ---
     function generatePrint(type) {
         let pContent = `
             <div class="print-data-box">
@@ -303,6 +348,42 @@
                 <span><b>Temp:</b> ${selectedP.temp}°F</span>
             </div>
         `;
+
+        if (type === 'PRESCRIPTION') {
+            // Get current text from treat modal fields for immediate printing
+            const complaints = document.getElementById('t_complaints').value;
+            const investigations = document.getElementById('t_investigations').value;
+            const history = document.getElementById('t_history').value;
+            const notes = document.getElementById('t_notes').value;
+            
+            const meds = Array.from(document.querySelectorAll('#medBody tr')).map(tr => ({
+                n: tr.querySelector('.m-name').value,
+                d: tr.querySelector('.m-dur').value,
+                r: tr.querySelector('.m-route').value,
+                rem: tr.querySelector('.m-rem').value
+            })).filter(m => m.n !== "");
+
+            pContent += `
+                <div style="margin-top:20px; font-size:13pt;">
+                    <div style="margin-bottom:10px;"><b>Chief Complaints:</b> <div class="print-text-wrap">${complaints || '---'}</div></div>
+                    <div style="margin-bottom:10px;"><b>Investigations:</b> <div class="print-text-wrap">${investigations || '---'}</div></div>
+                    <div style="margin-bottom:10px;"><b>Past History:</b> <div>${history || '---'}</div></div>
+                    
+                    <h3 style="border-bottom:2px solid #000; margin-bottom:5px;">Rx (Medications)</h3>
+                    <table class="med-table" style="font-size:12pt;">
+                        <thead><tr style="background:#ddd !important; -webkit-print-color-adjust: exact;">
+                            <th style="color:#000;">Drug Name</th><th style="color:#000;">Duration</th><th style="color:#000;">Route</th><th style="color:#000;">Remarks</th>
+                        </tr></thead>
+                        <tbody>
+                            ${meds.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}
+                        </tbody>
+                    </table>
+                    
+                    <div style="margin-top:15px;"><b>Notes/Advice:</b> <div class="print-text-wrap">${notes || '---'}</div></div>
+                </div>
+            `;
+        }
+
         document.getElementById('printArea').innerHTML = `<div class="print-page">${getFullHeaderFooter()}${pContent}</div>`;
         window.print();
     }
