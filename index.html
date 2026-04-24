@@ -9,7 +9,7 @@
         body { font-family: 'Calibri', 'Arial', sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 11pt; color: #000; }
         .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        /* UI Styles */
+        /* UI Styles - Not disturbed */
         .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
         .center-side { text-align: center; flex: 1; }
         .center-side h1 { color: var(--accent); margin: 0; font-size: 24px; font-weight: bold; text-transform: uppercase; }
@@ -28,7 +28,7 @@
         th { background: #263238; color: white; padding: 10px; text-align: left; }
         td { padding: 8px; border-bottom: 1px solid #eee; color: #000; }
 
-        /* PRINT STYLES */
+        /* PRINT STYLES - Updated for Font 14 */
         #printArea { display: none; }
         @media print {
             body * { visibility: hidden; }
@@ -39,21 +39,28 @@
             @page { margin: 0; }
         }
 
-        .print-header { display: flex; align-items: center; border-bottom: 3px solid #1b5e20; padding-bottom: 5px; margin-bottom: 10px; }
-        .print-hospital-name { text-align: center; flex: 1; padding: 0 10px; }
-        .print-hospital-name h1 { color: #c62828; margin: 0; font-size: 22pt; white-space: nowrap; text-transform: uppercase; }
-        .print-hospital-name p { margin: 2px 0; font-size: 8pt; font-weight: bold; }
-        .print-doc-box { border: 1.5px solid #000; padding: 6px; text-align: right; min-width: 230px; line-height: 1.3; border-radius: 4px; }
+        .print-header { display: flex; align-items: center; border-bottom: 3px solid #1b5e20; padding-bottom: 5px; margin-bottom: 10px; width: 100%; }
+        .print-hospital-name { text-align: center; flex: 1; overflow: hidden; }
+        .print-hospital-name h1 { color: #c62828; margin: 0; font-size: 24pt; white-space: nowrap; text-transform: uppercase; letter-spacing: -0.5px; }
+        .print-hospital-name p { margin: 2px 0; font-size: 9pt; font-weight: bold; }
+        
+        /* Adjusted Doctor Box to fit Hospital Name in one line */
+        .print-doc-box { border: 1.5px solid #000; padding: 6px; text-align: right; min-width: 250px; line-height: 1.2; border-radius: 4px; }
+        .print-doc-name { font-size: 16pt; font-weight: bold; }
+        .print-doc-degree { font-size: 11pt; font-weight: bold; }
+        .print-doc-reg { color: #c62828; font-size: 10pt; font-weight: bold; }
 
         .print-data-box { border: 1px solid #000; padding: 8px; font-size: 11pt; }
-        .print-vitals-box { border: 1px solid #000; border-top: none; padding: 8px; background: #f9f9f9; display: flex; justify-content: space-between; font-size: 10pt; }
+        .print-vitals-box { border: 1px solid #000; border-top: none; padding: 8px; background: #f9f9f9; display: flex; justify-content: space-between; font-size: 11pt; }
 
         .print-footer { position: absolute; bottom: 0.5cm; left: 0.5cm; right: 0.5cm; text-align: center; }
         .signature-block { text-align: right; margin-bottom: 20px; padding-right: 20px; font-weight: bold; line-height: 1.2; }
+        .sig-name { font-size: 14pt; }
+        .sig-deg { font-size: 11pt; }
         .not-valid-note { font-size: 8pt; font-weight: bold; margin-bottom: 2px; }
-        .telugu-services { font-size: 9pt; color: #1b5e20; font-weight: bold; margin-bottom: 5px; border-top: 1px dashed #ccc; padding-top: 5px; }
-        .footer-banner { background: #1565c0; color: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 14pt; -webkit-print-color-adjust: exact; }
-        .footer-icon { width: 40px; height: 40px; background: white; border-radius: 50%; padding: 3px; }
+        .telugu-services { font-size: 10pt; color: #1b5e20; font-weight: bold; margin-bottom: 5px; border-top: 1px dashed #ccc; padding-top: 5px; }
+        .footer-banner { background: #1565c0; color: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 15pt; -webkit-print-color-adjust: exact; }
+        .footer-icon { width: 45px; height: 45px; background: white; border-radius: 50%; padding: 3px; }
     </style>
 </head>
 <body>
@@ -187,21 +194,21 @@
 
     const getFullHeaderFooter = () => `
         <div class="print-header">
-            <img src="logo.jpg" style="width:80px;">
+            <img src="logo.jpg" style="width:75px;">
             <div class="print-hospital-name">
                 <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
                 <p>SURARAM COLONY 1ST OM JANDA NTR ROAD OPP: RAMALEELA MAIDANAM TG 500055</p>
             </div>
             <div class="print-doc-box">
-                <b style="font-size: 15pt;">DR. M. JAYACHANDER</b><br>
-                <b style="font-size: 11pt;">MBBS, M.D. (GENERAL MEDICINE)</b><br>
-                <span style="color: #c62828; font-size: 10pt; font-weight: bold;">Reg No: TSMC/FMR/43070</span>
+                <div class="print-doc-name">DR. M. JAYACHANDER</div>
+                <div class="print-doc-degree">MBBS, M.D. (GENERAL MEDICINE)</div>
+                <div class="print-doc-reg">Reg No: TSMC/FMR/43070</div>
             </div>
         </div>
         <div class="print-footer">
             <div class="signature-block">
-                DR. M. JAYACHANDER<br>
-                <span style="font-size: 10pt;">MBBS, M.D. (GENERAL MEDICINE)</span>
+                <span class="sig-name">DR. M. JAYACHANDER</span><br>
+                <span class="sig-deg">MBBS, M.D. (GENERAL MEDICINE)</span>
             </div>
             <div class="not-valid-note">Note: Not valid for medico legal purpose</div>
             <div class="telugu-services">
@@ -224,7 +231,7 @@
             <div class="print-data-box">
                 <table style="width:100%;">
                     <tr><td><b>OPD ID:</b> ${selectedP.opd_number}</td><td style="text-align:right;"><b>Date:</b> ${new Date().toLocaleDateString()}</td></tr>
-                    <tr><td colspan="2"><b>Name:</b> <span style="text-transform:uppercase; font-size:12pt;">${selectedP.name}</span></td></tr>
+                    <tr><td colspan="2"><b>Name:</b> <span style="text-transform:uppercase; font-size:13pt;">${selectedP.name}</span></td></tr>
                     <tr><td><b>Age:</b> ${selectedP.age} | <b>Sex:</b> ${selectedP.sex}</td><td style="text-align:right;"><b>Address:</b> ${selectedP.address}</td></tr>
                 </table>
             </div>
@@ -255,7 +262,7 @@
 
         pagesHtml += `<div class="print-page">${getFullHeaderFooter()}${p1Content}</div>`;
 
-        // PAGE 2+ (If more than 6 meds)
+        // PAGE 2+ (Pagination)
         if (type === 'PRESCRIPTION' && meds.length > 6) {
             const remainingMeds = meds.slice(6);
             pagesHtml += `<div class="print-page">${getFullHeaderFooter()}
