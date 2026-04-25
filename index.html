@@ -11,8 +11,8 @@
         /* Dashboard UI */
         .container { max-width: 1150px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
-        .center-side { text-align: center; flex: 2; }
-        .center-side h1 { color: var(--accent); margin: 0; font-size: 28px; font-weight: bold; text-transform: uppercase; }
+        .center-side { text-align: center; flex: 2; overflow: hidden; }
+        .center-side h1 { color: var(--accent); margin: 0; font-size: clamp(18px, 4vw, 28px); font-weight: bold; text-transform: uppercase; white-space: nowrap; }
         .doc-side { border: 2.5px solid #000; padding: 15px; text-align: center; background: #fffde7; min-width: 320px; border-radius: 4px; box-shadow: 3px 3px 0px #000; }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
@@ -21,6 +21,10 @@
         .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
         .btn-reg { background: var(--primary); color: white; width: 100%; font-size: 14pt; margin-top: 10px; }
         
+        /* COLOURFUL SELECT BUTTON */
+        .btn-select { background: #2e7d32 !important; color: white !important; padding: 8px 16px; border-radius: 4px; border: none; font-weight: bold; transition: background 0.3s; }
+        .btn-select:hover { background: #1b5e20 !important; }
+
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { background: #263238; color: white; padding: 12px; text-align: left; }
         td { padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; }
@@ -36,51 +40,39 @@
             #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
 
             .print-page-wrapper {
-                width: 21.59cm; 
-                height: 27.7cm; /* Reduced slightly to prevent Page 2 overflow */
-                position: relative;
-                margin: 0 auto;
-                padding: 0.4cm 1cm;
-                box-sizing: border-box;
-                page-break-after: always;
-                background: white !important;
+                width: 21.59cm; height: 27.7cm; position: relative; margin: 0 auto; padding: 0.4cm 1cm;
+                box-sizing: border-box; page-break-after: always; background: white !important;
                 -webkit-print-color-adjust: exact !important; 
             }
 
             .watermark { 
                 position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-                opacity: 0.1 !important; width: 450px; z-index: -1; visibility: visible !important; 
+                opacity: 0.08 !important; width: 500px; z-index: 0 !important; display: block !important;
             }
             
-            .print-footer-container { 
-                position: absolute; 
-                bottom: 0.1cm !important; /* Pinned to bottom of P1 */
-                left: 1cm; right: 1cm; 
-            }
+            .print-main-content { position: relative; z-index: 10; }
 
-            /* DARK HEADERS FOR TABLE */
+            .print-footer-container { position: absolute; bottom: 0.1cm !important; left: 1cm; right: 1cm; z-index: 10; }
+
             .med-print-table th { 
-                background: #333333 !important; 
-                color: #ffffff !important; 
-                padding: 8px; 
-                border: 2px solid #000; 
-                font-size: 14pt; 
-                -webkit-print-color-adjust: exact;
+                background: #333333 !important; color: #ffffff !important; padding: 8px; border: 2px solid #000; font-size: 14pt; -webkit-print-color-adjust: exact;
             }
 
             .print-vitals-box { background: #e8f5e9 !important; border: 2px solid #000; border-top: none; padding: 8px; display: flex; justify-content: space-between; font-size: 14pt; font-weight: 900; -webkit-print-color-adjust: exact; }
+
+            .print-hospital-name h1 { white-space: nowrap !important; font-size: 26pt !important; }
 
             @page { size: letter; margin: 0 !important; }
 
             @media (max-width: 768px) {
                 .print-page-wrapper { height: 27.5cm; padding: 0.2cm 0.4cm; }
-                .print-footer-container { bottom: 0.05cm !important; }
+                .print-hospital-name h1 { font-size: 20pt !important; }
             }
         }
 
-        .print-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 5px solid #1b5e20; padding-bottom: 5px; margin-bottom: 10px; }
+        .print-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 5px solid #1b5e20; padding-bottom: 5px; margin-bottom: 10px; position: relative; z-index: 10; }
         .print-hospital-name { text-align: center; flex: 1; }
-        .print-hospital-name h1 { color: #c62828; margin: 0; font-size: 28pt; font-weight: 900; }
+        .print-hospital-name h1 { color: #c62828; margin: 0; font-weight: 900; }
         .print-doc-box { border: 2.5px solid #000 !important; padding: 8px; text-align: center; width: 300px; border-radius: 8px; }
         .print-data-box { border: 2px solid #000; padding: 8px; font-size: 14pt; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 5px; font-weight: bold; }
         .med-print-table { width: 100%; border-collapse: collapse; border: 2px solid #000; margin-top: 10px; }
@@ -169,7 +161,7 @@
     }
     function handleResponse(data) { patients = data; renderTable(data); }
     function renderTable(list) {
-        document.getElementById('tbody').innerHTML = list.map(p => `<tr><td>${p.opd_number}</td><td>${p.name}</td><td><button onclick="openMenu('${p.opd_number}')">Select</button></td></tr>`).reverse().join('');
+        document.getElementById('tbody').innerHTML = list.map(p => `<tr><td>${p.opd_number}</td><td>${p.name}</td><td><button class="btn-select" onclick="openMenu('${p.opd_number}')">SELECT</button></td></tr>`).reverse().join('');
     }
     function openMenu(id) {
         selectedP = patients.find(p => p.opd_number === id);
@@ -190,6 +182,14 @@
         const data = { type: "SAVE_TREATMENT", opd: selectedP.opd_number, complaints: document.getElementById('t_complaints').value, investigations: document.getElementById('t_investigations').value, history: document.getElementById('t_history').value, medications: JSON.stringify(meds), notes: document.getElementById('t_notes').value };
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
         location.reload();
+    }
+
+    function sendWhatsApp() {
+        if (!selectedP.phone) { alert("Phone missing!"); return; }
+        const meds = JSON.parse(selectedP.medications || "[]");
+        let medText = meds.map((m, i) => `${i+1}. *${m.n}* - ${m.d}`).join('%0A');
+        const message = `*SRR HOSPITAL*%0A*Patient:* ${selectedP.name}%0A*Rx:*%0A${medText}%0A%0A*Dr. M. Jayachander*`;
+        window.open(`https://wa.me/91${selectedP.phone}?text=${message}`, '_blank');
     }
 
     const getFullPageSetup = (pContent) => `
