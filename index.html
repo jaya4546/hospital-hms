@@ -35,50 +35,59 @@
         th { background: #263238; color: white; padding: 12px; text-align: left; }
         td { padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; }
 
-        /* --- PRINT RECTIFICATION --- */
+        /* --- AGGRESSIVE PRINT RECTIFICATION --- */
         #printArea { display: none; }
         @media print {
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
-            #printArea { display: block; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
+            #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
 
             .print-page-wrapper {
                 width: 21.59cm; 
                 height: 27.94cm; /* Fixed Letter Height */
-                display: flex;
-                flex-direction: column; /* This pushes the footer to the bottom */
+                display: block; /* Use block for absolute footer tracking */
+                position: relative;
                 margin: 0 auto;
-                padding: 0.4cm 0.8cm;
+                padding: 0.5cm 1cm;
                 box-sizing: border-box;
                 page-break-after: always;
                 background: white;
-                position: relative;
+                overflow: hidden; /* Prevent extra page triggers */
             }
 
-            .print-main-content { flex-grow: 1; width: 100%; } /* Stretches to fill space */
+            .print-main-content { width: 100%; }
             
+            /* Aggressive Footer Pining */
             .print-footer-container { 
-                width: 100%;
-                margin-top: auto; /* Forces footer to the absolute bottom of the flex container */
-                padding-bottom: 0.2cm;
+                position: absolute;
+                bottom: 0.5cm; /* Pins exactly 0.5cm from paper edge */
+                left: 1cm;
+                right: 1cm;
+                width: calc(100% - 2cm);
             }
 
             .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.12; width: 400px; z-index: -1; }
             .print-text-wrap { white-space: pre-wrap; font-weight: bold; display: block; font-size: 15pt; margin-top: 3px; }
             
-            @page { size: letter; margin: 0; }
+            @page { 
+                size: letter; 
+                margin: 0 !important; /* Forces browser to give up its margins */
+            }
 
-            /* Mobile Chrome Print Fixes */
+            /* Mobile Aggressive Chrome Fix */
             @media (max-width: 768px) {
-                .print-page-wrapper { padding: 0.3cm 0.4cm; height: 26.5cm; } /* Shorter for mobile overflow */
-                .print-hospital-name h1 { font-size: 20pt !important; }
-                .print-doc-box { min-width: 220px !important; padding: 5px !important; border-width: 2px !important; }
-                .print-doc-box div:first-child { font-size: 14pt !important; }
-                .print-doc-box div { font-size: 9pt !important; }
-                .print-data-box { font-size: 12pt !important; grid-template-columns: 1fr 1fr !important; }
-                .print-vitals-box { font-size: 12pt !important; }
-                .med-print-table th, .med-print-table td { font-size: 12pt !important; padding: 4px !important; }
-                .footer-banner { font-size: 10pt !important; }
+                .print-page-wrapper { 
+                    height: 27.8cm; /* Maximize height for mobile view */
+                    padding: 0.3cm 0.5cm; 
+                } 
+                .print-footer-container { 
+                    bottom: 0.2cm !important; /* Move even lower on mobile */
+                    left: 0.5cm;
+                    right: 0.5cm;
+                    width: calc(100% - 1cm);
+                }
+                .print-hospital-name h1 { font-size: 22pt !important; }
+                .print-doc-box { width: 240px !important; }
             }
         }
 
@@ -86,8 +95,7 @@
         .print-hospital-name { text-align: center; flex: 1; }
         .print-hospital-name h1 { color: #c62828; margin: 0; font-size: 28pt; text-transform: uppercase; font-weight: 900; }
         
-        /* Fixed Border Box */
-        .print-doc-box { border: 2.5px solid #000 !important; padding: 8px; text-align: center; width: 280px; border-radius: 8px; background: transparent; display: block !important; }
+        .print-doc-box { border: 2.5px solid #000 !important; padding: 8px; text-align: center; width: 280px; border-radius: 8px; display: block !important; }
         
         .print-data-box { border: 2px solid #000; padding: 8px; font-size: 14pt; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 5px; font-weight: bold; }
         .print-vitals-box { border: 2px solid #000; border-top: none; padding: 8px; background: #ffffff !important; display: flex; justify-content: space-between; font-size: 14pt; font-weight: 900; margin-bottom: 10px; }
@@ -101,7 +109,7 @@
         
         .med-legal-note { font-size: 10pt; font-weight: 900; text-align: center; text-decoration: underline; }
         .telugu-file-note { font-size: 11pt; color: #c62828; font-weight: bold; text-align: center; margin: 2px 0; }
-        .telugu-services { font-size: 9pt; color: #1b5e20; font-weight: bold; text-align: center; line-height: 1.1; margin-bottom: 5px; }
+        .telugu-services { font-size: 8.5pt; color: #1b5e20; font-weight: bold; text-align: center; line-height: 1.1; margin-bottom: 5px; }
         
         .footer-banner-container { display: flex; align-items: center; justify-content: center; gap: 10px; }
         .footer-banner { background: #1976d2 !important; color: white !important; padding: 8px; flex: 1; text-align: center; font-weight: bold; font-size: 13pt; border-radius: 6px; -webkit-print-color-adjust: exact; }
@@ -115,7 +123,7 @@
         <img src="logo.jpg" style="width:90px">
         <div class="center-side">
             <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
-            <p style="font-size:11px; font-weight:bold;">Suraram colony NTR road opp: ramaleela maidanam TG 500055</p>
+            <p style="font-size:11px; font-weight:bold;">Suraram colony TG 500055</p>
         </div>
         <div class="doc-side">
             <b style="font-size: 20px;">DR. M. JAYACHANDER</b><br>
@@ -283,8 +291,8 @@
             document.getElementById('printArea').innerHTML = getFullPageSetup(info);
         } else {
             const meds = JSON.parse(selectedP.medications || "[]");
-            const first6 = meds.slice(0, 6);
-            const remaining = meds.slice(6);
+            const first8 = meds.slice(0, 8); // Increased row count for first page
+            const remaining = meds.slice(8);
 
             let page1Content = info + `
                 <p style="margin:2px 0;"><b>Complaints:</b> <span class="print-text-wrap">${selectedP.complaints || '---'}</span></p>
@@ -293,7 +301,7 @@
                 <h3 style="border-bottom:2px solid #000; font-size:15pt; margin:8px 0 3px 0;">Rx (Medications)</h3>
                 <table class="med-print-table">
                     <thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead>
-                    <tbody>${first6.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody>
+                    <tbody>${first8.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody>
                 </table>
                 ${remaining.length === 0 ? `<p style="margin-top:10px;"><b>Notes:</b> <span class="print-text-wrap">${selectedP.notes || '---'}</span></p>` : ''}
             `;
