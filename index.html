@@ -24,7 +24,7 @@
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); overflow-y: auto; }
         .modal-content { background: white; margin: 2% auto; padding: 25px; width: 95%; max-width: 950px; border-radius: 10px; }
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-        .menu-btn { padding: 20px; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .menu-btn { padding: 20px; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
         
         .med-table { width: 100%; border-collapse: collapse; margin: 10px 0; border: 2px solid #000; table-layout: fixed; }
         .med-table th { background: #333; color: #fff; padding: 10px; border: 1px solid #000; font-size: 14pt; }
@@ -42,7 +42,6 @@
             #printArea, #printArea * { visibility: visible; }
             #printArea { display: block; position: absolute; left: 0; top: 0; width: 100%; }
 
-            /* Wrap the entire page in a 100% height container */
             .print-page-wrapper {
                 width: 100%;
                 min-height: 98vh;
@@ -54,16 +53,8 @@
                 box-sizing: border-box;
             }
 
-            .print-main-content {
-                flex: 1 0 auto; /* This section grows to fill space, pushing footer down */
-            }
-
-            .print-footer-container {
-                flex-shrink: 0;
-                margin-top: 50px; /* Safety gap so it never mixes with medications */
-                width: 100%;
-            }
-
+            .print-main-content { flex: 1 0 auto; }
+            .print-footer-container { flex-shrink: 0; margin-top: 50px; width: 100%; }
             .watermark { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); opacity: 0.07; width: 500px; z-index: -1; }
             .print-text-wrap { white-space: pre-wrap; font-weight: bold; display: block; font-size: 16pt; margin-top: 5px; }
             @page { margin: 1cm; }
@@ -100,7 +91,7 @@
         <img src="logo.jpg" style="width:90px">
         <div class="center-side">
             <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
-            <p style="font-size:11px; font-weight:bold;">SURARAM COLONY TG 500055</p>
+            <p style="font-size:11px; font-weight:bold;">Suraram colony NTR road opp: ramaleela maidanam TG 500055</p>
         </div>
         <div class="doc-side">
             <b style="font-size: 20px;">DR. M. JAYACHANDER</b><br>
@@ -137,6 +128,9 @@
             <button class="menu-btn" style="background:#1565c0;" onclick="openEdit()">EDIT DETAILS</button>
             <button class="menu-btn" style="background:#ef6c00;" onclick="openTreat()">TREAT</button>
             <button class="menu-btn" style="background:#2e7d32;" onclick="generatePrint('PRESCRIPTION')">PRINT PRESCRIPTION</button>
+            <button class="menu-btn" style="background:#25D366;" onclick="sendWhatsApp()">
+                <img src="https://cdn-icons-png.flaticon.com/512/3670/3670051.png" style="width:25px;"> WHATSAPP Rx
+            </button>
             <button class="menu-btn" style="background:#c62828;" onclick="generatePrint('REGISTRATION')">PRINT REGISTRATION</button>
         </div>
         <button class="btn" style="width:100%; margin-top:20px; background:#666; color: white;" onclick="resetForm()">Close</button>
@@ -182,6 +176,16 @@
         document.getElementById('menuPatientName').innerText = "Patient: " + selectedP.name;
         document.getElementById('actionModal').style.display = "block";
     }
+
+    function sendWhatsApp() {
+        if (!selectedP.phone) { alert("No phone number saved for this patient!"); return; }
+        const meds = JSON.parse(selectedP.medications || "[]");
+        let medText = meds.map((m, i) => `${i+1}. ${m.n} (${m.r}) - ${m.d}`).join('%0A');
+        const message = `*SRI RAJA RAJESHWARI HOSPITAL*%0A%0AHello *${selectedP.name}*,%0AHere is your digital prescription summary:%0A%0A*Medications:*%0A${medText}%0A%0A*Notes:* ${selectedP.notes || 'N/A'}%0A%0APlease visit us again if symptoms persist.%0A*DR. M. JAYACHANDER*`;
+        const url = `https://wa.me/91${selectedP.phone}?text=${message}`;
+        window.open(url, '_blank');
+    }
+
     function openEdit() {
         ['name','age','sex','phone','address','weight','bp','pr','spo2','temp'].forEach(f => document.getElementById('p_'+f).value = selectedP[f] || "");
         document.getElementById('submitBtn').innerText = "UPDATE DETAILS";
@@ -217,7 +221,7 @@
                     <img src="logo.jpg" style="width:100px;">
                     <div class="print-hospital-name">
                         <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
-                        <p style="font-size:11pt; font-weight:bold; margin-top:5px;">SURARAM COLONY TG 500055</p>
+                        <p style="font-size:11pt; font-weight:bold; margin-top:5px;">Suraram colony NTR road opp: ramaleela maidanam TG 500055</p>
                     </div>
                     <div class="print-doc-box">
                         <div style="font-size:22pt; font-weight:900;">DR. M. JAYACHANDER</div>
@@ -260,6 +264,7 @@
             let page1Content = info + `
                 <p><b>Complaints:</b> <span class="print-text-wrap">${selectedP.complaints || '---'}</span></p>
                 <p><b>Investigations:</b> <span class="print-text-wrap">${selectedP.investigations || '---'}</span></p>
+                <p><b>Past History:</b> <span class="print-text-wrap">${selectedP.history || '---'}</span></p>
                 <h3 style="border-bottom:2px solid #000; font-size:18pt; margin-top:10px;">Rx (Medications)</h3>
                 <table class="med-print-table">
                     <thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead>
