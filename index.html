@@ -21,7 +21,6 @@
         .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
         .btn-reg { background: var(--primary); color: white; width: 100%; font-size: 14pt; margin-top: 10px; }
         
-        /* COLOURFUL SELECT BUTTON */
         .btn-select { background: #2e7d32 !important; color: white !important; padding: 8px 16px; border-radius: 4px; border: none; font-weight: bold; transition: background 0.3s; }
         .btn-select:hover { background: #1b5e20 !important; }
 
@@ -51,7 +50,6 @@
             }
             
             .print-main-content { position: relative; z-index: 10; }
-
             .print-footer-container { position: absolute; bottom: 0.1cm !important; left: 1cm; right: 1cm; z-index: 10; }
 
             .med-print-table th { 
@@ -59,7 +57,6 @@
             }
 
             .print-vitals-box { background: #e8f5e9 !important; border: 2px solid #000; border-top: none; padding: 8px; display: flex; justify-content: space-between; font-size: 14pt; font-weight: 900; -webkit-print-color-adjust: exact; }
-
             .print-hospital-name h1 { white-space: nowrap !important; font-size: 26pt !important; }
 
             @page { size: letter; margin: 0 !important; }
@@ -137,16 +134,17 @@
 <div id="treatModal" class="modal">
     <div class="modal-content">
         <h2>Treatment</h2>
-        <textarea id="t_complaints" placeholder="Complaints"></textarea>
-        <textarea id="t_investigations" placeholder="Investigations"></textarea>
-        <textarea id="t_history" placeholder="Past History"></textarea>
-        <table border="1" style="width:100%; margin:10px 0;">
-            <thead><tr><th>Drug</th><th>Dur</th><th>Route</th><th>Rem</th><th></th></tr></thead>
+        <div style="margin-bottom:10px;"><b>Complaints:</b><textarea id="t_complaints"></textarea></div>
+        <div style="margin-bottom:10px;"><b>Investigations:</b><textarea id="t_investigations"></textarea></div>
+        <div style="margin-bottom:10px;"><b>Past History:</b><textarea id="t_history"></textarea></div>
+        <table border="1" style="width:100%; margin:10px 0; border-collapse: collapse;">
+            <thead><tr style="background:#eee;"><th>Drug Name</th><th>Dur</th><th>Route</th><th>Rem</th><th></th></tr></thead>
             <tbody id="medBody"></tbody>
         </table>
-        <button onclick="addMedRow()">+ Add Drug</button>
-        <textarea id="t_notes" placeholder="Notes"></textarea>
-        <button class="btn btn-reg" onclick="saveTreatment()">Save</button>
+        <button class="btn" style="background:#2196f3; color:white; margin-bottom:10px;" onclick="addMedRow()">+ Add Drug</button>
+        <div><b>Notes:</b><textarea id="t_notes"></textarea></div>
+        <button class="btn btn-reg" onclick="saveTreatment()">Save Treatment</button>
+        <button class="btn" style="width:100%; margin-top:10px; background:#666; color:white;" onclick="document.getElementById('treatModal').style.display='none'">Cancel</button>
     </div>
 </div>
 
@@ -169,9 +167,39 @@
         document.getElementById('actionModal').style.display = "block";
     }
 
+    /* RECTIFIED EDIT BUTTON FUNCTION */
+    function openEdit() {
+        if (!selectedP) return;
+        ['name','age','sex','phone','address','weight','bp','pr','spo2','temp'].forEach(f => {
+            const el = document.getElementById('p_'+f);
+            if(el) el.value = selectedP[f] || "";
+        });
+        document.getElementById('actionModal').style.display = "none";
+        window.scrollTo(0,0);
+    }
+
+    /* RECTIFIED TREAT BUTTON FUNCTION */
+    function openTreat() {
+        if (!selectedP) return;
+        document.getElementById('actionModal').style.display = "none";
+        document.getElementById('treatModal').style.display = "block";
+        ['complaints','investigations','history','notes'].forEach(f => {
+            const el = document.getElementById('t_'+f);
+            if(el) el.value = selectedP[f] || "";
+        });
+        document.getElementById('medBody').innerHTML = "";
+        try {
+            const meds = JSON.parse(selectedP.medications || "[]");
+            if (meds.length > 0) meds.forEach(m => addMedRow(m));
+            else addMedRow();
+        } catch(e) {
+            addMedRow();
+        }
+    }
+
     function addMedRow(data = {n:'', d:'', r:'', rem:''}) {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td><textarea class="m-name">${data.n}</textarea></td><td><textarea class="m-dur">${data.d}</textarea></td><td><textarea class="m-route">${data.r}</textarea></td><td><textarea class="m-rem">${data.rem}</textarea></td><td onclick="this.parentElement.remove()">×</td>`;
+        tr.innerHTML = `<td><textarea class="m-name">${data.n || ''}</textarea></td><td><textarea class="m-dur">${data.d || ''}</textarea></td><td><textarea class="m-route">${data.r || ''}</textarea></td><td><textarea class="m-rem">${data.rem || ''}</textarea></td><td style="cursor:pointer; color:red; font-weight:bold; text-align:center;" onclick="this.parentElement.remove()">×</td>`;
         document.getElementById('medBody').appendChild(tr);
     }
 
