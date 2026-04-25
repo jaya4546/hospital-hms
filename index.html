@@ -94,6 +94,8 @@
         </div>
     </div>
 
+    <input type="hidden" id="current_opd_id" value="">
+
     <div class="grid">
         <input type="text" id="p_name" placeholder="Patient Name">
         <input type="number" id="p_age" placeholder="Age">
@@ -106,7 +108,7 @@
         <input type="text" id="p_spo2" placeholder="SpO2">
         <input type="text" id="p_temp" placeholder="Temp">
     </div>
-    <button class="btn btn-reg" onclick="savePatient('REGISTRATION')">Register Patient</button>
+    <button class="btn btn-reg" id="mainActionBtn" onclick="savePatient('REGISTRATION')">Register Patient</button>
     
     <input type="text" id="pSearch" style="width:100%; margin-top:20px; padding:12px;" placeholder="🔍 Search Patient..." onkeyup="filterTable()">
     <table>
@@ -167,18 +169,18 @@
         document.getElementById('actionModal').style.display = "block";
     }
 
-    /* RECTIFIED EDIT BUTTON FUNCTION */
     function openEdit() {
         if (!selectedP) return;
+        document.getElementById('current_opd_id').value = selectedP.opd_number;
+        document.getElementById('mainActionBtn').innerText = "Update Patient Details";
         ['name','age','sex','phone','address','weight','bp','pr','spo2','temp'].forEach(f => {
             const el = document.getElementById('p_'+f);
             if(el) el.value = selectedP[f] || "";
         });
         document.getElementById('actionModal').style.display = "none";
-        window.scrollTo(0,0);
+        window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
-    /* RECTIFIED TREAT BUTTON FUNCTION */
     function openTreat() {
         if (!selectedP) return;
         document.getElementById('actionModal').style.display = "none";
@@ -192,9 +194,7 @@
             const meds = JSON.parse(selectedP.medications || "[]");
             if (meds.length > 0) meds.forEach(m => addMedRow(m));
             else addMedRow();
-        } catch(e) {
-            addMedRow();
-        }
+        } catch(e) { addMedRow(); }
     }
 
     function addMedRow(data = {n:'', d:'', r:'', rem:''}) {
@@ -297,7 +297,21 @@
     }
 
     async function savePatient(type) {
-        const data = { type: type, opd: "SRR-"+Date.now().toString().slice(-4), name: document.getElementById('p_name').value, age: document.getElementById('p_age').value, sex: document.getElementById('p_sex').value, phone: document.getElementById('p_phone').value, address: document.getElementById('p_address').value, weight: document.getElementById('p_weight').value, bp: document.getElementById('p_bp').value, pr: document.getElementById('p_pr').value, spo2: document.getElementById('p_spo2').value, temp: document.getElementById('p_temp').value };
+        const existingOpd = document.getElementById('current_opd_id').value;
+        const data = { 
+            type: "REGISTRATION", 
+            opd: existingOpd ? existingOpd : "SRR-"+Date.now().toString().slice(-4), 
+            name: document.getElementById('p_name').value, 
+            age: document.getElementById('p_age').value, 
+            sex: document.getElementById('p_sex').value, 
+            phone: document.getElementById('p_phone').value, 
+            address: document.getElementById('p_address').value, 
+            weight: document.getElementById('p_weight').value, 
+            bp: document.getElementById('p_bp').value, 
+            pr: document.getElementById('p_pr').value, 
+            spo2: document.getElementById('p_spo2').value, 
+            temp: document.getElementById('p_temp').value 
+        };
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
         location.reload();
     }
