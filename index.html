@@ -151,7 +151,8 @@
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbybybQ8Z-63ZqoGpGyzjLdE5YgNopWSIRr1BHdrKgF3wNliSigX689zFIWco02kAJbo/exec";
+    // UPDATED WITH YOUR NEW WEB APP URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbz-oWxFXTe9IUsW3BP9BYuIlS6K1PuQmp9GqGIWtOugBYK0ajGYW-7jZD3-5La70Qxt/exec";
     let patients = [], selectedP = null;
 
     function loadData() {
@@ -171,7 +172,6 @@
 
     function openEdit() {
         if (!selectedP) return;
-        // Force the ID into the hidden field and change button text
         document.getElementById('current_opd_id').value = selectedP.opd_number;
         document.getElementById('mainActionBtn').innerText = "Update Patient Details";
         ['name','age','sex','phone','address','weight','bp','pr','spo2','temp'].forEach(f => {
@@ -297,14 +297,17 @@
         window.print();
     }
 
-    /* === RECTIFIED SAVE FUNCTION: FORCED UPDATE CHECK === */
+    /* === RECTIFIED SAVE FUNCTION: WITH DUPLICATE PROTECTION === */
     async function savePatient() {
         const idField = document.getElementById('current_opd_id');
         const actionBtn = document.getElementById('mainActionBtn');
-        let opd_to_use = "";
+        
+        if (actionBtn.disabled) return; 
 
-        // FORCE CHECK: If button says Update AND we have an ID, do NOT create a new one.
-        if (actionBtn.innerText === "Update Patient Details" && idField.value && idField.value !== "") {
+        let opd_to_use = "";
+        let isUpdate = (actionBtn.innerText === "Update Patient Details");
+
+        if (isUpdate) {
             opd_to_use = idField.value;
         } else {
             opd_to_use = "SRR-" + Date.now().toString().slice(-4);
@@ -325,13 +328,13 @@
             temp: document.getElementById('p_temp').value 
         };
 
-        // Disable to prevent duplicate requests from rapid clicking
-        actionBtn.innerText = "Processing...";
+        actionBtn.innerText = isUpdate ? "Updating..." : "Saving...";
         actionBtn.disabled = true;
 
         try {
             await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-            location.reload(); 
+            // Crucial delay to allow Google Sheets to finish before refreshing the table
+            setTimeout(() => { location.reload(); }, 2000); 
         } catch (e) {
             actionBtn.innerText = "Error Saving";
             actionBtn.disabled = false;
