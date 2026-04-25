@@ -180,8 +180,11 @@
     function sendWhatsApp() {
         if (!selectedP.phone) { alert("No phone number saved for this patient!"); return; }
         const meds = JSON.parse(selectedP.medications || "[]");
-        let medText = meds.map((m, i) => `${i+1}. ${m.n} (${m.r}) - ${m.d}`).join('%0A');
+        // Updated logic to include Remarks (rem)
+        let medText = meds.map((m, i) => `${i+1}. *${m.n}* - ${m.d} (${m.r}) ${m.rem ? '[' + m.rem + ']' : ''}`).join('%0A');
+        
         const message = `*SRI RAJA RAJESHWARI HOSPITAL*%0A%0AHello *${selectedP.name}*,%0AHere is your digital prescription summary:%0A%0A*Medications:*%0A${medText}%0A%0A*Notes:* ${selectedP.notes || 'N/A'}%0A%0APlease visit us again if symptoms persist.%0A*DR. M. JAYACHANDER*`;
+        
         const url = `https://wa.me/91${selectedP.phone}?text=${message}`;
         window.open(url, '_blank');
     }
