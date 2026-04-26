@@ -8,7 +8,6 @@
         :root { --primary: #1b5e20; --accent: #c62828; --bg: #f4f7f6; }
         body { font-family: 'Calibri', sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 12pt; color: #000; }
         
-        /* Dashboard UI */
         .container { max-width: 1150px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
         .center-side { text-align: center; flex: 2; overflow: hidden; }
@@ -31,40 +30,19 @@
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); overflow-y: auto; }
         .modal-content { background: white; margin: 2% auto; padding: 25px; width: 90%; max-width: 800px; border-radius: 12px; }
 
-        /* PRINT SYSTEM */
         #printArea { display: none; }
         @media print {
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
             #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
-
-            .print-page-wrapper {
-                width: 21.59cm; height: 27.7cm; position: relative; margin: 0 auto; padding: 0.4cm 1cm;
-                box-sizing: border-box; page-break-after: always; background: white !important;
-                -webkit-print-color-adjust: exact !important; 
-            }
-
-            .watermark { 
-                position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-                opacity: 0.08 !important; width: 500px; z-index: 0 !important; display: block !important;
-            }
-            
+            .print-page-wrapper { width: 21.59cm; height: 27.7cm; position: relative; margin: 0 auto; padding: 0.4cm 1cm; box-sizing: border-box; page-break-after: always; background: white !important; -webkit-print-color-adjust: exact !important; }
+            .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.08 !important; width: 500px; z-index: 0 !important; display: block !important; }
             .print-main-content { position: relative; z-index: 10; }
             .print-footer-container { position: absolute; bottom: 0.1cm !important; left: 1cm; right: 1cm; z-index: 10; }
-
-            .med-print-table th { 
-                background: #333333 !important; color: #ffffff !important; padding: 8px; border: 2px solid #000; font-size: 14pt; -webkit-print-color-adjust: exact;
-            }
-
+            .med-print-table th { background: #333333 !important; color: #ffffff !important; padding: 8px; border: 2px solid #000; font-size: 14pt; -webkit-print-color-adjust: exact; }
             .print-vitals-box { background: #e8f5e9 !important; border: 2px solid #000; border-top: none; padding: 8px; display: flex; justify-content: space-between; font-size: 14pt; font-weight: 900; -webkit-print-color-adjust: exact; }
             .print-hospital-name h1 { white-space: nowrap !important; font-size: 26pt !important; }
-
             @page { size: letter; margin: 0 !important; }
-
-            @media (max-width: 768px) {
-                .print-page-wrapper { height: 27.5cm; padding: 0.2cm 0.4cm; }
-                .print-hospital-name h1 { font-size: 20pt !important; }
-            }
         }
 
         .print-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 5px solid #1b5e20; padding-bottom: 5px; margin-bottom: 10px; position: relative; z-index: 10; }
@@ -151,7 +129,7 @@
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbz-oWxFXTe9IUsW3BP9BYuIlS6K1PuQmp9GqGIWtOugBYK0ajGYW-7jZD3-5La70Qxt/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbyAOmVN5PqkK5eOtX0cCshBAPaRL4GHlu4HaqqykE3IDezzaFYMHjgvRW3uQJLMjT4S/exec";
     let patients = [], selectedP = null;
 
     function loadData() {
@@ -174,7 +152,6 @@
         document.getElementById('current_opd_id').value = selectedP.opd_number;
         document.getElementById('mainActionBtn').innerText = "Update Patient Details";
         
-        // AGGRESSIVE DATA MATCHING: Load the dashboard fields from the existing patient object
         document.getElementById('p_name').value = selectedP.name || "";
         document.getElementById('p_age').value = selectedP.age || "";
         document.getElementById('p_sex').value = selectedP.sex || "Male";
@@ -182,7 +159,7 @@
         document.getElementById('p_address').value = selectedP.address || "";
         document.getElementById('p_weight').value = selectedP.weight || "";
         document.getElementById('p_bp').value = selectedP.bp || "";
-        document.getElementById('p_pr').value = selectedP.pulse || ""; // Dashboard Pulse must match this key
+        document.getElementById('p_pr').value = selectedP.pulse || ""; 
         document.getElementById('p_spo2').value = selectedP.spo2 || "";
         document.getElementById('p_temp').value = selectedP.temp || "";
 
@@ -266,7 +243,6 @@
     `;
 
     function generatePrint(type) {
-        // AGGRESSIVE PRINTING MATCH: Recreate vital mappings for the Rx print to match dashboard exactly
         const info = `<div class="print-data-box"><div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:18pt; text-transform:uppercase;">${selectedP.name}</span><br>Phone: ${selectedP.phone || 'N/A'}</div><div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}<br>Address: ${selectedP.address}</div></div><div class="print-vitals-box"><span>Wt: ${selectedP.weight}kg</span><span>BP: ${selectedP.bp}</span><span>Pulse: ${selectedP.pulse || ""}</span><span>SpO2: ${selectedP.spo2}%</span><span>Temp: ${selectedP.temp}°F</span></div>`;
         
         if (type === 'REGISTRATION') {
@@ -311,7 +287,6 @@
         const actionBtn = document.getElementById('mainActionBtn');
         let opd_to_use = "";
 
-        // RECTIFIED AGGRESSIVE LOCK: strictly enforce the use of the hidden ID during update
         if (idField.value && idField.value !== "") {
             opd_to_use = idField.value;
         } else {
@@ -328,7 +303,7 @@
             address: document.getElementById('p_address').value, 
             weight: document.getElementById('p_weight').value, 
             bp: document.getElementById('p_bp').value, 
-            pulse: document.getElementById('p_pr').value, // Captured from Pulse field, mapping to correct key
+            pulse: document.getElementById('p_pr').value, 
             spo2: document.getElementById('p_spo2').value, 
             temp: document.getElementById('p_temp').value 
         };
