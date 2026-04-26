@@ -60,6 +60,11 @@
             .print-hospital-name h1 { white-space: nowrap !important; font-size: 26pt !important; }
 
             @page { size: letter; margin: 0 !important; }
+
+            @media (max-width: 768px) {
+                .print-page-wrapper { height: 27.5cm; padding: 0.2cm 0.4cm; }
+                .print-hospital-name h1 { font-size: 20pt !important; }
+            }
         }
 
         .print-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 5px solid #1b5e20; padding-bottom: 5px; margin-bottom: 10px; position: relative; z-index: 10; }
@@ -146,8 +151,7 @@
 </div>
 
 <script>
-    // UPDATED NEW URL
-    const API_URL = "https://script.google.com/macros/s/AKfycbx4nxtFs0cNSRs8TfdT5eQcQyQelTTEhdu3mMwPoxdOJtCjb1XgoVYB1yFreGU-OFCD/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbz-oWxFXTe9IUsW3BP9BYuIlS6K1PuQmp9GqGIWtOugBYK0ajGYW-7jZD3-5La70Qxt/exec";
     let patients = [], selectedP = null;
 
     function loadData() {
@@ -169,10 +173,19 @@
         if (!selectedP) return;
         document.getElementById('current_opd_id').value = selectedP.opd_number;
         document.getElementById('mainActionBtn').innerText = "Update Patient Details";
-        ['name','age','sex','phone','address','weight','bp','pr','spo2','temp'].forEach(f => {
-            const el = document.getElementById('p_'+f);
-            if(el) el.value = selectedP[f] || "";
-        });
+        
+        // AGGRESSIVE DATA MATCHING: Load the dashboard fields from the existing patient object
+        document.getElementById('p_name').value = selectedP.name || "";
+        document.getElementById('p_age').value = selectedP.age || "";
+        document.getElementById('p_sex').value = selectedP.sex || "Male";
+        document.getElementById('p_phone').value = selectedP.phone || "";
+        document.getElementById('p_address').value = selectedP.address || "";
+        document.getElementById('p_weight').value = selectedP.weight || "";
+        document.getElementById('p_bp').value = selectedP.bp || "";
+        document.getElementById('p_pr').value = selectedP.pulse || ""; // Dashboard Pulse must match this key
+        document.getElementById('p_spo2').value = selectedP.spo2 || "";
+        document.getElementById('p_temp').value = selectedP.temp || "";
+
         document.getElementById('actionModal').style.display = "none";
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
@@ -253,17 +266,39 @@
     `;
 
     function generatePrint(type) {
-        const info = `<div class="print-data-box"><div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:18pt; text-transform:uppercase;">${selectedP.name}</span><br>Phone: ${selectedP.phone || 'N/A'}</div><div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}<br>Address: ${selectedP.address}</div></div><div class="print-vitals-box"><span>Wt: ${selectedP.weight}kg</span><span>BP: ${selectedP.bp}</span><span>Pulse: ${selectedP.pr}</span><span>SpO2: ${selectedP.spo2}%</span><span>Temp: ${selectedP.temp}°F</span></div>`;
+        // AGGRESSIVE PRINTING MATCH: Recreate vital mappings for the Rx print to match dashboard exactly
+        const info = `<div class="print-data-box"><div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:18pt; text-transform:uppercase;">${selectedP.name}</span><br>Phone: ${selectedP.phone || 'N/A'}</div><div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}<br>Address: ${selectedP.address}</div></div><div class="print-vitals-box"><span>Wt: ${selectedP.weight}kg</span><span>BP: ${selectedP.bp}</span><span>Pulse: ${selectedP.pulse || ""}</span><span>SpO2: ${selectedP.spo2}%</span><span>Temp: ${selectedP.temp}°F</span></div>`;
+        
         if (type === 'REGISTRATION') {
             document.getElementById('printArea').innerHTML = getFullPageSetup(info);
         } else {
             const meds = JSON.parse(selectedP.medications || "[]");
             const p1Meds = meds.slice(0, 7);
             const p2Meds = meds.slice(7);
-            let p1Content = info + `<p style="margin:5px 0;"><b>Complaints:</b> <span style="font-weight:bold; font-size:15pt;">${selectedP.complaints || '---'}</span></p><p style="margin:5px 0;"><b>Investigations:</b> <span style="font-weight:bold; font-size:15pt;">${selectedP.investigations || '---'}</span></p><p style="margin:5px 0;"><b>Past History:</b> <span style="font-weight:bold; font-size:15pt;">${selectedP.history || '---'}</span></p><h3 style="border-bottom:2px solid #000; font-size:15pt; margin-top:10px;">Rx (Medications)</h3><table class="med-print-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${p1Meds.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody></table>${p2Meds.length === 0 ? `<p style="margin-top:10px;"><b>Notes:</b> <span style="font-weight:bold; font-size:15pt;">${selectedP.notes || '---'}</span></p>` : ''}`;
+
+            let p1Content = info + `
+                <p style="margin:5px 0;"><b>Complaints:</b> <span style="font-weight:bold; font-size:15pt;">${selectedP.complaints || '---'}</span></p>
+                <p style="margin:5px 0;"><b>Investigations:</b> <span style="font-weight:bold; font-size:15pt;">${selectedP.investigations || '---'}</span></p>
+                <p style="margin:5px 0;"><b>Past History:</b> <span style="font-weight:bold; font-size:15pt;">${selectedP.history || '---'}</span></p>
+                <h3 style="border-bottom:2px solid #000; font-size:15pt; margin-top:10px;">Rx (Medications)</h3>
+                <table class="med-print-table">
+                    <thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead>
+                    <tbody>${p1Meds.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody>
+                </table>
+                ${p2Meds.length === 0 ? `<p style="margin-top:10px;"><b>Notes:</b> <span style="font-weight:bold; font-size:15pt;">${selectedP.notes || '---'}</span></p>` : ''}
+            `;
+            
             let finalHtml = getFullPageSetup(p1Content);
+
             if (p2Meds.length > 0) {
-                let p2Content = info + `<h3 style="border-bottom:2px solid #000; font-size:15pt; margin-top:10px;">Rx (Continued)</h3><table class="med-print-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${p2Meds.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody></table><p style="margin-top:10px;"><b>Notes:</b> <span style="font-weight:bold; font-size:15pt;">${selectedP.notes || '---'}</span></p>`;
+                let p2Content = info + `
+                    <h3 style="border-bottom:2px solid #000; font-size:15pt; margin-top:10px;">Rx (Continued)</h3>
+                    <table class="med-print-table">
+                        <thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead>
+                        <tbody>${p2Meds.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody>
+                    </table>
+                    <p style="margin-top:10px;"><b>Notes:</b> <span style="font-weight:bold; font-size:15pt;">${selectedP.notes || '---'}</span></p>
+                `;
                 finalHtml += getFullPageSetup(p2Content);
             }
             document.getElementById('printArea').innerHTML = finalHtml;
@@ -276,7 +311,7 @@
         const actionBtn = document.getElementById('mainActionBtn');
         let opd_to_use = "";
 
-        // RECTIFIED: FORCE USE OF EXISTING ID IF EDITING
+        // RECTIFIED AGGRESSIVE LOCK: strictly enforce the use of the hidden ID during update
         if (idField.value && idField.value !== "") {
             opd_to_use = idField.value;
         } else {
@@ -293,7 +328,7 @@
             address: document.getElementById('p_address').value, 
             weight: document.getElementById('p_weight').value, 
             bp: document.getElementById('p_bp').value, 
-            pr: document.getElementById('p_pr').value, 
+            pulse: document.getElementById('p_pr').value, // Captured from Pulse field, mapping to correct key
             spo2: document.getElementById('p_spo2').value, 
             temp: document.getElementById('p_temp').value 
         };
