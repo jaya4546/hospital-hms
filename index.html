@@ -6,7 +6,7 @@
     <title>SRR Hospital Management System</title>
     <style>
         :root { --primary: #1b5e20; --accent: #c62828; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 12pt; color: #333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 12pt; color: #333; overflow-x: hidden; }
         
         .container { max-width: 1150px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
@@ -36,16 +36,47 @@
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
         .modal-content { background: white; margin: 5% auto; padding: 25px; width: 95%; max-width: 800px; border-radius: 12px; }
 
-        /* PRINT LAYOUT - FIXED FOR A4 FULL SCALE */
+        /* PRINT LAYOUT - AGGRESSIVE FIT FOR SINGLE PAGE */
         #printArea { display: none; }
         @media print {
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
-            #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
-            .print-page-wrapper { width: 21cm; min-height: 27cm; position: relative; margin: 0 auto; padding: 0.8cm 1.2cm; box-sizing: border-box; background: white !important; }
-            .watermark { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); opacity: 0.08 !important; width: 550px; z-index: 0; }
-            .print-footer-container { position: absolute; bottom: 0.8cm; left: 1.2cm; right: 1.2cm; width: calc(100% - 2.4cm); z-index: 10; }
-            @page { size: A4; margin: 0; }
+            #printArea { 
+                display: block !important; 
+                position: absolute; 
+                left: 0; top: 0; 
+                width: 100%; 
+                height: 100%; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                box-sizing: border-box;
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important;
+            }
+            .print-page-wrapper { 
+                width: 21cm; /* Explicit A4 width */
+                height: 29.6cm; /* Strict A4 height */
+                position: absolute; 
+                top: 0; left: 0;
+                margin: 0 !important; 
+                padding: 0.5cm 0.8cm; /* Minimal aggressive margins to ensure fitness */
+                box-sizing: border-box; 
+                background: white !important; 
+                page-break-after: always;
+                -webkit-print-color-adjust: exact !important;
+            }
+            .watermark { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); opacity: 0.08 !important; width: 550px; z-index: 0; }
+            .print-footer-container { 
+                position: absolute; 
+                bottom: 0.5cm; /* Strict lower boundary */
+                left: 0.8cm; right: 0.8cm; 
+                width: calc(100% - 1.6cm); 
+                z-index: 10; 
+            }
+            @page { 
+                size: A4 portrait; /* Strict A4 portrait */
+                margin: 0 !important; /* Forces removal of browser default margins */
+            }
         }
     </style>
 </head>
@@ -139,7 +170,7 @@
         document.getElementById('actionModal').style.display = "block";
     }
 
-    /* RECTIFIED EDIT LOGIC */
+    /* RECTIFIED EDIT LOGIC: strictly enforces data mapping from backend object to UI fields */
     function openEdit() {
         if (!selectedP) return;
         document.getElementById('current_opd_id').value = selectedP.opd_number;
@@ -161,10 +192,19 @@
     }
 
     async function savePatient() {
-        const btn = document.getElementById('mainActionBtn');
+        const idField = document.getElementById('current_opd_id');
+        const actionBtn = document.getElementById('mainActionBtn');
+        let opd_to_use = "";
+
+        if (idField.value && idField.value !== "") {
+            opd_to_use = idField.value;
+        } else {
+            opd_to_use = "SRR-" + Date.now().toString().slice(-4);
+        }
+
         const data = { 
             type: "REGISTRATION", 
-            opd: document.getElementById('current_opd_id').value || "SRR-"+Date.now().toString().slice(-4), 
+            opd: opd_to_use, 
             name: document.getElementById('p_name').value, 
             age: document.getElementById('p_age').value, 
             sex: document.getElementById('p_sex').value, 
@@ -176,13 +216,21 @@
             spo2: document.getElementById('p_spo2').value, 
             temp: document.getElementById('p_temp').value 
         };
-        btn.innerText = "Processing...";
-        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-        location.reload();
+
+        actionBtn.innerText = "Processing...";
+        actionBtn.disabled = true;
+
+        try {
+            await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+            setTimeout(() => { location.reload(); }, 1500); 
+        } catch (e) {
+            actionBtn.innerText = "Error Saving";
+            actionBtn.disabled = false;
+        }
     }
 
     function generatePrint(type) {
-        const header = `
+        const headerHtml = `
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:5px solid #1b5e20; padding-bottom:10px; margin-bottom:15px;">
                 <img src="logo.jpg" style="width:100px;">
                 <div style="text-align:center; flex:1;">
@@ -196,7 +244,7 @@
                 </div>
             </div>`;
 
-        const footer = `
+        const footerHtml = `
             <div class="print-footer-container">
                 <div style="text-align:right; margin-bottom:15px;">
                     <div style="font-size:16pt; font-weight:900;">DR. M. JAYACHANDER</div>
@@ -204,48 +252,59 @@
                 </div>
                 <div style="border-top:2px solid #000; margin-bottom:8px;"></div>
                 <div style="font-size:11pt; color:#c62828; font-weight:900; text-align:center; margin-bottom:5px;">Note: దయచేసి ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తీసుకురావలెను</div>
-                <div style="font-size:9.5pt; color:#1b5e20; font-weight:bold; text-align:center; line-height:1.3; margin-bottom:10px;">మా ప్రత్యేక సేవలు: బిపి, షుగర్ ,గుండె వ్యాధులు కాలేయ వ్యాధులు (జాండీస్), కిడ్నీ సమస్యలు, నరాల వ్యాధులు (పక్షవాతం) ,వైరల్ ఫీవర్, జీర్ణకోశ వ్యాధులు (అల్సర్), ఊపిరితిత్తుల వ్యాధులు, థైరాయిడ్ మరియు ఫిట్స్ చూడబడును.</div>
+                <div style="font-size:10pt; color:#1b5e20; font-weight:bold; text-align:center; line-height:1.3; margin-bottom:10px;">మా ప్రత్యేక సేవలు: బిపి, షుగర్ ,గుండె వ్యాధులు కాలేయ వ్యాధులు (జాండీస్), కిడ్నీ సమస్యలు, నరాల వ్యాధులు (పక్షవాతం) ,వైరల్ ఫీవర్, జీర్ణకోశ వ్యాధులు (అల్సర్), ఊపిరితిత్తుల వ్యాధులు, థైరాయిడ్ మరియు ఫిట్స్ చూడబడును.</div>
                 <div style="font-size:10pt; font-weight:bold; text-align:center; color:red; margin-bottom:8px;">Note: Not valid for medico legal purpose</div>
                 <div style="background:#1565c0 !important; color:white !important; padding:12px; text-align:center; font-weight:bold; font-size:15pt; border-radius:8px; -webkit-print-color-adjust: exact;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div>
             </div>`;
 
         const contentBase = `
-            <div style="border:2.5px solid #000; padding:12px; font-size:15pt; display:grid; grid-template-columns: 1.2fr 0.8fr; font-weight:bold;">
+            <div style="border:2.5px solid #000; padding:12px; font-size:15pt; display:grid; grid-template-columns: 1.2fr 0.8fr; font-weight:bold; position:relative; z-index:10;">
                 <div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:20pt; text-transform:uppercase;">${selectedP.name}</span><br>Phone: ${selectedP.phone || 'N/A'}</div>
                 <div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}<br>Address: ${selectedP.address}</div>
             </div>
-            <div style="background:#e8f5e9 !important; border:2.5px solid #000; border-top:none; padding:10px; display:flex; justify-content:space-between; font-size:15pt; font-weight:bold; -webkit-print-color-adjust: exact;">
+            <div style="background:#e8f5e9 !important; border:2.5px solid #000; border-top:none; padding:10px; display:flex; justify-content:space-between; font-size:15pt; font-weight:bold; position:relative; z-index:10; -webkit-print-color-adjust: exact;">
                 <span>Wt: ${selectedP.weight}kg</span><span>BP: ${selectedP.bp}</span><span>P.R.: ${selectedP.pulse}</span><span>SpO2: ${selectedP.spo2}%</span><span>Temp: ${selectedP.temp}°F</span>
             </div>`;
 
-        let specific = contentBase;
+        let specificHtml = contentBase;
         if(type === 'PRESCRIPTION') {
             const meds = JSON.parse(selectedP.medications || "[]");
-            specific += `
-                <p style="font-size:15pt; margin:15px 0;"><b>Complaints:</b> ${selectedP.complaints || '---'}</p>
-                <p style="font-size:15pt; margin:15px 0;"><b>Investigations:</b> ${selectedP.investigations || '---'}</p>
-                <h3 style="border-bottom:2.5px solid #000; margin-top:20px; font-size:18pt;">Rx (Prescription)</h3>
-                <table style="width:100%; border-collapse:collapse; border:2.5px solid #000;">
-                    <thead style="background:#333; color:white;"><tr><th style="padding:12px; border:1px solid #000;">Drug Name</th><th style="border:1px solid #000;">Dur</th><th style="border:1px solid #000;">Route</th><th style="border:1px solid #000;">Remarks</th></tr></thead>
-                    <tbody>${meds.map(m => `<tr style="font-size:15pt; font-weight:bold;"><td style="padding:12px; border:1px solid #000;">${m.n}</td><td style="border:1px solid #000; text-align:center;">${m.d}</td><td style="border:1px solid #000; text-align:center;">${m.r}</td><td style="border:1px solid #000; padding:8px;">${m.rem}</td></tr>`).join('')}</tbody>
-                </table>
-                <p style="font-size:15pt; margin-top:20px;"><b>Notes:</b> ${selectedP.notes || '---'}</p>`;
+            specificHtml += `
+                <div style="position:relative; z-index:10;">
+                    <p style="font-size:15pt; margin:15px 0;"><b>Complaints:</b> ${selectedP.complaints || '---'}</p>
+                    <p style="font-size:15pt; margin:15px 0;"><b>Investigations:</b> ${selectedP.investigations || '---'}</p>
+                    <p style="font-size:15pt; margin:15px 0;"><b>Past History:</b> ${selectedP.history || '---'}</p>
+                    <h3 style="border-bottom:2.5px solid #000; margin-top:20px; font-size:18pt;">Rx (Prescription)</h3>
+                    <table style="width:100%; border-collapse:collapse; border:2.5px solid #000; margin-top:10px;">
+                        <thead style="background:#333; color:white;"><tr><th style="padding:12px; border:1px solid #000;">Drug Name</th><th style="border:1px solid #000;">Dur</th><th style="border:1px solid #000;">Route</th><th style="border:1px solid #000;">Remarks</th></tr></thead>
+                        <tbody>${meds.map(m => `<tr style="font-size:15pt; font-weight:bold;"><td style="padding:12px; border:1px solid #000;">${m.n}</td><td style="border:1px solid #000; text-align:center;">${m.d}</td><td style="border:1px solid #000; text-align:center;">${m.r}</td><td style="border:1px solid #000; padding:8px;">${m.rem}</td></tr>`).join('')}</tbody>
+                    </table>
+                    <p style="font-size:15pt; margin-top:20px;"><b>Notes:</b> ${selectedP.notes || '---'}</p>
+                </div>`;
         } else {
-            specific += "<h2 style='text-align:center; margin-top:100px; font-size:30pt; text-decoration:underline;'>REGISTRATION SLIP</h2>";
+            specificHtml += "<h2 style='text-align:center; margin-top:100px; font-size:30pt; text-decoration:underline;'>REGISTRATION SLIP</h2>";
         }
 
-        document.getElementById('printArea').innerHTML = `<div class="print-page-wrapper"><img src="logo.jpg" class="watermark">${header}${specific}${footer}</div>`;
+        // AGGRESSIVE PAGE-FIT IMPLEMENTATION
+        document.getElementById('printArea').innerHTML = `
+            <div class="print-page-wrapper">
+                <img src="logo.jpg" class="watermark">
+                ${headerHtml}
+                ${specificHtml}
+                ${footerHtml}
+            </div>
+        `;
         window.print();
     }
 
     function openTreat() {
+        if (!selectedP) return;
         document.getElementById('actionModal').style.display = "none";
         document.getElementById('treatName').innerText = selectedP.name;
         document.getElementById('treatModal').style.display = "block";
-        document.getElementById('t_complaints').value = selectedP.complaints || "";
-        document.getElementById('t_investigations').value = selectedP.investigations || "";
-        document.getElementById('t_history').value = selectedP.history || "";
-        document.getElementById('t_notes').value = selectedP.notes || "";
+        ['complaints','investigations','history','notes'].forEach(f => {
+            if(document.getElementById('t_'+f)) document.getElementById('t_'+f).value = selectedP[f] || "";
+        });
         document.getElementById('medBody').innerHTML = "";
         try {
             const meds = JSON.parse(selectedP.medications || "[]");
