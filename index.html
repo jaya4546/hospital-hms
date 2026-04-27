@@ -174,15 +174,29 @@
 
         let printHTML = "";
         if(type === 'REGISTRATION') {
-            printHTML = `<div class="print-page-wrapper"><img src="logo.jpg" class="watermark">${header}${details}<h2 style="text-align:center; margin-top:100px; font-size:30pt; text-decoration:underline;">REGISTRATION SLIP</h2>${footer}</div>`;
+            // FIX: Removed the giant centered "REGISTRATION SLIP" here
+            printHTML = `<div class="print-page-wrapper"><img src="logo.jpg" class="watermark">${header}${details}${footer}</div>`;
         } else {
             const meds = JSON.parse(selectedP.medications || "[]");
             const chunk = (arr, size) => Array.from({ length: Math.ceil(arr.length / size) }, (v, i) => arr.slice(i * size, i * size + size));
-            const medPages = chunk(meds, 7);
+            // Splitting table to ensure it fits portrait without spill
+            const medPages = chunk(meds, 7); 
             medPages.forEach((pageMeds, index) => {
+                const isLastPage = index === medPages.length - 1;
                 let medRows = pageMeds.map(m => `<tr><td>${m.n}</td><td style="text-align:center;">${m.d}</td><td style="text-align:center;">${m.r}</td><td>${m.rem}</td></tr>`).join('');
-                let history = (index === 0) ? `<p style="font-size:12pt; margin:5px 0;"><b>Complaints:</b> ${selectedP.complaints || ''}</p><p style="font-size:12pt; margin:5px 0;"><b>Past History:</b> ${selectedP.history || ''}</p>` : "";
-                printHTML += `<div class="print-page-wrapper"><img src="logo.jpg" class="watermark">${header}${details}${history}<h3 style="border-bottom:2px solid #000; margin-top:5px;">Rx (Prescription) ${index > 0 ? '(Contd.)' : ''}</h3><table class="med-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${medRows}</tbody></table>${index === 0 ? `<p style="font-size:12pt;"><b>Notes:</b> ${selectedP.notes || ''}</p>` : ""}${footer}</div>`;
+                
+                // RECTIFIED: Strict order and Investigations section restored
+                let history = (index === 0) ? `
+                    <p style="font-size:12pt; margin:5px 0;"><b>Complaints:</b> ${selectedP.complaints || ''}</p>
+                    <p style="font-size:12pt; margin:5px 0;"><b>Investigations:</b> ${selectedP.investigations || ''}</p>
+                    <p style="font-size:12pt; margin:5px 0;"><b>Past History:</b> ${selectedP.history || ''}</p>
+                ` : "";
+                
+                // FIX: Notes are now forced to print ONLY after the medications table has completed.
+                // It works on Page 1 if there's only 1 page, or Page 2 if needed.
+                let notesHtml = (isLastPage) ? `<p style="font-size:12pt; margin-top: 10px;"><b>Notes:</b> ${selectedP.notes || ''}</p>` : "";
+
+                printHTML += `<div class="print-page-wrapper"><img src="logo.jpg" class="watermark">${header}${details}${history}<h3 style="border-bottom:2px solid #000; margin-top:5px;">Rx (Prescription) ${index > 0 ? '(Contd.)' : ''}</h3><table class="med-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${medRows}</tbody></table>${notesHtml}${footer}</div>`;
             });
         }
         document.getElementById('printArea').innerHTML = printHTML;
