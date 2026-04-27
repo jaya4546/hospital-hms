@@ -150,11 +150,9 @@
         document.getElementById('tbody').innerHTML = html;
     }
     
-    // AGGRESSIVE SEARCH RE-IMPLEMENTATION
     function aggressiveSearch() {
         const query = document.getElementById('pSearch').value.toUpperCase();
         const rows = document.querySelectorAll("#tbody tr");
-        
         rows.forEach(row => {
             const nameCell = row.getElementsByTagName("td")[1];
             if (nameCell) {
@@ -197,12 +195,19 @@
         } else {
             const meds = JSON.parse(selectedP.medications || "[]");
             const chunk = (arr, size) => Array.from({ length: Math.ceil(arr.length / size) }, (v, i) => arr.slice(i * size, i * size + size));
-            const medPages = chunk(meds, 7); 
+            
+            // RECTIFIED: Strictly 6 medications per page for portrait A4 clarity
+            const medPages = chunk(meds, 6); 
+            
             medPages.forEach((pageMeds, index) => {
                 const isLastPage = index === medPages.length - 1;
                 let medRows = pageMeds.map(m => `<tr><td>${m.n}</td><td style="text-align:center;">${m.d}</td><td style="text-align:center;">${m.r}</td><td>${m.rem}</td></tr>`).join('');
+                
                 let history = (index === 0) ? `<p style="font-size:12pt; margin:5px 0;"><b>Complaints:</b> ${selectedP.complaints || ''}</p><p style="font-size:12pt; margin:5px 0;"><b>Investigations:</b> ${selectedP.investigations || ''}</p><p style="font-size:12pt; margin:5px 0;"><b>Past History:</b> ${selectedP.history || ''}</p>` : "";
+                
+                // Notes appear ONLY on the very last page of medications
                 let notesHtml = (isLastPage) ? `<p style="font-size:12pt; margin-top: 10px;"><b>Notes:</b> ${selectedP.notes || ''}</p>` : "";
+
                 printHTML += `<div class="print-page-wrapper"><img src="logo.jpg" class="watermark">${header}${details}${history}<h3 style="border-bottom:2px solid #000; margin-top:5px;">Rx (Prescription) ${index > 0 ? '(Contd.)' : ''}</h3><table class="med-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${medRows}</tbody></table>${notesHtml}${footer}</div>`;
             });
         }
