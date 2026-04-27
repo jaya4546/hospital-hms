@@ -16,7 +16,6 @@
         .center-side h1 { color: var(--accent); margin: 0; font-size: 26px; font-weight: 900; text-transform: uppercase; }
         .full-address { font-size: 13px; font-weight: bold; color: #1b5e20; margin-top: 5px; line-height: 1.4; display: block; }
         
-        /* Doctor Box 3 Lines */
         .doc-side { border: 2.5px solid #000; padding: 12px; text-align: center; background: #fffde7; min-width: 280px; border-radius: 8px; box-shadow: 4px 4px 0px #000; }
         .doc-name { font-size: 19px; font-weight: 900; display: block; color: #000; }
         .doc-degree { font-size: 13px; font-weight: bold; display: block; color: #333; }
@@ -36,13 +35,10 @@
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
         .modal-content { background: white; margin: 5% auto; padding: 25px; width: 95%; max-width: 800px; border-radius: 12px; }
 
-        /* RECTIFIED PRINT MARGINS - FORCING FULL PAGE FIT */
+        /* RECTIFIED PRINT MARGINS & OVERFLOW PREVENTION */
         #printArea { display: none; }
         @media print {
-            @page { 
-                size: A4; 
-                margin: 0mm !important; /* Removes browser-added margins */
-            }
+            @page { size: A4; margin: 0 !important; }
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
             #printArea { 
@@ -50,23 +46,30 @@
                 position: absolute; 
                 left: 0; top: 0; 
                 width: 100%; 
+                margin: 0 !important;
+                padding: 0 !important;
             }
             .print-page-wrapper { 
                 width: 100%; 
-                min-height: 100vh;
-                padding: 10mm 15mm; /* Professional internal padding */
+                height: 296mm; /* Fixed A4 height to prevent spill */
+                padding: 8mm 12mm; /* Balanced padding for PC and Mobile */
                 box-sizing: border-box; 
                 background: white !important; 
                 position: relative;
+                overflow: hidden; /* Force content to stay in 1 page */
             }
-            .watermark { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); opacity: 0.08 !important; width: 550px; z-index: 0; }
+            .watermark { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); opacity: 0.06 !important; width: 500px; z-index: 0; }
             .print-footer-container { 
                 position: absolute; 
-                bottom: 10mm; 
-                left: 15mm; 
-                right: 15mm; 
+                bottom: 8mm; 
+                left: 12mm; 
+                right: 12mm; 
             }
-            /* Ensures colors show up in print */
+            /* Doctor box fix for PC cutting */
+            .doc-print-box { 
+                margin-right: 2px !important; 
+                max-width: 280px;
+            }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
     </style>
@@ -187,38 +190,38 @@
 
     function generatePrint(type) {
         const header = `
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:5px solid #1b5e20; padding-bottom:10px; margin-bottom:15px;">
-                <img src="logo.jpg" style="width:100px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:5px solid #1b5e20; padding-bottom:8px; margin-bottom:12px;">
+                <img src="logo.jpg" style="width:90px;">
                 <div style="text-align:center; flex:1;">
-                    <h1 style="color:#c62828; margin:0; font-size:26pt; font-weight:900; white-space:nowrap;">SRI RAJA RAJESHWARI HOSPITAL</h1>
-                    <p style="font-size:11pt; font-weight:bold; margin:2px 0;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, TG 500055</p>
+                    <h1 style="color:#c62828; margin:0; font-size:24pt; font-weight:900; white-space:nowrap;">SRI RAJA RAJESHWARI HOSPITAL</h1>
+                    <p style="font-size:10.5pt; font-weight:bold; margin:2px 0;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, TG 500055</p>
                 </div>
-                <div style="border:2px solid #000; padding:10px; text-align:center; min-width:280px; border-radius:8px;">
-                    <div style="font-size:18pt; font-weight:900;">DR. M. JAYACHANDER</div>
-                    <div style="font-size:11pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
-                    <div style="color:#c62828; font-size:11pt; font-weight:bold;">Reg No: TSMC/FMR/43070</div>
+                <div class="doc-print-box" style="border:2px solid #000; padding:10px; text-align:center; min-width:260px; border-radius:8px;">
+                    <div style="font-size:16pt; font-weight:900;">DR. M. JAYACHANDER</div>
+                    <div style="font-size:10pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
+                    <div style="color:#c62828; font-size:10pt; font-weight:bold;">Reg No: TSMC/FMR/43070</div>
                 </div>
             </div>`;
 
         const footer = `
             <div class="print-footer-container">
-                <div style="text-align:right; margin-bottom:15px;">
-                    <div style="font-size:16pt; font-weight:900;">DR. M. JAYACHANDER</div>
-                    <div style="font-size:11pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
+                <div style="text-align:right; margin-bottom:10px;">
+                    <div style="font-size:15pt; font-weight:900;">DR. M. JAYACHANDER</div>
+                    <div style="font-size:10pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
                 </div>
-                <div style="border-top:2px solid #000; margin-bottom:8px;"></div>
-                <div style="font-size:11pt; color:#c62828; font-weight:900; text-align:center; margin-bottom:5px;">Note: దయచేసి ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తీసుకురావలెను</div>
-                <div style="font-size:9.5pt; color:#1b5e20; font-weight:bold; text-align:center; line-height:1.3; margin-bottom:10px;">మా ప్రత్యేక సేవలు: బిపి, షుగర్ ,గుండె వ్యాధులు కాలేయ వ్యాధులు (జాండీస్), కిడ్నీ సమస్యలు, నరాల వ్యాధులు (పక్షవాతం) ,వైరల్ ఫీవర్, జీర్ణకోశ వ్యాధులు (అల్సర్), ఊపిరితిత్తుల వ్యాధులు, థైరాయిడ్ మరియు ఫిట్స్ చూడబడును.</div>
-                <div style="font-size:10pt; font-weight:bold; text-align:center; color:red; margin-bottom:8px;">Note: Not valid for medico legal purpose</div>
-                <div style="background:#1565c0 !important; color:white !important; padding:12px; text-align:center; font-weight:bold; font-size:15pt; border-radius:8px;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div>
+                <div style="border-top:2px solid #000; margin-bottom:6px;"></div>
+                <div style="font-size:10.5pt; color:#c62828; font-weight:900; text-align:center; margin-bottom:4px;">Note: దయచేసి ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తీసుకురావలెను</div>
+                <div style="font-size:9pt; color:#1b5e20; font-weight:bold; text-align:center; line-height:1.2; margin-bottom:8px;">మా ప్రత్యేక సేవలు: బిపి, షుగర్ ,గుండె వ్యాధులు కాలేయ వ్యాధులు (జాండీస్), కిడ్నీ సమస్యలు, నరాల వ్యాధులు (పక్షవాతం) ,వైరల్ ఫీవర్, జీర్ణకోశ వ్యాధులు (అల్సర్), ఊపిరితిత్తుల వ్యాధులు, థైరాయిడ్ మరియు ఫిట్స్ చూడబడును.</div>
+                <div style="font-size:9.5pt; font-weight:bold; text-align:center; color:red; margin-bottom:6px;">Note: Not valid for medico legal purpose</div>
+                <div style="background:#1565c0 !important; color:white !important; padding:10px; text-align:center; font-weight:bold; font-size:14pt; border-radius:8px;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div>
             </div>`;
 
         const contentBase = `
-            <div style="border:2.5px solid #000; padding:12px; font-size:15pt; display:grid; grid-template-columns: 1.2fr 0.8fr; font-weight:bold;">
-                <div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:20pt; text-transform:uppercase;">${selectedP.name}</span><br>Phone: ${selectedP.phone || 'N/A'}</div>
+            <div style="border:2.5px solid #000; padding:10px; font-size:14pt; display:grid; grid-template-columns: 1.2fr 0.8fr; font-weight:bold;">
+                <div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:18pt; text-transform:uppercase;">${selectedP.name}</span><br>Phone: ${selectedP.phone || 'N/A'}</div>
                 <div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}<br>Address: ${selectedP.address}</div>
             </div>
-            <div style="background:#e8f5e9 !important; border:2.5px solid #000; border-top:none; padding:10px; display:flex; justify-content:space-between; font-size:15pt; font-weight:bold;">
+            <div style="background:#e8f5e9 !important; border:2.5px solid #000; border-top:none; padding:8px; display:flex; justify-content:space-between; font-size:14pt; font-weight:bold;">
                 <span>Wt: ${selectedP.weight}kg</span><span>BP: ${selectedP.bp}</span><span>P.R.: ${selectedP.pulse}</span><span>SpO2: ${selectedP.spo2}%</span><span>Temp: ${selectedP.temp}°F</span>
             </div>`;
 
@@ -226,17 +229,17 @@
         if(type === 'PRESCRIPTION') {
             const meds = JSON.parse(selectedP.medications || "[]");
             specific += `
-                <p style="font-size:15pt; margin:15px 0;"><b>Complaints:</b> ${selectedP.complaints || '---'}</p>
-                <p style="font-size:15pt; margin:15px 0;"><b>Investigations:</b> ${selectedP.investigations || '---'}</p>
-                <p style="font-size:15pt; margin:15px 0;"><b>Past History:</b> ${selectedP.history || '---'}</p>
-                <h3 style="border-bottom:2.5px solid #000; margin-top:20px; font-size:18pt;">Rx (Prescription)</h3>
-                <table style="width:100%; border-collapse:collapse; border:2.5px solid #000;">
-                    <thead style="background:#333; color:white;"><tr><th style="padding:12px; border:1px solid #000;">Drug Name</th><th style="border:1px solid #000;">Dur</th><th style="border:1px solid #000;">Route</th><th style="border:1px solid #000;">Remarks</th></tr></thead>
-                    <tbody>${meds.map(m => `<tr style="font-size:15pt; font-weight:bold;"><td style="padding:12px; border:1px solid #000;">${m.n}</td><td style="border:1px solid #000; text-align:center;">${m.d}</td><td style="border:1px solid #000; text-align:center;">${m.r}</td><td style="border:1px solid #000; padding:8px;">${m.rem}</td></tr>`).join('')}</tbody>
+                <p style="font-size:14pt; margin:10px 0;"><b>Complaints:</b> ${selectedP.complaints || '---'}</p>
+                <p style="font-size:14pt; margin:10px 0;"><b>Investigations:</b> ${selectedP.investigations || '---'}</p>
+                <p style="font-size:14pt; margin:10px 0;"><b>Past History:</b> ${selectedP.history || '---'}</p>
+                <h3 style="border-bottom:2.5px solid #000; margin-top:15px; font-size:16pt;">Rx (Prescription)</h3>
+                <table style="width:100%; border-collapse:collapse; border:2px solid #000;">
+                    <thead style="background:#333; color:white;"><tr><th style="padding:10px; border:1px solid #000;">Drug Name</th><th style="border:1px solid #000;">Dur</th><th style="border:1px solid #000;">Route</th><th style="border:1px solid #000;">Remarks</th></tr></thead>
+                    <tbody>${meds.map(m => `<tr style="font-size:14pt; font-weight:bold;"><td style="padding:10px; border:1px solid #000;">${m.n}</td><td style="border:1px solid #000; text-align:center;">${m.d}</td><td style="border:1px solid #000; text-align:center;">${m.r}</td><td style="border:1px solid #000; padding:6px;">${m.rem}</td></tr>`).join('')}</tbody>
                 </table>
-                <p style="font-size:15pt; margin-top:20px;"><b>Notes:</b> ${selectedP.notes || '---'}</p>`;
+                <p style="font-size:14pt; margin-top:15px;"><b>Notes:</b> ${selectedP.notes || '---'}</p>`;
         } else {
-            specific += "<h2 style='text-align:center; margin-top:100px; font-size:30pt; text-decoration:underline;'>REGISTRATION SLIP</h2>";
+            specific += "<h2 style='text-align:center; margin-top:80px; font-size:28pt; text-decoration:underline;'>REGISTRATION SLIP</h2>";
         }
 
         document.getElementById('printArea').innerHTML = `<div class="print-page-wrapper"><img src="logo.jpg" class="watermark">${header}${specific}${footer}</div>`;
