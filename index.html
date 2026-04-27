@@ -13,10 +13,9 @@
         /* Dashboard Header */
         .header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-bottom: 20px; gap: 15px; }
         .center-side { text-align: center; flex: 1; min-width: 300px; }
-        .center-side h1 { color: var(--accent); margin: 0; font-size: 26px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+        .center-side h1 { color: var(--accent); margin: 0; font-size: 26px; font-weight: 900; text-transform: uppercase; }
         .full-address { font-size: 13px; font-weight: bold; color: #1b5e20; margin-top: 5px; line-height: 1.4; display: block; }
         
-        /* Doctor Box 3 Lines - Fixed Dashboard View */
         .doc-side { border: 2.5px solid #000; padding: 12px; text-align: center; background: #fffde7; min-width: 280px; border-radius: 8px; box-shadow: 4px 4px 0px #000; }
         .doc-name { font-size: 19px; font-weight: 900; display: block; color: #000; }
         .doc-degree { font-size: 13px; font-weight: bold; display: block; color: #333; }
@@ -27,7 +26,6 @@
         
         .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
         .btn-reg { background: var(--primary); color: white; width: 100%; font-size: 14pt; margin-top: 10px; }
-        
         .btn-select { background: #2e7d32; color: white; padding: 8px 16px; border-radius: 4px; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 25px; }
@@ -35,82 +33,31 @@
         td { padding: 12px; border-bottom: 1px solid #ddd; font-weight: bold; }
 
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
-        .modal-content { background: white; margin: 5% auto; padding: 25px; width: 95%; max-width: 800px; border-radius: 12px; border-top: 10px solid var(--accent); }
+        .modal-content { background: white; margin: 5% auto; padding: 25px; width: 95%; max-width: 800px; border-radius: 12px; }
 
-        /* PRINT LAYOUT - COMPLEX A4 BREAKING & FITNESS */
+        /* PRINT MEDIA LOGIC */
         #printArea { display: none; }
         @media print {
+            @page { size: A4; margin: 0 !important; }
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
-            #printArea { 
-                display: block !important; 
-                position: absolute; 
-                left: 0; top: 0; 
-                width: 100%; 
-                margin: 0 !important; 
-                padding: 0 !important; 
-            }
+            #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
             
-            /* Strict Page Wrapper - Enforces fitness and prevents spill */
             .print-page-wrapper { 
-                width: 21cm; 
-                height: 29.6cm; /* Exact A4 height to prevent collapse */
-                position: relative; 
-                margin: 0 auto; 
-                padding: 8mm 10mm; /* Minimal Padding: removes mobile whitespace, stops PC cutting */
-                box-sizing: border-box; 
-                page-break-after: always; /* Force new page after this wrapper */
-                background: white !important; 
-                overflow: hidden; /* Strict containment of content */
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important;
+                width: 210mm; height: 296mm; padding: 8mm 12mm; box-sizing: border-box; 
+                background: white !important; position: relative; overflow: hidden; page-break-after: always;
             }
+            .watermark { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); opacity: 0.05 !important; width: 500px; z-index: 0; }
             
-            /* Dynamic Print Header: Prevents collapsed doctor details on mobile */
-            .print-header-grid { 
-                display: grid; 
-                grid-template-columns: 1fr 280px; 
-                align-items: center; 
-                border-bottom: 5px solid #1b5e20; 
-                padding-bottom: 8px; 
-                margin-bottom: 12px; 
-                width: 100%;
-            }
+            /* Header forced to right on mobile/pc */
+            .print-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid #1b5e20; padding-bottom: 8px; margin-bottom: 10px; }
+            .print-footer { position: absolute; bottom: 8mm; left: 12mm; right: 12mm; }
             
-            /* Vitals Box fitness */
-            .vitals-box { 
-                background: #e8f5e9 !important; 
-                border: 2.5px solid #000; 
-                border-top: none; 
-                padding: 10px; 
-                display: flex; 
-                justify-content: space-between; 
-                font-size: 14pt; 
-                font-weight: bold; 
-                position: relative; 
-                z-index: 10;
-            }
-            
-            /* Table fitness */
-            .print-table { 
-                width: 100%; 
-                border-collapse: collapse; 
-                border: 2px solid #000; 
-                margin-top: 10px; 
-            }
-            .print-table th { background: #333; color: white; padding: 10px; border: 1px solid #000; font-size: 14pt; }
-            .print-table td { padding: 10px; border: 1px solid #000; font-size: 14pt; font-weight: bold; }
-            
-            /* Forced Footer Containment */
-            .print-footer-container { 
-                position: absolute; 
-                bottom: 8mm; /* Reduced bottom gap for fitness */
-                left: 10mm; right: 10mm; 
-                width: calc(100% - 20mm); 
-                z-index: 10; 
-            }
-            
-            @page { size: A4 portrait; margin: 0 !important; }
+            .vitals-row { background: #e8f5e9 !important; border: 2.5px solid #000; border-top: none; padding: 8px; display: flex; justify-content: space-between; font-size: 14pt; font-weight: bold; }
+            .med-table { width: 100%; border-collapse: collapse; border: 2px solid #000; margin-top: 10px; }
+            .med-table th { background: #333; color: white; padding: 8px; border: 1px solid #000; }
+            .med-table td { padding: 8px; border: 1px solid #000; font-size: 14pt; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
     </style>
 </head>
@@ -118,7 +65,7 @@
 
 <div class="container">
     <div class="header">
-        <img src="logo.jpg" style="width:100px; height:auto;">
+        <img src="logo.jpg" style="width:100px;">
         <div class="center-side">
             <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
             <span class="full-address">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam,<br>Quthbullapur Mandal, Hyderabad, TG 500055</span>
@@ -136,11 +83,11 @@
         <input type="text" id="p_name" placeholder="Patient Name">
         <input type="number" id="p_age" placeholder="Age">
         <select id="p_sex"><option>Male</option><option>Female</option></select>
-        <input type="text" id="p_phone" placeholder="Phone (Col Q)">
-        <input type="text" id="p_address" placeholder="Address (Col F)">
+        <input type="text" id="p_phone" placeholder="Phone">
+        <input type="text" id="p_address" placeholder="Address">
         <input type="text" id="p_weight" placeholder="Weight">
         <input type="text" id="p_bp" placeholder="BP">
-        <input type="text" id="p_pr" placeholder="Pulse (P.R. Col I)">
+        <input type="text" id="p_pr" placeholder="Pulse">
         <input type="text" id="p_spo2" placeholder="SpO2">
         <input type="text" id="p_temp" placeholder="Temp">
     </div>
@@ -162,8 +109,7 @@
             <button class="btn" style="background:#1565c0; color:white;" onclick="openEdit()">EDIT DETAILS</button>
             <button class="btn" style="background:#ef6c00; color:white;" onclick="openTreat()">ADD TREATMENT</button>
             <button class="btn" style="background:#2e7d32; color:white;" onclick="generatePrint('PRESCRIPTION')">PRINT Rx</button>
-            <button class="btn" style="background:#25D366; color:white;" onclick="sendWhatsApp()">WHATSAPP Rx</button>
-            <button class="btn" style="background:#c62828; color:white;" onclick="generatePrint('REGISTRATION')">PRINT REG SLIP</button>
+            <button class="btn" style="background:#c62828; color:white;" onclick="generatePrint('REGISTRATION')">PRINT REG</button>
         </div>
         <button class="btn" style="width:100%; margin-top:15px; background:#444; color:white;" onclick="document.getElementById('actionModal').style.display='none'">CLOSE</button>
     </div>
@@ -172,15 +118,15 @@
 <div id="treatModal" class="modal">
     <div class="modal-content">
         <h2 style="color:var(--primary);">Treatment for <span id="treatName"></span></h2>
-        <textarea id="t_complaints" placeholder="Chief Complaints" rows="2" style="margin-bottom:10px;"></textarea>
-        <textarea id="t_investigations" placeholder="Investigations Needed" rows="2" style="margin-bottom:10px;"></textarea>
-        <textarea id="t_history" placeholder="Past Medical History" rows="2" style="margin-bottom:10px;"></textarea>
-        <table style="width:100%; margin-bottom:10px; border-collapse: collapse;">
+        <textarea id="t_complaints" placeholder="Chief Complaints" rows="2"></textarea>
+        <textarea id="t_investigations" placeholder="Investigations" rows="2"></textarea>
+        <textarea id="t_history" placeholder="Past Medical History" rows="2"></textarea>
+        <table style="width:100%; border-collapse: collapse;">
             <thead><tr style="background:#eee;"><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th><th></th></tr></thead>
             <tbody id="medBody"></tbody>
         </table>
-        <button class="btn" style="background:#2196f3; color:white;" onclick="addMedRow()">+ Add MedicineRow</button>
-        <textarea id="t_notes" placeholder="Clinical Notes" rows="2" style="margin-top:10px;"></textarea>
+        <button class="btn" style="background:#2196f3; color:white; margin:10px 0;" onclick="addMedRow()">+ Add Medicine</button>
+        <textarea id="t_notes" placeholder="Clinical Notes" rows="2"></textarea>
         <button class="btn btn-reg" onclick="saveTreatment()">Save Treatment</button>
         <button class="btn" style="width:100%; margin-top:10px; background:#666; color:white;" onclick="document.getElementById('treatModal').style.display='none'">Cancel</button>
     </div>
@@ -201,333 +147,76 @@
     }
     function openMenu(id) {
         selectedP = patients.find(p => String(p.opd_number) === String(id));
-        document.getElementById('menuPatientName').innerText = "Options for: " + selectedP.name;
+        document.getElementById('menuPatientName').innerText = selectedP.name;
         document.getElementById('actionModal').style.display = "block";
     }
 
     function openEdit() {
-        if (!selectedP) return;
         document.getElementById('current_opd_id').value = selectedP.opd_number;
-        document.getElementById('mainActionBtn').innerText = "UPDATE PATIENT DETAILS";
-        
-        // Populate standard fields
-        document.getElementById('p_name').value = selectedP.name || "";
-        document.getElementById('p_age').value = selectedP.age || "";
-        document.getElementById('p_sex').value = selectedP.sex || "Male";
-        document.getElementById('p_phone').value = selectedP.phone || ""; // COLUMN Q
-        document.getElementById('p_address').value = selectedP.address || ""; // COLUMN F
-        document.getElementById('p_weight').value = selectedP.weight || "";
-        document.getElementById('p_bp').value = selectedP.bp || "";
-        document.getElementById('p_pr').value = selectedP.pulse || ""; // COLUMN I
-        document.getElementById('p_spo2').value = selectedP.spo2 || "";
-        document.getElementById('p_temp').value = selectedP.temp || "";
-
+        document.getElementById('p_name').value = selectedP.name;
+        document.getElementById('p_age').value = selectedP.age;
+        document.getElementById('p_sex').value = selectedP.sex;
+        document.getElementById('p_phone').value = selectedP.phone;
+        document.getElementById('p_address').value = selectedP.address;
+        document.getElementById('p_weight').value = selectedP.weight;
+        document.getElementById('p_bp').value = selectedP.bp;
+        document.getElementById('p_pr').value = selectedP.pulse;
+        document.getElementById('p_spo2').value = selectedP.spo2;
+        document.getElementById('p_temp').value = selectedP.temp;
         document.getElementById('actionModal').style.display = "none";
-        window.scrollTo({top: 0, behavior: 'smooth'});
+        window.scrollTo(0,0);
     }
 
     async function savePatient() {
-        const data = { 
-            type: "REGISTRATION", opd: document.getElementById('current_opd_id').value || "SRR-"+Date.now().toString().slice(-4), 
-            name: document.getElementById('p_name').value, age: document.getElementById('p_age').value, sex: document.getElementById('p_sex').value, 
-            phone: document.getElementById('p_phone').value, address: document.getElementById('p_address').value, weight: document.getElementById('p_weight').value, 
-            bp: document.getElementById('p_bp').value, pulse: document.getElementById('p_pr').value, spo2: document.getElementById('p_spo2').value, temp: document.getElementById('p_temp').value 
-        };
+        const data = { type: "REGISTRATION", opd: document.getElementById('current_opd_id').value || "SRR-"+Date.now().toString().slice(-4), name: document.getElementById('p_name').value, age: document.getElementById('p_age').value, sex: document.getElementById('p_sex').value, phone: document.getElementById('p_phone').value, address: document.getElementById('p_address').value, weight: document.getElementById('p_weight').value, bp: document.getElementById('p_bp').value, pulse: document.getElementById('p_pr').value, spo2: document.getElementById('p_spo2').value, temp: document.getElementById('p_temp').value };
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
         location.reload();
     }
 
-    // COMPLEX PAGE BREAKING LOGIC IMPLEMENTATION
-    const buildPrintContent = (type) => {
-        // Shared Templates: Doctor Signature, Watermark, and dynamic Telugu Footer
-        const signatureTemplate = `<div style="text-align:right; margin-bottom:10px;">
-                                    <div style="font-size:15pt; font-weight:900;">DR. M. JAYACHANDER</div>
-                                    <div style="font-size:10pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)This updated code implements the full "Page Breaking" logic you requested. It fixes the collapsed header on mobile and PC cutting, removes the whitespace/margins on mobile, and ensures that if prescriptions exceed 7 drugs, they continue to a second page that *only* repeats the Patient Basic Details and Vitals box.
+    function generatePrint(type) {
+        const header = `<div class="print-header"><img src="logo.jpg" style="width:90px;"><div style="text-align:center;"><h1 style="color:#c62828; margin:0; font-size:24pt; font-weight:900;">SRI RAJA RAJESHWARI HOSPITAL</h1><p style="font-size:10.5pt; font-weight:bold; margin:2px 0;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, TG 500055</p></div><div style="border:2px solid #000; padding:8px; text-align:center; min-width:250px; border-radius:8px;"><div style="font-size:16pt; font-weight:900;">DR. M. JAYACHANDER</div><div style="font-size:10pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div><div style="color:#c62828; font-size:10pt; font-weight:bold;">Reg No: TSMC/FMR/43070</div></div></div>`;
+        const footer = `<div class="print-footer"><div style="text-align:right; margin-bottom:10px;"><div style="font-size:15pt; font-weight:900;">DR. M. JAYACHANDER</div><div style="font-size:10pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div></div><div style="border-top:2px solid #000; margin-bottom:4px;"></div><div style="font-size:10pt; color:#c62828; font-weight:900; text-align:center;">Note: దయచేసి ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తీసుకురావలెను</div><div style="background:#1565c0 !important; color:white !important; padding:8px; text-align:center; font-weight:bold; font-size:14pt; border-radius:8px; margin-top:5px;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div></div>`;
+        const details = `<div style="border:2.5px solid #000; padding:10px; font-size:14pt; display:grid; grid-template-columns: 1.2fr 0.8fr; font-weight:bold;"><div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:18pt;">${selectedP.name}</span></div><div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}</div></div><div class="vitals-row"><span>Wt: ${selectedP.weight}kg</span><span>BP: ${selectedP.bp}</span><span>P.R.: ${selectedP.pulse}</span><span>SpO2: ${selectedP.spo2}%</span><span>Temp: ${selectedP.temp}°F</span></div>`;
 
-Complaints, Investigations, and Past History will only appear on Page 1.
-
-### **Full Rectified index.html**
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRR Hospital Management System</title>
-    <style>
-        :root { --primary: #1b5e20; --accent: #c62828; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 12pt; color: #333; overflow-x: hidden; }
-        
-        .container { max-width: 1150px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
-        /* Dashboard Header */
-        .header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-bottom: 20px; gap: 15px; }
-        .center-side { text-align: center; flex: 1; min-width: 300px; }
-        .center-side h1 { color: var(--accent); margin: 0; font-size: 26px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
-        .full-address { font-size: 13px; font-weight: bold; color: #1b5e20; margin-top: 5px; line-height: 1.4; display: block; }
-        
-        /* Doctor Box 3 Lines - Dashboard View */
-        .doc-side { border: 2.5px solid #000; padding: 12px; text-align: center; background: #fffde7; min-width: 280px; border-radius: 8px; box-shadow: 4px 4px 0px #000; }
-        .doc-name { font-size: 19px; font-weight: 900; display: block; color: #000; }
-        .doc-degree { font-size: 13px; font-weight: bold; display: block; color: #333; }
-        .doc-reg { font-size: 13px; font-weight: 900; display: block; color: var(--accent); }
-        
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 15px; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1.5px solid #000; border-radius: 4px; font-size: 11pt; box-sizing: border-box; }
-        
-        .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
-        .btn-reg { background: var(--primary); color: white; width: 100%; font-size: 14pt; margin-top: 10px; }
-        
-        .btn-select { background: #2e7d32; color: white; padding: 8px 16px; border-radius: 4px; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 25px; }
-        th { background: #263238; color: white; padding: 12px; text-align: left; }
-        td { padding: 12px; border-bottom: 1px solid #ddd; font-weight: bold; }
-
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
-        .modal-content { background: white; margin: 5% auto; padding: 25px; width: 95%; max-width: 800px; border-radius: 12px; border-top: 10px solid var(--accent); }
-
-        /* PRINT LAYOUT - COMPLEX PAGE BREAKING & FITNESS FIXES */
-        #printArea { display: none; }
-        @media print {
-            body * { visibility: hidden; }
-            #printArea, #printArea * { visibility: visible; }
-            #printArea { 
-                display: block !important; 
-                position: absolute; 
-                left: 0; top: 0; 
-                width: 100%; 
-                margin: 0 !important; 
-                padding: 0 !important; 
-            }
-            
-            /* Strict Page Wrapper - Enforces fitness and prevents spill */
-            .print-page-wrapper { 
-                width: 21cm; 
-                height: 29.6cm; /* Exact A4 height to prevent collapse */
-                position: relative; 
-                margin: 0 auto; 
-                padding: 8mm 10mm; /* RECTIFIED whitespace gaps and stopping PC cutting */
-                box-sizing: border-box; 
-                page-break-after: always; /* Force new page after this wrapper */
-                background: white !important; 
-                overflow: hidden; /* Strict containment */
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important;
-            }
-            
-            /* RECTIFIED Print Header: Forces GRID placement so doctor box is on right, even on mobile */
-            .print-header-grid { 
-                display: grid; 
-                grid-template-columns: 1fr 280px; 
-                align-items: center; 
-                border-bottom: 5px solid #1b5e20; 
-                padding-bottom: 8px; 
-                margin-bottom: 12px; 
-                width: 100%;
-            }
-            
-            /* Vital box fitness */
-            .vitals-box { 
-                background: #e8f5e9 !important; 
-                border: 2.5px solid #000; 
-                border-top: none; 
-                padding: 10px; 
-                display: flex; 
-                justify-content: space-between; 
-                font-size: 14pt; 
-                font-weight: bold; 
-                position: relative; 
-                z-index: 10;
-            }
-            
-            /* Table fitness */
-            .print-table { 
-                width: 100%; 
-                border-collapse: collapse; 
-                border: 2px solid #000; 
-                margin-top: 10px; 
-            }
-            .print-table th { background: #333; color: white; padding: 10px; border: 1px solid #000; font-size: 14pt; }
-            .print-table td { padding: 10px; border: 1px solid #000; font-size: 14pt; font-weight: bold; }
-            
-            /* Forced Footer Containment */
-            .print-footer-container { 
-                position: absolute; 
-                bottom: 8mm; /* Strict fitness */
-                left: 10mm; right: 10mm; 
-                width: calc(100% - 20mm); 
-                z-index: 10; 
-            }
-            
-            @page { size: A4 portrait; margin: 0 !important; }
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="header">
-        <img src="logo.jpg" style="width:100px; height:auto;">
-        <div class="center-side">
-            <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
-            <span class="full-address">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam,<br>Quthbullapur Mandal, Hyderabad, TG 500055</span>
-        </div>
-        <div class="doc-side">
-            <span class="doc-name">DR. M. JAYACHANDER</span>
-            <span class="doc-degree">MBBS, M.D. (GENERAL MEDICINE)</span>
-            <span class="doc-reg">Reg No: TSMC/FMR/43070</span>
-        </div>
-    </div>
-
-    <input type="hidden" id="current_opd_id" value="">
-
-    <div class="grid">
-        <input type="text" id="p_name" placeholder="Patient Name">
-        <input type="number" id="p_age" placeholder="Age">
-        <select id="p_sex"><option>Male</option><option>Female</option></select>
-        <input type="text" id="p_phone" placeholder="Phone (Col Q)">
-        <input type="text" id="p_address" placeholder="Address (Col F)">
-        <input type="text" id="p_weight" placeholder="Weight">
-        <input type="text" id="p_bp" placeholder="BP">
-        <input type="text" id="p_pr" placeholder="Pulse (P.R. Col I)">
-        <input type="text" id="p_spo2" placeholder="SpO2">
-        <input type="text" id="p_temp" placeholder="Temp">
-    </div>
-    <button class="btn btn-reg" id="mainActionBtn" onclick="savePatient()">Register Patient</button>
-    
-    <input type="text" id="pSearch" style="width:100%; margin-top:25px; padding:12px; border: 2px solid var(--primary);" placeholder="🔍 Search Patient Name..." onkeyup="filterTable()">
-    <table>
-        <thead><tr><th>OPD ID</th><th>Name</th><th>Action</th></tr></thead>
-        <tbody id="tbody"></tbody>
-    </table>
-</div>
-
-<div id="printArea"></div>
-
-<div id="actionModal" class="modal">
-    <div class="modal-content">
-        <h2 id="menuPatientName" style="color:var(--accent); text-align:center;"></h2>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:20px;">
-            <button class="btn" style="background:#1565c0; color:white;" onclick="openEdit()">EDIT DETAILS</button>
-            <button class="btn" style="background:#ef6c00; color:white;" onclick="openTreat()">ADD TREATMENT</button>
-            <button class="btn" style="background:#2e7d32; color:white;" onclick="generatePrint('PRESCRIPTION')">PRINT Rx</button>
-            <button class="btn" style="background:#25D366; color:white;" onclick="sendWhatsApp()">WHATSAPP Rx</button>
-            <button class="btn" style="background:#c62828; color:white;" onclick="generatePrint('REGISTRATION')">PRINT REG SLIP</button>
-        </div>
-        <button class="btn" style="width:100%; margin-top:15px; background:#444; color:white;" onclick="document.getElementById('actionModal').style.display='none'">CLOSE</button>
-    </div>
-</div>
-
-<div id="treatModal" class="modal">
-    <div class="modal-content">
-        <h2 style="color:var(--primary);">Treatment for <span id="treatName"></span></h2>
-        <textarea id="t_complaints" placeholder="Chief Complaints" rows="2" style="margin-bottom:10px;"></textarea>
-        <textarea id="t_investigations" placeholder="Investigations Needed" rows="2" style="margin-bottom:10px;"></textarea>
-        <textarea id="t_history" placeholder="Past Medical History" rows="2" style="margin-bottom:10px;"></textarea>
-        <table style="width:100%; margin-bottom:10px; border-collapse: collapse;">
-            <thead><tr style="background:#eee;"><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th><th></th></tr></thead>
-            <tbody id="medBody"></tbody>
-        </table>
-        <button class="btn" style="background:#2196f3; color:white;" onclick="addMedRow()">+ Add MedicineRow</button>
-        <textarea id="t_notes" placeholder="Clinical Notes" rows="2" style="margin-top:10px;"></textarea>
-        <button class="btn btn-reg" onclick="saveTreatment()">Save Treatment</button>
-        <button class="btn" style="width:100%; margin-top:10px; background:#666; color:white;" onclick="document.getElementById('treatModal').style.display='none'">Cancel</button>
-    </div>
-</div>
-
-<script>
-    const API_URL = "[https://script.google.com/macros/s/AKfycbw_fhUBaHGRiYb6pOZA__LyMVkjiIusfWCT6QsfSrka6s7PanIG3fwLk-bnAZm2goKb/exec](https://script.google.com/macros/s/AKfycbw_fhUBaHGRiYb6pOZA__LyMVkjiIusfWCT6QsfSrka6s7PanIG3fwLk-bnAZm2goKb/exec)";
-    let patients = [], selectedP = null;
-
-    function loadData() {
-        const script = document.createElement('script');
-        script.src = `${API_URL}?callback=handleResponse&ts=${Date.now()}`;
-        document.body.appendChild(script);
-    }
-    function handleResponse(data) { patients = data; renderTable(data); }
-    function renderTable(list) {
-        document.getElementById('tbody').innerHTML = list.map(p => `<tr><td>${p.opd_number}</td><td>${p.name}</td><td><button class="btn-select" onclick="openMenu('${p.opd_number}')">SELECT</button></td></tr>`).reverse().join('');
-    }
-    function openMenu(id) {
-        selectedP = patients.find(p => String(p.opd_number) === String(id));
-        document.getElementById('menuPatientName').innerText = "Options for: " + selectedP.name;
-        document.getElementById('actionModal').style.display = "block";
-    }
-
-    function openEdit() {
-        if (!selectedP) return;
-        document.getElementById('current_opd_id').value = selectedP.opd_number;
-        document.getElementById('mainActionBtn').innerText = "UPDATE PATIENT DETAILS";
-        
-        document.getElementById('p_name').value = selectedP.name || "";
-        document.getElementById('p_age').value = selectedP.age || "";
-        document.getElementById('p_sex').value = selectedP.sex || "Male";
-        document.getElementById('p_phone').value = selectedP.phone || ""; 
-        document.getElementById('p_address').value = selectedP.address || ""; 
-        document.getElementById('p_weight').value = selectedP.weight || "";
-        document.getElementById('p_bp').value = selectedP.bp || "";
-        document.getElementById('p_pr').value = selectedP.pulse || ""; 
-        document.getElementById('p_spo2').value = selectedP.spo2 || "";
-        document.getElementById('p_temp').value = selectedP.temp || "";
-
-        document.getElementById('actionModal').style.display = "none";
-        window.scrollTo({top: 0, behavior: 'smooth'});
-    }
-
-    async function savePatient() {
-        const data = { 
-            type: "REGISTRATION", opd: document.getElementById('current_opd_id').value || "SRR-"+Date.now().toString().slice(-4), 
-            name: document.getElementById('p_name').value, age: document.getElementById('p_age').value, sex: document.getElementById('p_sex').value, 
-            phone: document.getElementById('p_phone').value, address: document.getElementById('p_address').value, weight: document.getElementById('p_weight').value, 
-            bp: document.getElementById('p_bp').value, pulse: document.getElementById('p_pr').value, spo2: document.getElementById('p_spo2').value, temp: document.getElementById('p_temp').value 
-        };
-        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-        location.reload();
-    }
-
-    // COMPLEX PAGE BREAKING LOGIC IMPLEMENTATION
-    const buildPrintContent = (type) => {
-        // Shared Templates: Doctor Signature, Watermark, and dynamic Telugu Footer
-        const signatureTemplate = `<div style="text-align:right; margin-bottom:10px;">
-                                    <div style="font-size:15pt; font-weight:900;">DR. M. JAYACHANDER</div>
-                                    <div style="font-size:10pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
-                                </div>`;
-        const watermarkTemplate = `<img src="logo.jpg" class="watermark">`;
-        const footerTemplate = `<div style="border-top:2px solid #000; margin-bottom:6px;"></div>
-                                <div style="font-size:10.5pt; color:#c62828; font-weight:900; text-align:center; margin-bottom:4px;">Note: దయచేసి ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తీసుకురావలెను</div>
-                                <div style="font-size:9pt; color:#1b5e20; font-weight:bold; text-align:center; line-height:1.2; margin-bottom:8px;">మా ప్రత్యేక సేవలు: బిపి, షుగర్ ,గుండె వ్యాధులు కాలేయ వ్యాధులు (జాండీస్), కిడ్నీ సమస్యలు, నరాల వ్యాధులు (పక్షవాతం) ,వైరల్ ఫీవర్, జీర్ణకోశ వ్యాధులు (అల్సర్), ఊపిరితిత్తుల వ్యాధులు, థైరాయిడ్ మరియు ఫిట్స్ చూడబడును.</div>
-                                <div style="font-size:9.5pt; font-weight:bold; text-align:center; color:red; margin-bottom:6px;">Note: Not valid for medico legal purpose</div>
-                                <div style="background:#1565c0 !important; color:white !important; padding:10px; text-align:center; font-weight:bold; font-size:14pt; border-radius:8px;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div>`;
-
-        const printArea = document.getElementById('printArea');
-        printArea.innerHTML = ""; // Clear existing print content
-
-        if (type === 'REGISTRATION') {
-            const content = getStandardHeaderTemplate() + getPatientBasicDetailsTemplate() + "<h2 style='text-align:center; margin-top:80px; font-size:30pt;'>REGISTRATION SLIP</h2>";
-            const fullPage = `<div class="print-page-wrapper">${watermarkTemplate}${content}<div class="print-footer-container">${signatureTemplate}${footerTemplate}</div></div>`;
-            printArea.innerHTML = fullPage;
+        let printHTML = "";
+        if(type === 'REGISTRATION') {
+            printHTML = `<div class="print-page-wrapper"><img src="logo.jpg" class="watermark">${header}${details}<h2 style="text-align:center; margin-top:100px; font-size:30pt; text-decoration:underline;">REGISTRATION SLIP</h2>${footer}</div>`;
         } else {
-            // PRESCRIPTION BREAKING LOGIC
             const meds = JSON.parse(selectedP.medications || "[]");
-            
-            if (meds.length <= 7) {
-                // SITS IN ONE PAGE
-                let tableHtml = `<h3 style="border-bottom:2.5px solid #000; margin-top:20px; font-size:18pt;">Rx (Prescription)</h3><table class="print-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${meds.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody></table>`;
-                const content = getStandardHeaderTemplate() + getPatientBasicDetailsTemplate() + getClinicalHistoryTemplate() + tableHtml + `<p style="font-size:15pt; margin-top:20px;"><b>Notes:</b> ${selectedP.notes || '---'}</p>`;
-                const fullPage = `<div class="print-page-wrapper">${watermarkTemplate}${content}<div class="print-footer-container">${signatureTemplate}${footerTemplate}</div></div>`;
-                printArea.innerHTML = fullPage;
-            } else {
-                // NEEDS CONTINUATION ON NEXT PAGE
-                // PAGE 1: First 7 drugs only
-                let p1Meds = meds.slice(0, 7);
-                let tableHtmlP1 = `<h3 style="border-bottom:2.5px solid #000; margin-top:20px; font-size:18pt;">Rx (Prescription)</h3><table class="print-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${p1Meds.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody></table>`;
-                const p1Content = getStandardHeaderTemplate() + getPatientBasicDetailsTemplate() + getClinicalHistoryTemplate() + tableHtmlP1 + `<div style="text-align:right; font-weight:bold; margin-top:10px;">Continued on Page 2 →</div>`;
-                
-                // PAGE 2+: Remaining drugs only
-                let p2Meds = meds.slice(7);
-                let tableHtmlP2 = `<h3 style="border-bottom:2.5px solid #000; margin-top:10px; font-size:16pt;">Rx (Continued)</h3><table class="print-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${p2Meds.map(m => `<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody></table>`;
-                
-                // Content for P2 avoids Complaints/Investigations/History
-                const p2Content = get StandardHeaderTemplate() + getPatientBasicDetailsTemplate() + tableHtmlP2 + `<p style="font-size:15pt; margin-top:20px;"><b>Notes:To manage your files and run this updated "Page Breaking" code, use these specific Command Prompt (CMD) steps.
+            const chunk = (arr, size) => Array.from({ length: Math.ceil(arr.length / size) }, (v, i) => arr.slice(i * size, i * size + size));
+            const medPages = chunk(meds, 6);
+
+            medPages.forEach((pageMeds, index) => {
+                let medRows = pageMeds.map(m => `<tr><td>${m.n}</td><td style="text-align:center;">${m.d}</td><td style="text-align:center;">${m.r}</td><td>${m.rem}</td></tr>`).join('');
+                let historyContent = (index === 0) ? `<p style="font-size:14pt;"><b>Complaints:</b> ${selectedP.complaints || '---'}</p><p style="font-size:14pt;"><b>Investigations:</b> ${selectedP.investigations || '---'}</p>` : "";
+                printHTML += `<div class="print-page-wrapper"><img src="logo.jpg" class="watermark">${header}${details}${historyContent}<h3 style="border-bottom:2px solid #000; margin-top:10px;">Rx (Prescription) Page ${index+1}</h3><table class="med-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${medRows}</tbody></table>${footer}</div>`;
+            });
+        }
+        document.getElementById('printArea').innerHTML = printHTML;
+        window.print();
+    }
+
+    function openTreat() {
+        document.getElementById('actionModal').style.display = "none";
+        document.getElementById('treatName').innerText = selectedP.name;
+        document.getElementById('treatModal').style.display = "block";
+        ['complaints','investigations','history','notes'].forEach(f => document.getElementById('t_'+f).value = selectedP[f] || "");
+        document.getElementById('medBody').innerHTML = "";
+        try { JSON.parse(selectedP.medications || "[]").forEach(m => addMedRow(m)); } catch(e) { addMedRow(); }
+    }
+    function addMedRow(data = {n:'', d:'', r:'', rem:''}) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td><textarea class="m-name">${data.n}</textarea></td><td><textarea class="m-dur">${data.d}</textarea></td><td><textarea class="m-route">${data.r}</textarea></td><td><textarea class="m-rem">${data.rem}</textarea></td><td style="color:red; cursor:pointer;" onclick="this.parentElement.remove()">×</td>`;
+        document.getElementById('medBody').appendChild(tr);
+    }
+    async function saveTreatment() {
+        const meds = Array.from(document.querySelectorAll('#medBody tr')).map(tr => ({ n: tr.querySelector('.m-name').value, d: tr.querySelector('.m-dur').value, r: tr.querySelector('.m-route').value, rem: tr.querySelector('.m-rem').value })).filter(m => m.n !== "");
+        const data = { type: "SAVE_TREATMENT", opd: selectedP.opd_number, complaints: document.getElementById('t_complaints').value, investigations: document.getElementById('t_investigations').value, history: document.getElementById('t_history').value, medications: JSON.stringify(meds), notes: document.getElementById('t_notes').value };
+        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+        location.reload();
+    }
+    function filterTable() { renderTable(patients.filter(p => p.name.toLowerCase().includes(document.getElementById('pSearch').value.toLowerCase()))); }
+    window.onload = loadData;
+</script>
+</body>
+</html>
