@@ -151,7 +151,7 @@
         document.getElementById('tbody').innerHTML = html;
     }
 
-    // CORRECTION 2: OVERHAULED WHATSAPP LOGIC
+    // FIXED WHATSAPP LINE BREAKS
     function sendWhatsApp(id) {
         const p = patients.find(pat => String(pat.opd_number) === String(id));
         if (!p) return;
@@ -160,14 +160,15 @@
         try {
             const meds = JSON.parse(p.medications || "[]");
             if (meds.length > 0) {
-                medText = "\n\n*PRESCRIPTION:*\n";
+                medText = "%0A%0A*PRESCRIPTION:*%0A";
                 meds.forEach((m, i) => {
-                    medText += `${i + 1}. ${m.n} -- ${m.d} -- ${m.r} -- (${m.rem})\n`;
+                    // Added %0A twice: one after each drug entry for clean separation
+                    medText += `${i + 1}. ${m.n} -- ${m.d} -- ${m.r} -- (${m.rem})%0A`;
                 });
             }
         } catch (e) { medText = ""; }
 
-        const clinicalNotes = p.notes ? `\n*Clinical Notes:* ${p.notes}` : "";
+        const clinicalNotes = p.notes ? `%0A*Clinical Notes:* ${p.notes}` : "";
         
         const message = `*SRI RAJA RAJESHWARI HOSPITAL*%0A` +
             `Suraram Colony, Hyderabad%0A` +
@@ -186,12 +187,17 @@
         window.open(waUrl, '_blank');
     }
 
-    // CORRECTION 1: DELETE PATIENT LOGIC
+    // AGGRESSIVE DELETE TRIGGER
     async function deletePatient(id) {
-        if(confirm("Are you sure you want to PERMANENTLY DELETE this patient record? This cannot be undone.")) {
+        if(confirm("PERMANENTLY DELETE record " + id + "?")) {
             const data = { type: "DELETE_PATIENT", opd: id };
-            await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-            alert("Delete request sent. Refreshing...");
+            // Using POST to ensure data is sent to the script
+            await fetch(API_URL, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                body: JSON.stringify(data) 
+            });
+            alert("Delete signal sent to database. Refreshing...");
             location.reload();
         }
     }
