@@ -25,6 +25,7 @@
         .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
         .btn-reg { background: var(--primary); color: white; width: 100%; font-size: 14pt; margin-top: 10px; }
         .btn-select { background: #2e7d32; color: white; padding: 8px 16px; border-radius: 4px; }
+        .btn-delete { background: #d32f2f; color: white; padding: 8px 16px; border-radius: 4px; margin-left: 5px; }
         .btn-whatsapp { background: #25D366; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-size: 10pt; display: inline-block; margin-left: 5px; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 25px; }
@@ -141,13 +142,58 @@
     
     function renderTable(list) {
         const html = list.map(p => {
-            const waLink = `https://wa.me/91${p.phone}?text=Hello ${p.name}, Your Prescription from SRR Hospital is ready.`;
             return `<tr><td>${p.opd_number}</td><td>${p.name}</td><td>
                 <button class="btn-select" onclick="openMenu('${p.opd_number}')">SELECT</button>
-                <a href="${waLink}" class="btn-whatsapp" target="_blank">WhatsApp</a>
+                <button class="btn-delete" onclick="deletePatient('${p.opd_number}')">DELETE</button>
+                <button class="btn-whatsapp" onclick="sendWhatsApp('${p.opd_number}')">WhatsApp</button>
             </td></tr>`;
         }).reverse().join('');
         document.getElementById('tbody').innerHTML = html;
+    }
+
+    // CORRECTION 2: OVERHAULED WHATSAPP LOGIC
+    function sendWhatsApp(id) {
+        const p = patients.find(pat => String(pat.opd_number) === String(id));
+        if (!p) return;
+
+        let medText = "";
+        try {
+            const meds = JSON.parse(p.medications || "[]");
+            if (meds.length > 0) {
+                medText = "\n\n*PRESCRIPTION:*\n";
+                meds.forEach((m, i) => {
+                    medText += `${i + 1}. ${m.n} -- ${m.d} -- ${m.r} -- (${m.rem})\n`;
+                });
+            }
+        } catch (e) { medText = ""; }
+
+        const clinicalNotes = p.notes ? `\n*Clinical Notes:* ${p.notes}` : "";
+        
+        const message = `*SRI RAJA RAJESHWARI HOSPITAL*%0A` +
+            `Suraram Colony, Hyderabad%0A` +
+            `--------------------------%0A` +
+            `*Patient:* ${p.name}%0A` +
+            `*OPD ID:* ${p.opd_number}%0A` +
+            `*Date:* ${new Date().toLocaleDateString()}` +
+            `${medText}` +
+            `${clinicalNotes}%0A%0A` +
+            `*Advice:* దయచేసి ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తీసుకురావలెను.%0A` +
+            `--------------------------%0A` +
+            `*DR. M. JAYACHANDER*%0A` +
+            `MBBS, M.D. (GENERAL MEDICINE)`;
+
+        const waUrl = `https://wa.me/91${p.phone}?text=${message}`;
+        window.open(waUrl, '_blank');
+    }
+
+    // CORRECTION 1: DELETE PATIENT LOGIC
+    async function deletePatient(id) {
+        if(confirm("Are you sure you want to PERMANENTLY DELETE this patient record? This cannot be undone.")) {
+            const data = { type: "DELETE_PATIENT", opd: id };
+            await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+            alert("Delete request sent. Refreshing...");
+            location.reload();
+        }
     }
     
     function aggressiveSearch() {
@@ -195,19 +241,12 @@
         } else {
             const meds = JSON.parse(selectedP.medications || "[]");
             const chunk = (arr, size) => Array.from({ length: Math.ceil(arr.length / size) }, (v, i) => arr.slice(i * size, i * size + size));
-            
-            // RECTIFIED: Strictly 6 medications per page for portrait A4 clarity
             const medPages = chunk(meds, 6); 
-            
             medPages.forEach((pageMeds, index) => {
                 const isLastPage = index === medPages.length - 1;
                 let medRows = pageMeds.map(m => `<tr><td>${m.n}</td><td style="text-align:center;">${m.d}</td><td style="text-align:center;">${m.r}</td><td>${m.rem}</td></tr>`).join('');
-                
                 let history = (index === 0) ? `<p style="font-size:12pt; margin:5px 0;"><b>Complaints:</b> ${selectedP.complaints || ''}</p><p style="font-size:12pt; margin:5px 0;"><b>Investigations:</b> ${selectedP.investigations || ''}</p><p style="font-size:12pt; margin:5px 0;"><b>Past History:</b> ${selectedP.history || ''}</p>` : "";
-                
-                // Notes appear ONLY on the very last page of medications
                 let notesHtml = (isLastPage) ? `<p style="font-size:12pt; margin-top: 10px;"><b>Notes:</b> ${selectedP.notes || ''}</p>` : "";
-
                 printHTML += `<div class="print-page-wrapper"><img src="logo.jpg" class="watermark">${header}${details}${history}<h3 style="border-bottom:2px solid #000; margin-top:5px;">Rx (Prescription) ${index > 0 ? '(Contd.)' : ''}</h3><table class="med-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${medRows}</tbody></table>${notesHtml}${footer}</div>`;
             });
         }
