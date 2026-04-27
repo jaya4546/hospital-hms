@@ -128,14 +128,20 @@
 
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbw_fhUBaHGRiYb6pOZA__LyMVkjiIusfWCT6QsfSrka6s7PanIG3fwLk-bnAZm2goKb/exec";
-    let patients = [], selectedP = null;
+    let patients = [], filteredPatients = [], selectedP = null;
 
     function loadData() {
         const script = document.createElement('script');
         script.src = `${API_URL}?callback=handleResponse&ts=${Date.now()}`;
         document.body.appendChild(script);
     }
-    function handleResponse(data) { patients = data; renderTable(data); }
+    
+    function handleResponse(data) { 
+        patients = data; 
+        filteredPatients = data; 
+        renderTable(data); 
+    }
+    
     function renderTable(list) {
         document.getElementById('tbody').innerHTML = list.map(p => {
             const waLink = `https://wa.me/91${p.phone}?text=Hello ${p.name}, Your Prescription from SRR Hospital is ready.`;
@@ -145,6 +151,13 @@
             </td></tr>`
         }).reverse().join('');
     }
+    
+    function filterTable() {
+        const val = document.getElementById('pSearch').value.toLowerCase();
+        filteredPatients = patients.filter(p => p.name.toLowerCase().includes(val));
+        renderTable(filteredPatients);
+    }
+
     function openMenu(id) {
         selectedP = patients.find(p => String(p.opd_number) === String(id));
         document.getElementById('menuPatientName').innerText = selectedP.name;
@@ -170,30 +183,27 @@
     function generatePrint(type) {
         const header = `<div class="print-header"><img src="logo.jpg" style="width:65px; margin-right:10px;"><div><h1>SRI RAJA RAJESHWARI HOSPITAL</h1><p style="font-size:8.5pt; font-weight:bold; margin:2px 0; color:#1b5e20;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyderabad 500055</p></div><div style="border:2px solid #000; padding:6px; text-align:center; border-radius:8px; min-width:240px;"><div style="font-size:14pt; font-weight:900;">DR. M. JAYACHANDER</div><div style="font-size:9pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div><div style="color:#c62828; font-size:9pt; font-weight:bold;">Reg No: TSMC/FMR/43070</div></div></div>`;
         const footer = `<div class="print-footer"><div style="text-align:right; margin-bottom:8px;"><div style="font-size:14pt; font-weight:900;">DR. M. JAYACHANDER</div><div style="font-size:9pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div></div><div style="border-top:2px solid #000; margin-bottom:4px;"></div><div style="font-size:9pt; color:#c62828; font-weight:900; text-align:center; margin-bottom:2px;">Note: దయచేసి ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తీసుకురావలెను</div><div style="font-size:7.5pt; color:#1b5e20; font-weight:bold; text-align:center; line-height:1.1; margin-bottom:4px;">మా ప్రత్యేక సేవలు: బిపి, షుగర్, గుండె వ్యాధులు, కాలేయ వ్యాధులు, కిడ్నీ సమస్యలు, నరాల వ్యాధులు, వైరల్ ఫీవర్, అల్సర్, థైరాయిడ్ మరియు ఫిట్స్.</div><div style="font-size:9pt; font-weight:bold; text-align:center; color:red; margin-bottom:4px;">Note: Not valid for medico legal purpose</div><div style="background:#1565c0 !important; color:white !important; padding:6px; text-align:center; font-weight:bold; font-size:13pt; border-radius:8px;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div></div>`;
-        const details = `<div style="border:2.5px solid #000; padding:8px; font-size:12pt; display:grid; grid-template-columns: 1.2fr 0.8fr; font-weight:bold;"><div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:16pt; text-transform:uppercase;">${selectedP.name}</span></div><div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}</div></div><div class="vitals-row"><span>Wt: ${selectedP.weight}kg</span><span>BP: ${selectedP.bp}</span><span>P.R.: ${selectedP.pulse}</span><span>SpO2: ${selectedP.spo2}%</span><span>Temp: ${selectedP.temp}°F</span></div>`;
+        
+        // RECTIFIED: Phone number added to print details
+        const details = `<div style="border:2.5px solid #000; padding:8px; font-size:12pt; display:grid; grid-template-columns: 1.2fr 0.8fr; font-weight:bold;"><div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:16pt; text-transform:uppercase;">${selectedP.name}</span><br>Phone: ${selectedP.phone}</div><div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}<br>Address: ${selectedP.address || ''}</div></div><div class="vitals-row"><span>Wt: ${selectedP.weight}kg</span><span>BP: ${selectedP.bp}</span><span>P.R.: ${selectedP.pulse}</span><span>SpO2: ${selectedP.spo2}%</span><span>Temp: ${selectedP.temp}°F</span></div>`;
 
         let printHTML = "";
         if(type === 'REGISTRATION') {
-            // FIX: Removed the giant centered "REGISTRATION SLIP" here
             printHTML = `<div class="print-page-wrapper"><img src="logo.jpg" class="watermark">${header}${details}${footer}</div>`;
         } else {
             const meds = JSON.parse(selectedP.medications || "[]");
             const chunk = (arr, size) => Array.from({ length: Math.ceil(arr.length / size) }, (v, i) => arr.slice(i * size, i * size + size));
-            // Splitting table to ensure it fits portrait without spill
             const medPages = chunk(meds, 7); 
             medPages.forEach((pageMeds, index) => {
                 const isLastPage = index === medPages.length - 1;
                 let medRows = pageMeds.map(m => `<tr><td>${m.n}</td><td style="text-align:center;">${m.d}</td><td style="text-align:center;">${m.r}</td><td>${m.rem}</td></tr>`).join('');
                 
-                // RECTIFIED: Strict order and Investigations section restored
                 let history = (index === 0) ? `
                     <p style="font-size:12pt; margin:5px 0;"><b>Complaints:</b> ${selectedP.complaints || ''}</p>
                     <p style="font-size:12pt; margin:5px 0;"><b>Investigations:</b> ${selectedP.investigations || ''}</p>
                     <p style="font-size:12pt; margin:5px 0;"><b>Past History:</b> ${selectedP.history || ''}</p>
                 ` : "";
                 
-                // FIX: Notes are now forced to print ONLY after the medications table has completed.
-                // It works on Page 1 if there's only 1 page, or Page 2 if needed.
                 let notesHtml = (isLastPage) ? `<p style="font-size:12pt; margin-top: 10px;"><b>Notes:</b> ${selectedP.notes || ''}</p>` : "";
 
                 printHTML += `<div class="print-page-wrapper"><img src="logo.jpg" class="watermark">${header}${details}${history}<h3 style="border-bottom:2px solid #000; margin-top:5px;">Rx (Prescription) ${index > 0 ? '(Contd.)' : ''}</h3><table class="med-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${medRows}</tbody></table>${notesHtml}${footer}</div>`;
@@ -222,7 +232,7 @@
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
         location.reload();
     }
-    function filterTable() { renderTable(patients.filter(p => p.name.toLowerCase().includes(document.getElementById('pSearch').value.toLowerCase()))); }
+    
     window.onload = loadData;
 </script>
 </body>
