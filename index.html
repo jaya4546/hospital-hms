@@ -10,7 +10,6 @@
         
         .container { max-width: 1150px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* Dashboard Header - Logo, Name, and Doc in one line */
         .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-bottom: 20px; gap: 10px; flex-wrap: nowrap; }
         .center-side { text-align: center; flex: 1; }
         .center-side h1 { color: var(--accent); margin: 0; font-size: 20px; font-weight: 900; text-transform: uppercase; white-space: nowrap; }
@@ -35,7 +34,6 @@
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
         .modal-content { background: white; margin: 5% auto; padding: 25px; width: 95%; max-width: 800px; border-radius: 12px; }
 
-        /* PRINT LOGIC */
         #printArea { display: none; }
         @media print {
             @page { size: A4 portrait; margin: 0 !important; }
@@ -87,7 +85,7 @@
     </div>
     <button class="btn btn-reg" id="mainActionBtn" onclick="savePatient()">Register Patient</button>
     
-    <input type="text" id="pSearch" style="width:100%; margin-top:25px; padding:12px; border: 2px solid var(--primary);" placeholder="🔍 Search Patient Name..." onkeyup="filterTable()">
+    <input type="text" id="pSearch" style="width:100%; margin-top:25px; padding:12px; border: 2px solid var(--primary);" placeholder="🔍 Search Patient Name..." oninput="filterTable()">
     <table>
         <thead><tr><th>OPD ID</th><th>Name</th><th>Action</th></tr></thead>
         <tbody id="tbody"></tbody>
@@ -128,7 +126,7 @@
 
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbw_fhUBaHGRiYb6pOZA__LyMVkjiIusfWCT6QsfSrka6s7PanIG3fwLk-bnAZm2goKb/exec";
-    let patients = [], filteredPatients = [], selectedP = null;
+    let patients = [], selectedP = null;
 
     function loadData() {
         const script = document.createElement('script');
@@ -138,8 +136,7 @@
     
     function handleResponse(data) { 
         patients = data; 
-        filteredPatients = data; 
-        renderTable(data); 
+        renderTable(patients); 
     }
     
     function renderTable(list) {
@@ -152,10 +149,11 @@
         }).reverse().join('');
     }
     
+    // RECTIFIED SEARCH LOGIC
     function filterTable() {
-        const val = document.getElementById('pSearch').value.toLowerCase();
-        filteredPatients = patients.filter(p => p.name.toLowerCase().includes(val));
-        renderTable(filteredPatients);
+        const query = document.getElementById('pSearch').value.toLowerCase();
+        const filtered = patients.filter(p => p.name.toLowerCase().includes(query));
+        renderTable(filtered);
     }
 
     function openMenu(id) {
@@ -184,7 +182,6 @@
         const header = `<div class="print-header"><img src="logo.jpg" style="width:65px; margin-right:10px;"><div><h1>SRI RAJA RAJESHWARI HOSPITAL</h1><p style="font-size:8.5pt; font-weight:bold; margin:2px 0; color:#1b5e20;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyderabad 500055</p></div><div style="border:2px solid #000; padding:6px; text-align:center; border-radius:8px; min-width:240px;"><div style="font-size:14pt; font-weight:900;">DR. M. JAYACHANDER</div><div style="font-size:9pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div><div style="color:#c62828; font-size:9pt; font-weight:bold;">Reg No: TSMC/FMR/43070</div></div></div>`;
         const footer = `<div class="print-footer"><div style="text-align:right; margin-bottom:8px;"><div style="font-size:14pt; font-weight:900;">DR. M. JAYACHANDER</div><div style="font-size:9pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div></div><div style="border-top:2px solid #000; margin-bottom:4px;"></div><div style="font-size:9pt; color:#c62828; font-weight:900; text-align:center; margin-bottom:2px;">Note: దయచేసి ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తీసుకురావలెను</div><div style="font-size:7.5pt; color:#1b5e20; font-weight:bold; text-align:center; line-height:1.1; margin-bottom:4px;">మా ప్రత్యేక సేవలు: బిపి, షుగర్, గుండె వ్యాధులు, కాలేయ వ్యాధులు, కిడ్నీ సమస్యలు, నరాల వ్యాధులు, వైరల్ ఫీవర్, అల్సర్, థైరాయిడ్ మరియు ఫిట్స్.</div><div style="font-size:9pt; font-weight:bold; text-align:center; color:red; margin-bottom:4px;">Note: Not valid for medico legal purpose</div><div style="background:#1565c0 !important; color:white !important; padding:6px; text-align:center; font-weight:bold; font-size:13pt; border-radius:8px;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div></div>`;
         
-        // RECTIFIED: Phone number added to print details
         const details = `<div style="border:2.5px solid #000; padding:8px; font-size:12pt; display:grid; grid-template-columns: 1.2fr 0.8fr; font-weight:bold;"><div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:16pt; text-transform:uppercase;">${selectedP.name}</span><br>Phone: ${selectedP.phone}</div><div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}<br>Address: ${selectedP.address || ''}</div></div><div class="vitals-row"><span>Wt: ${selectedP.weight}kg</span><span>BP: ${selectedP.bp}</span><span>P.R.: ${selectedP.pulse}</span><span>SpO2: ${selectedP.spo2}%</span><span>Temp: ${selectedP.temp}°F</span></div>`;
 
         let printHTML = "";
