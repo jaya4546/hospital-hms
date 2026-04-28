@@ -43,8 +43,7 @@
             #printArea, #printArea * { visibility: visible; }
             #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
             .print-page-wrapper { width: 210mm; height: 296mm; padding: 5mm 5mm; box-sizing: border-box; position: relative; overflow: hidden; page-break-after: always; }
-            /* INCREASED WATERMARK DENSITY */
-            .watermark { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); opacity: 0.12 !important; width: 500px; z-index: 0; }
+            .watermark { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); opacity: 0.15 !important; width: 500px; z-index: 0; }
             .print-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #1b5e20; padding-bottom: 5px; margin-bottom: 8px; width: 100%; }
             .print-header h1 { color: #c62828 !important; margin: 0; font-size: 18pt; font-weight: 900; white-space: nowrap; }
             .print-footer { position: absolute; bottom: 5mm; left: 5mm; right: 5mm; width: calc(100% - 10mm); }
@@ -189,29 +188,46 @@
         window.open(waUrl, '_blank');
     }
 
-    // ULTRA-AGGRESSIVE DELETE LOGIC
+    /** * MASTER AGGRESSIVE DELETE 
+     * Uses a multi-channel force approach: Script Injection + Iframe Form Post
+     */
     function deletePatient(id) {
-        if(confirm("PERMANENTLY DELETE record " + id + "?")) {
-            // 1. Send via JSONP (often bypasses CORS issues that block standard fetch)
-            const script = document.createElement('script');
-            script.src = `${API_URL}?type=DELETE_PATIENT&opd=${id}&ts=${Date.now()}`;
-            document.body.appendChild(script);
+        if(!confirm("⚠️ PERMANENTLY DELETE " + id + "? This cannot be undone.")) return;
 
-            // 2. Also send via POST for redundancy
-            fetch(API_URL, { 
-                method: 'POST', 
-                mode: 'no-cors', 
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `type=DELETE_PATIENT&opd=${id}` 
-            });
+        // Channel 1: Force Form Submit via Invisible Iframe (Strongest)
+        const ifrm = document.createElement('iframe');
+        ifrm.style.display = 'none';
+        ifrm.name = 'del_frame';
+        document.body.appendChild(ifrm);
 
-            alert("Permanent delete command sent to Database.");
-            
-            // 3. Force refresh to update the dashboard
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-        }
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = API_URL;
+        form.target = 'del_frame';
+
+        const typeInput = document.createElement('input');
+        typeInput.name = 'type';
+        typeInput.value = 'DELETE_PATIENT';
+        form.appendChild(typeInput);
+
+        const opdInput = document.createElement('input');
+        opdInput.name = 'opd';
+        opdInput.value = id;
+        form.appendChild(opdInput);
+
+        document.body.appendChild(form);
+        form.submit();
+
+        // Channel 2: URL Parameter trigger for redundant catch
+        const img = new Image();
+        img.src = `${API_URL}?type=DELETE_PATIENT&opd=${id}&nocache=${Date.now()}`;
+
+        alert("DELETION COMMAND FORCED. Dashboard will clean up now.");
+
+        // Cleanup and Refresh
+        setTimeout(() => {
+            location.reload();
+        }, 1200);
     }
     
     function aggressiveSearch() {
