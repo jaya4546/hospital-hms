@@ -93,6 +93,12 @@
     </table>
 </div>
 
+<iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+<form id="deleteForm" method="POST" target="hidden_iframe" style="display:none;">
+    <input type="hidden" name="type" value="DELETE_PATIENT">
+    <input type="hidden" name="opd" id="deleteOpdInput">
+</form>
+
 <div id="printArea"></div>
 
 <div id="actionModal" class="modal">
@@ -142,7 +148,7 @@
     
     function renderTable(list) {
         const html = list.map(p => {
-            return `<tr id="row-${p.opd_number}"><td>${p.opd_number}</td><td>${p.name}</td><td>
+            return `<tr><td>${p.opd_number}</td><td>${p.name}</td><td>
                 <button class="btn-select" onclick="openMenu('${p.opd_number}')">SELECT</button>
                 <button class="btn-delete" onclick="deletePatient('${p.opd_number}')">DELETE</button>
                 <button class="btn-whatsapp" onclick="sendWhatsApp('${p.opd_number}')">WhatsApp</button>
@@ -151,6 +157,7 @@
         document.getElementById('tbody').innerHTML = html;
     }
 
+    // FIXED WHATSAPP LINE BREAKS
     function sendWhatsApp(id) {
         const p = patients.find(pat => String(pat.opd_number) === String(id));
         if (!p) return;
@@ -185,27 +192,22 @@
         window.open(waUrl, '_blank');
     }
 
-    // UPDATED PERMANENT DELETE TRIGGER
-    async function deletePatient(id) {
-        if(confirm("PERMANENTLY DELETE record " + id + " from Google Spreadsheet?")) {
-            // Visual feedback: Hide row immediately
-            const row = document.getElementById('row-' + id);
-            if(row) row.style.opacity = '0.3';
+    // AGGRESSIVE DELETE VIA FORM SUBMISSION
+    function deletePatient(id) {
+        if(confirm("PERMANENTLY DELETE record " + id + "?")) {
+            const form = document.getElementById('deleteForm');
+            form.action = API_URL;
+            document.getElementById('deleteOpdInput').value = id;
+            
+            // Aggressively trigger the form submit
+            form.submit();
 
-            // Sending delete command via POST to the Spreadsheet
-            try {
-                await fetch(API_URL, { 
-                    method: 'POST', 
-                    mode: 'no-cors', 
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `type=DELETE_PATIENT&opd=${id}` 
-                });
-                
-                alert("Delete request processed. Patient will be removed permanently.");
-                location.reload(); 
-            } catch (err) {
-                alert("Network error. Please try again.");
-            }
+            alert("Aggressive delete command sent. Page will refresh to clear dashboard.");
+            
+            // Short delay before refresh to ensure form data leaves the browser
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
         }
     }
     
