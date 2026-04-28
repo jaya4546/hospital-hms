@@ -128,7 +128,8 @@
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbw_fhUBaHGRiYb6pOZA__LyMVkjiIusfWCT6QsfSrka6s7PanIG3fwLk-bnAZm2goKb/exec";
+    // UPDATED WITH YOUR NEW DEPLOYMENT URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbwuHAceOQ9uOA60sIxpfBgpZ1Dv9uNAl9dwh3eMNtXz83hq0v39BSvB-232mru-Cdm-/exec";
     let patients = [], selectedP = null;
 
     function loadData() {
@@ -188,13 +189,10 @@
         window.open(waUrl, '_blank');
     }
 
-    /** * MASTER AGGRESSIVE DELETE 
-     * Uses a multi-channel force approach: Script Injection + Iframe Form Post
-     */
     function deletePatient(id) {
         if(!confirm("⚠️ PERMANENTLY DELETE " + id + "? This cannot be undone.")) return;
 
-        // Channel 1: Force Form Submit via Invisible Iframe (Strongest)
+        // Force Form Submit via Invisible Iframe (Bypasses CORS)
         const ifrm = document.createElement('iframe');
         ifrm.style.display = 'none';
         ifrm.name = 'del_frame';
@@ -218,13 +216,12 @@
         document.body.appendChild(form);
         form.submit();
 
-        // Channel 2: URL Parameter trigger for redundant catch
+        // Secondary URL parameter trigger
         const img = new Image();
         img.src = `${API_URL}?type=DELETE_PATIENT&opd=${id}&nocache=${Date.now()}`;
 
-        alert("DELETION COMMAND FORCED. Dashboard will clean up now.");
+        alert("DELETION COMMAND FORCED. Dashboard will update now.");
 
-        // Cleanup and Refresh
         setTimeout(() => {
             location.reload();
         }, 1200);
