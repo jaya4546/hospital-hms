@@ -14,6 +14,7 @@
         .center-side { text-align: center; flex: 1; }
         .center-side h1 { color: var(--accent); margin: 0; font-size: 20px; font-weight: 900; text-transform: uppercase; white-space: nowrap; }
         .full-address { font-size: 11px; font-weight: bold; color: #1b5e20; margin-top: 3px; display: block; }
+        .hospital-phone { font-size: 13px; font-weight: bold; color: #000; margin-top: 5px; display: block; }
         
         .doc-side { border: 2px solid #000; padding: 8px; text-align: center; background: #fffde7; min-width: 250px; border-radius: 8px; }
         .doc-name { font-size: 16px; font-weight: 900; display: block; color: #000; }
@@ -42,7 +43,8 @@
             #printArea, #printArea * { visibility: visible; }
             #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
             .print-page-wrapper { width: 210mm; height: 296mm; padding: 5mm 5mm; box-sizing: border-box; position: relative; overflow: hidden; page-break-after: always; }
-            .watermark { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); opacity: 0.05 !important; width: 450px; z-index: 0; }
+            /* INCREASED WATERMARK DENSITY */
+            .watermark { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); opacity: 0.12 !important; width: 500px; z-index: 0; }
             .print-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #1b5e20; padding-bottom: 5px; margin-bottom: 8px; width: 100%; }
             .print-header h1 { color: #c62828 !important; margin: 0; font-size: 18pt; font-weight: 900; white-space: nowrap; }
             .print-footer { position: absolute; bottom: 5mm; left: 5mm; right: 5mm; width: calc(100% - 10mm); }
@@ -62,6 +64,7 @@
         <div class="center-side">
             <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
             <span class="full-address">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyderabad 500055</span>
+            <span class="hospital-phone">📞 9201955976</span>
         </div>
         <div class="doc-side">
             <span class="doc-name">DR. M. JAYACHANDER</span>
@@ -92,12 +95,6 @@
         <tbody id="tbody"></tbody>
     </table>
 </div>
-
-<iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-<form id="deleteForm" method="POST" target="hidden_iframe" style="display:none;">
-    <input type="hidden" name="type" value="DELETE_PATIENT">
-    <input type="hidden" name="opd" id="deleteOpdInput">
-</form>
 
 <div id="printArea"></div>
 
@@ -157,7 +154,6 @@
         document.getElementById('tbody').innerHTML = html;
     }
 
-    // FIXED WHATSAPP LINE BREAKS
     function sendWhatsApp(id) {
         const p = patients.find(pat => String(pat.opd_number) === String(id));
         if (!p) return;
@@ -177,6 +173,7 @@
         
         const message = `*SRI RAJA RAJESHWARI HOSPITAL*%0A` +
             `Suraram Colony, Hyderabad%0A` +
+            `📞 9201955976%0A` +
             `--------------------------%0A` +
             `*Patient:* ${p.name}%0A` +
             `*OPD ID:* ${p.opd_number}%0A` +
@@ -192,22 +189,28 @@
         window.open(waUrl, '_blank');
     }
 
-    // AGGRESSIVE DELETE VIA FORM SUBMISSION
+    // ULTRA-AGGRESSIVE DELETE LOGIC
     function deletePatient(id) {
         if(confirm("PERMANENTLY DELETE record " + id + "?")) {
-            const form = document.getElementById('deleteForm');
-            form.action = API_URL;
-            document.getElementById('deleteOpdInput').value = id;
-            
-            // Aggressively trigger the form submit
-            form.submit();
+            // 1. Send via JSONP (often bypasses CORS issues that block standard fetch)
+            const script = document.createElement('script');
+            script.src = `${API_URL}?type=DELETE_PATIENT&opd=${id}&ts=${Date.now()}`;
+            document.body.appendChild(script);
 
-            alert("Aggressive delete command sent. Page will refresh to clear dashboard.");
+            // 2. Also send via POST for redundancy
+            fetch(API_URL, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `type=DELETE_PATIENT&opd=${id}` 
+            });
+
+            alert("Permanent delete command sent to Database.");
             
-            // Short delay before refresh to ensure form data leaves the browser
+            // 3. Force refresh to update the dashboard
             setTimeout(() => {
                 location.reload();
-            }, 1500);
+            }, 1000);
         }
     }
     
@@ -246,8 +249,8 @@
     }
 
     function generatePrint(type) {
-        const header = `<div class="print-header"><img src="logo.jpg" style="width:65px; margin-right:10px;"><div><h1>SRI RAJA RAJESHWARI HOSPITAL</h1><p style="font-size:8.5pt; font-weight:bold; margin:2px 0; color:#1b5e20;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyderabad 500055</p></div><div style="border:2px solid #000; padding:6px; text-align:center; border-radius:8px; min-width:240px;"><div style="font-size:14pt; font-weight:900;">DR. M. JAYACHANDER</div><div style="font-size:9pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div><div style="color:#c62828; font-size:9pt; font-weight:bold;">Reg No: TSMC/FMR/43070</div></div></div>`;
-        const footer = `<div class="print-footer"><div style="text-align:right; margin-bottom:8px;"><div style="font-size:14pt; font-weight:900;">DR. M. JAYACHANDER</div><div style="font-size:9pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div></div><div style="border-top:2px solid #000; margin-bottom:4px;"></div><div style="font-size:9pt; color:#c62828; font-weight:900; text-align:center; margin-bottom:2px;">Note: దయచేసి ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తీసుకురావలెను</div><div style="font-size:7.5pt; color:#1b5e20; font-weight:bold; text-align:center; line-height:1.1; margin-bottom:4px;">మా ప్రత్యేక సేవలు: బిపి, షుగర్, గుండె వ్యాధులు, కాలేయ వ్యాధులు, కిడ్నీ సమస్యలు, నరాల వ్యాధులు, వైరల్ ఫీవర్, అల్సర్, థైరాయిడ్ మరియు ఫిట్స్.</div><div style="font-size:9pt; font-weight:bold; text-align:center; color:red; margin-bottom:4px;">Note: Not valid for medico legal purpose</div><div style="background:#1565c0 !important; color:white !important; padding:6px; text-align:center; font-weight:bold; font-size:13pt; border-radius:8px;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div></div>`;
+        const header = `<div class="print-header"><img src="logo.jpg" style="width:65px; margin-right:10px;"><div><h1>SRI RAJA RAJESHWARI HOSPITAL</h1><p style="font-size:8.5pt; font-weight:bold; margin:2px 0; color:#1b5e20;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyderabad 500055</p><p style="font-size:9pt; font-weight:bold;">📞 9201955976</p></div><div style="border:2px solid #000; padding:6px; text-align:center; border-radius:8px; min-width:240px;"><div style="font-size:14pt; font-weight:900;">DR. M. JAYACHANDER</div><div style="font-size:9pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div><div style="color:#c62828; font-size:9pt; font-weight:bold;">Reg No: TSMC/FMR/43070</div></div></div>`;
+        const footer = `<div class="print-footer"><div style="text-align:right; margin-bottom:8px;"><div style="font-size:14pt; font-weight:900;">DR. M. JAYACHANDER</div><div style="font-size:9pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div></div><div style="border-top:2px solid #000; margin-bottom:4px;"></div><div style="font-size:9pt; color:#c62828; font-weight:900; text-align:center; margin-bottom:2px;">Note: దయచేసి ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తీసుకురావలెను | Ph: 9201955976</div><div style="font-size:7.5pt; color:#1b5e20; font-weight:bold; text-align:center; line-height:1.1; margin-bottom:4px;">మా ప్రత్యేక సేవలు: బిపి, షుగర్, గుండె వ్యాధులు, కాలేయ వ్యాధులు, కిడ్నీ సమస్యలు, నరాల వ్యాధులు, వైరల్ ఫీవర్, అల్సర్, థైరాయిడ్ మరియు ఫిట్స్.</div><div style="font-size:9pt; font-weight:bold; text-align:center; color:red; margin-bottom:4px;">Note: Not valid for medico legal purpose</div><div style="background:#1565c0 !important; color:white !important; padding:6px; text-align:center; font-weight:bold; font-size:13pt; border-radius:8px;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div></div>`;
         const details = `<div style="border:2.5px solid #000; padding:8px; font-size:12pt; display:grid; grid-template-columns: 1.2fr 0.8fr; font-weight:bold;"><div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:16pt; text-transform:uppercase;">${selectedP.name}</span><br>Phone: ${selectedP.phone}</div><div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}<br>Address: ${selectedP.address || ''}</div></div><div class="vitals-row"><span>Wt: ${selectedP.weight}kg</span><span>BP: ${selectedP.bp}</span><span>P.R.: ${selectedP.pulse}</span><span>SpO2: ${selectedP.spo2}%</span><span>Temp: ${selectedP.temp}°F</span></div>`;
 
         let printHTML = "";
