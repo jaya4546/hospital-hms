@@ -10,15 +10,15 @@
         
         .container { max-width: 1150px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-bottom: 20px; gap: 10px; flex-wrap: nowrap; }
-        .center-side { text-align: center; flex: 1; min-width: 0; }
-        .center-side h1 { color: var(--accent); margin: 0; font-size: 16px; font-weight: 900; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .full-address { font-size: 11px; font-weight: bold; color: #1b5e20; margin-top: 3px; display: block; }
-        .hospital-phone { font-size: 13px; font-weight: bold; color: #000; margin-top: 5px; display: block; }
+        .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-bottom: 20px; gap: 5px; flex-wrap: nowrap; }
+        .center-side { text-align: left; flex: 1; min-width: 0; padding-left: 10px; }
+        .center-side h1 { color: var(--accent); margin: 0; font-size: 14px; font-weight: 900; text-transform: uppercase; white-space: nowrap; letter-spacing: -0.2px; }
+        .full-address { font-size: 9px; font-weight: bold; color: #1b5e20; margin-top: 2px; display: block; white-space: nowrap; letter-spacing: -0.3px; }
+        .hospital-phone { font-size: 11px; font-weight: bold; color: #000; margin-top: 3px; display: block; }
         
-        .doc-side { border: 2px solid #000; padding: 8px; text-align: center; background: #fffde7; min-width: 230px; border-radius: 8px; flex-shrink: 0; }
-        .doc-name { font-size: 16px; font-weight: 900; display: block; color: #000; }
-        .doc-reg { font-size: 11px; font-weight: 900; display: block; color: var(--accent); }
+        .doc-side { border: 2px solid #000; padding: 6px; text-align: center; background: #fffde7; min-width: 220px; border-radius: 8px; flex-shrink: 0; }
+        .doc-name { font-size: 15px; font-weight: 900; display: block; color: #000; }
+        .doc-reg { font-size: 10px; font-weight: 900; display: block; color: var(--accent); }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 15px; }
         input, select, textarea { width: 100%; padding: 12px; border: 1.5px solid #000; border-radius: 4px; font-size: 11pt; box-sizing: border-box; }
@@ -50,8 +50,8 @@
             
             .no-header-space { padding-top: 55mm !important; }
 
-            .print-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #1b5e20; padding-bottom: 10px; margin-bottom: 15px; position: relative; z-index: 1; }
-            .hosp-title { color: #c62828 !important; margin: 0; font-size: 17pt; font-weight: 900; white-space: nowrap; }
+            .print-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #1b5e20; padding-bottom: 8px; margin-bottom: 15px; position: relative; z-index: 1; gap: 5px; }
+            .hosp-title { color: #c62828 !important; margin: 0; font-size: 16pt; font-weight: 900; white-space: nowrap; letter-spacing: -0.5px; }
             
             .vitals-row { background: #e8f5e9 !important; border: 2.5px solid #000; border-top: none; padding: 8px; display: flex; justify-content: space-between; font-size: 13pt; font-weight: bold; position: relative; z-index: 1; }
             
@@ -73,7 +73,7 @@
 
 <div class="container">
     <div class="header">
-        <img src="logo.jpg" style="width:70px;">
+        <img src="logo.jpg" style="width:60px;">
         <div class="center-side">
             <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
             <span class="full-address">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyderabad 500055</span>
@@ -227,16 +227,16 @@
     function generatePrint(type, withHeaderFooter) {
         const headerHTML = withHeaderFooter ? `
             <div class="print-header">
-                <img src="logo.jpg" style="width:80px; margin-right:15px;">
+                <img src="logo.jpg" style="width:70px; margin-right:10px;">
                 <div style="flex:1; min-width: 0;">
                     <h1 class="hosp-title">SRI RAJA RAJESHWARI HOSPITAL</h1>
-                    <p style="font-size:10pt; font-weight:bold; margin:3px 0; color:#1b5e20;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyd-55</p>
-                    <p style="font-size:11pt; font-weight:bold;">📞 9201955976</p>
+                    <p style="font-size:8.5pt; font-weight:bold; margin:2px 0; color:#1b5e20; white-space:nowrap; letter-spacing:-0.4px;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyd-55</p>
+                    <p style="font-size:10pt; font-weight:bold; margin:0;">📞 9201955976</p>
                 </div>
-                <div style="border:2px solid #000; padding:10px; text-align:center; border-radius:8px; min-width:235px; background:#fffde7; flex-shrink:0;">
-                    <div style="font-size:15pt; font-weight:900;">DR. M. JAYACHANDER</div>
-                    <div style="font-size:9pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
-                    <div style="font-size:9pt; font-weight:900; color:#c62828;">Reg No: TSMC/FMR/43070</div>
+                <div style="border:2px solid #000; padding:8px; text-align:center; border-radius:8px; min-width:230px; background:#fffde7; flex-shrink:0;">
+                    <div style="font-size:14pt; font-weight:900;">DR. M. JAYACHANDER</div>
+                    <div style="font-size:8.5pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
+                    <div style="font-size:8.5pt; font-weight:900; color:#c62828;">Reg No: TSMC/FMR/43070</div>
                 </div>
             </div>` : "";
         
