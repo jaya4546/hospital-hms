@@ -44,24 +44,23 @@
             #printArea, #printArea * { visibility: visible; }
             #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
             
-            .print-page-wrapper { width: 210mm; min-height: 296mm; padding: 10mm; box-sizing: border-box; position: relative; page-break-after: always; background: white; }
+            .print-page-wrapper { width: 210mm; min-height: 296mm; padding: 10mm; box-sizing: border-box; position: relative; page-break-after: always; background: white; overflow: hidden; }
             
-            /* WATERMARK - Only shows when not in headerless mode */
-            .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 80pt; color: rgba(200, 200, 200, 0.2); font-weight: bold; z-index: 0; pointer-events: none; white-space: nowrap; }
+            .watermark-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.1; z-index: 0; width: 400px; pointer-events: none; }
             
-            /* Headerless Mode logic */
             .no-header-space { padding-top: 55mm !important; }
 
             .print-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #1b5e20; padding-bottom: 10px; margin-bottom: 15px; position: relative; z-index: 1; }
-            .print-header h1 { color: #c62828 !important; margin: 0; font-size: 22pt; font-weight: 900; }
+            .hosp-title { color: #c62828 !important; margin: 0; font-size: 24pt; font-weight: 900; white-space: nowrap; }
             
             .vitals-row { background: #e8f5e9 !important; border: 2.5px solid #000; border-top: none; padding: 8px; display: flex; justify-content: space-between; font-size: 13pt; font-weight: bold; position: relative; z-index: 1; }
             
-            .med-table { width: 100%; border-collapse: collapse; border: 2px solid #000; margin-top: 15px; position: relative; z-index: 1; }
-            .med-table th { background: #333 !important; color: white !important; padding: 8px; border: 1px solid #000; }
-            .med-table td { padding: 8px; border: 1px solid #000; font-size: 12pt; }
+            .med-table { width: 100%; border-collapse: collapse; border: 2px solid #000; margin-top: 10px; position: relative; z-index: 1; }
+            .med-table th { background: #333 !important; color: white !important; padding: 8px; border: 1px solid #000; font-size: 11pt; }
+            .med-table td { padding: 8px; border: 1px solid #000; font-size: 11pt; }
 
             .print-footer { position: absolute; bottom: 10mm; left: 10mm; right: 10mm; z-index: 1; }
+            .telugu-footer { font-size: 10pt; font-weight: bold; text-align: center; margin-top: 5px; color: #000; }
             
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
@@ -227,7 +226,7 @@
             <div class="print-header">
                 <img src="logo.jpg" style="width:80px; margin-right:15px;">
                 <div style="flex:1;">
-                    <h1>SRI RAJA RAJESHWARI HOSPITAL</h1>
+                    <h1 class="hosp-title">SRI RAJA RAJESHWARI HOSPITAL</h1>
                     <p style="font-size:10pt; font-weight:bold; margin:3px 0; color:#1b5e20;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyd-55</p>
                     <p style="font-size:11pt; font-weight:bold;">📞 9201955976</p>
                 </div>
@@ -240,13 +239,17 @@
         
         const footerHTML = withHeaderFooter ? `
             <div class="print-footer">
-                <div style="text-align:right; margin-bottom:10px;"><div style="font-size:15pt; font-weight:900;">DR. M. JAYACHANDER</div></div>
+                <div style="text-align:right; margin-bottom:10px;">
+                    <div style="font-size:15pt; font-weight:900;">DR. M. JAYACHANDER</div>
+                    <div style="font-size:9pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
+                </div>
                 <div style="border-top:2.5px solid #000; margin-bottom:5px;"></div>
                 <div style="font-size:10pt; color:#c62828; font-weight:900; text-align:center;">Not valid for medico legal purpose</div>
+                <div class="telugu-footer">అన్ని రకముల మెడికల్ రిపోర్ట్స్ ఇక్కడ చేయబడును. మా వద్ద అత్యవసర విభాగం కలదు.</div>
                 <div style="background:#1565c0 !important; color:white !important; padding:8px; text-align:center; font-weight:bold; font-size:14pt; border-radius:8px; margin-top:5px;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div>
             </div>` : "";
 
-        const watermarkHTML = withHeaderFooter ? `<div class="watermark">SRR HOSPITAL</div>` : "";
+        const watermarkHTML = withHeaderFooter ? `<div class="watermark-container"><img src="logo.jpg" style="width:100%;"></div>` : "";
 
         const details = `
             <div style="border:2.5px solid #000; padding:10px; font-size:13pt; display:grid; grid-template-columns: 1.2fr 0.8fr; font-weight:bold; position:relative; z-index:1;">
@@ -264,9 +267,20 @@
             printHTML = `<div class="print-page-wrapper ${spaceClass}">${watermarkHTML}${headerHTML}${details}${footerHTML}</div>`;
         } else {
             const meds = JSON.parse(selectedP.medications || "[]");
-            let medRows = meds.map(m => `<tr><td>${m.n}</td><td style="text-align:center;">${m.d}</td><td style="text-align:center;">${m.r}</td><td>${m.rem}</td></tr>`).join('');
-            let clinicalInfo = `<div style="position:relative; z-index:1; margin-top:15px;"><p><b>Chief Complaints:</b> ${selectedP.complaints || ''}</p><p><b>History:</b> ${selectedP.history || ''}</p></div>`;
-            printHTML = `<div class="print-page-wrapper ${spaceClass}">${watermarkHTML}${headerHTML}${details}${clinicalInfo}<h3 style="border-bottom:2px solid #000; margin-top:10px; position:relative; z-index:1;">Rx Prescription</h3><table class="med-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${medRows}</tbody></table><div style="margin-top:15px; position:relative; z-index:1;"><p><b>Clinical Notes:</b> ${selectedP.notes || ''}</p><p><b>Investigations:</b> ${selectedP.investigations || ''}</p></div>${footerHTML}</div>`;
+            const chunkSize = 6;
+            for (let i = 0; i < meds.length || i === 0; i += chunkSize) {
+                const chunk = meds.slice(i, i + chunkSize);
+                let medRows = chunk.map(m => `<tr><td>${m.n}</td><td style="text-align:center;">${m.d}</td><td style="text-align:center;">${m.r}</td><td>${m.rem}</td></tr>`).join('');
+                let clinicalInfo = i === 0 ? `<div style="position:relative; z-index:1; margin-top:10px;"><p><b>Chief Complaints:</b> ${selectedP.complaints || ''}</p><p><b>History:</b> ${selectedP.history || ''}</p></div>` : "";
+                
+                printHTML += `<div class="print-page-wrapper ${spaceClass}">
+                    ${watermarkHTML}${headerHTML}${details}${clinicalInfo}
+                    <h3 style="border-bottom:2px solid #000; margin-top:10px; position:relative; z-index:1;">Rx Prescription ${meds.length > chunkSize ? `(Page ${Math.floor(i/chunkSize)+1})` : ''}</h3>
+                    <table class="med-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${medRows}</tbody></table>
+                    ${i + chunkSize >= meds.length ? `<div style="margin-top:15px; position:relative; z-index:1;"><p><b>Clinical Notes:</b> ${selectedP.notes || ''}</p><p><b>Investigations:</b> ${selectedP.investigations || ''}</p></div>` : ''}
+                    ${footerHTML}
+                </div>`;
+            }
         }
 
         document.getElementById('printArea').innerHTML = printHTML;
