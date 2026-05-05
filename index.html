@@ -132,7 +132,7 @@
     <div class="modal-content">
         <h2 style="color:var(--primary);">Treatment for <span id="treatName"></span></h2>
         <textarea id="t_complaints" placeholder="Chief Complaints" rows="2"></textarea>
-        <textarea id="t_investigations" placeholder="Investigations" rows="2"></textarea>
+        <textarea id="t_investigations" placeholder="Advice Investigations" rows="2"></textarea>
         <textarea id="t_history" placeholder="Past Medical History" rows="2"></textarea>
         <table style="width:100%; border-collapse: collapse;">
             <thead><tr style="background:#eee;"><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th><th></th></tr></thead>
@@ -279,13 +279,20 @@
             for (let i = 0; i < meds.length || i === 0; i += chunkSize) {
                 const chunk = meds.slice(i, i + chunkSize);
                 let medRows = chunk.map(m => `<tr><td>${m.n}</td><td style="text-align:center;">${m.d}</td><td style="text-align:center;">${m.r}</td><td>${m.rem}</td></tr>`).join('');
-                let clinicalInfo = i === 0 ? `<div style="position:relative; z-index:1; margin-top:10px;"><p><b>Chief Complaints:</b> ${selectedP.complaints || ''}</p><p><b>History:</b> ${selectedP.history || ''}</p></div>` : "";
+                
+                // Reordered Clinical Info sections for prescription print
+                let clinicalInfo = i === 0 ? `
+                    <div style="position:relative; z-index:1; margin-top:10px;">
+                        <p><b>Chief Complaints:</b> ${selectedP.complaints || ''}</p>
+                        <p><b>Past History:</b> ${selectedP.history || ''}</p>
+                        <p><b>Advice Investigations:</b> ${selectedP.investigations || ''}</p>
+                    </div>` : "";
                 
                 printHTML += `<div class="print-page-wrapper ${spaceClass}">
                     ${watermarkHTML}${headerHTML}${details}${clinicalInfo}
                     <h3 style="border-bottom:2px solid #000; margin-top:10px; position:relative; z-index:1;">Rx Prescription ${meds.length > chunkSize ? `(Page ${Math.floor(i/chunkSize)+1})` : ''}</h3>
                     <table class="med-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${medRows}</tbody></table>
-                    ${i + chunkSize >= meds.length ? `<div style="margin-top:15px; position:relative; z-index:1;"><p><b>Clinical Notes:</b> ${selectedP.notes || ''}</p><p><b>Investigations:</b> ${selectedP.investigations || ''}</p></div>` : ''}
+                    ${i + chunkSize >= meds.length ? `<div style="margin-top:15px; position:relative; z-index:1;"><p><b>Clinical Notes:</b> ${selectedP.notes || ''}</p></div>` : ''}
                     ${footerHTML}
                 </div>`;
             }
