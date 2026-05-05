@@ -42,8 +42,11 @@
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
             #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
-            .print-page-wrapper { width: 210mm; height: 296mm; padding: 5mm 5mm; box-sizing: border-box; position: relative; overflow: hidden; page-break-after: always; }
-            .watermark { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); opacity: 0.15 !important; width: 500px; z-index: 0; }
+            .print-page-wrapper { width: 210mm; min-height: 296mm; padding: 5mm 5mm; box-sizing: border-box; position: relative; page-break-after: always; }
+            
+            /* No Header Mode: Leaves 5.5cm space at top */
+            .no-header-space { padding-top: 55mm !important; }
+            
             .print-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #1b5e20; padding-bottom: 5px; margin-bottom: 8px; width: 100%; }
             .print-header h1 { color: #c62828 !important; margin: 0; font-size: 18pt; font-weight: 900; white-space: nowrap; }
             .print-footer { position: absolute; bottom: 5mm; left: 5mm; right: 5mm; width: calc(100% - 10mm); }
@@ -103,8 +106,14 @@
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:20px;">
             <button class="btn" style="background:#1565c0; color:white;" onclick="openEdit()">EDIT DETAILS</button>
             <button class="btn" style="background:#ef6c00; color:white;" onclick="openTreat()">ADD TREATMENT</button>
-            <button class="btn" style="background:#2e7d32; color:white;" onclick="generatePrint('PRESCRIPTION')">PRINT Rx</button>
-            <button class="btn" style="background:#c62828; color:white;" onclick="generatePrint('REGISTRATION')">PRINT REG</button>
+            
+            <!-- Standard Print Options -->
+            <button class="btn" style="background:#2e7d32; color:white;" onclick="generatePrint('PRESCRIPTION', true)">PRINT Rx (With Header)</button>
+            <button class="btn" style="background:#c62828; color:white;" onclick="generatePrint('REGISTRATION', true)">PRINT REG (With Header)</button>
+            
+            <!-- Letterhead Print Options (No Header/Footer) -->
+            <button class="btn" style="background:#2e7d32; color:white; border:2px solid #000;" onclick="generatePrint('PRESCRIPTION', false)">PRINT Rx (Without Header)</button>
+            <button class="btn" style="background:#c62828; color:white; border:2px solid #000;" onclick="generatePrint('REGISTRATION', false)">PRINT REG (Without Header)</button>
         </div>
         <button class="btn" style="width:100%; margin-top:15px; background:#444; color:white;" onclick="document.getElementById('actionModal').style.display='none'">CLOSE</button>
     </div>
@@ -128,7 +137,6 @@
 </div>
 
 <script>
-    // UPDATED WITH YOUR NEW DEPLOYMENT URL
     const API_URL = "https://script.google.com/macros/s/AKfycbwuHAceOQ9uOA60sIxpfBgpZ1Dv9uNAl9dwh3eMNtXz83hq0v39BSvB-232mru-Cdm-/exec";
     let patients = [], selectedP = null;
 
@@ -157,85 +165,33 @@
     function sendWhatsApp(id) {
         const p = patients.find(pat => String(pat.opd_number) === String(id));
         if (!p) return;
-
         let medText = "";
         try {
             const meds = JSON.parse(p.medications || "[]");
             if (meds.length > 0) {
                 medText = "%0A%0A*PRESCRIPTION:*%0A";
-                meds.forEach((m, i) => {
-                    medText += `${i + 1}. ${m.n} -- ${m.d} -- ${m.r} -- (${m.rem})%0A`;
-                });
+                meds.forEach((m, i) => { medText += `${i + 1}. ${m.n} -- ${m.d} -- ${m.r} -- (${m.rem})%0A`; });
             }
         } catch (e) { medText = ""; }
-
         const clinicalNotes = p.notes ? `%0A*Clinical Notes:* ${p.notes}` : "";
-        
-        const message = `*SRI RAJA RAJESHWARI HOSPITAL*%0A` +
-            `Suraram Colony, Hyderabad%0A` +
-            `📞 9201955976%0A` +
-            `--------------------------%0A` +
-            `*Patient:* ${p.name}%0A` +
-            `*OPD ID:* ${p.opd_number}%0A` +
-            `*Date:* ${new Date().toLocaleDateString()}` +
-            `${medText}` +
-            `${clinicalNotes}%0A%0A` +
-            `*Advice:* దయచేసి ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తీసుకురావలెను.%0A` +
-            `--------------------------%0A` +
-            `*DR. M. JAYACHANDER*%0A` +
-            `MBBS, M.D. (GENERAL MEDICINE)`;
-
-        const waUrl = `https://wa.me/91${p.phone}?text=${message}`;
-        window.open(waUrl, '_blank');
+        const message = `*SRI RAJA RAJESHWARI HOSPITAL*%0A📞 9201955976%0A*Patient:* ${p.name}%0A*OPD ID:* ${p.opd_number}${medText}${clinicalNotes}`;
+        window.open(`https://wa.me/91${p.phone}?text=${message}`, '_blank');
     }
 
     function deletePatient(id) {
-        if(!confirm("⚠️ PERMANENTLY DELETE " + id + "? This cannot be undone.")) return;
-
-        // Force Form Submit via Invisible Iframe (Bypasses CORS)
-        const ifrm = document.createElement('iframe');
-        ifrm.style.display = 'none';
-        ifrm.name = 'del_frame';
-        document.body.appendChild(ifrm);
-
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = API_URL;
-        form.target = 'del_frame';
-
-        const typeInput = document.createElement('input');
-        typeInput.name = 'type';
-        typeInput.value = 'DELETE_PATIENT';
-        form.appendChild(typeInput);
-
-        const opdInput = document.createElement('input');
-        opdInput.name = 'opd';
-        opdInput.value = id;
-        form.appendChild(opdInput);
-
-        document.body.appendChild(form);
-        form.submit();
-
-        // Secondary URL parameter trigger
-        const img = new Image();
-        img.src = `${API_URL}?type=DELETE_PATIENT&opd=${id}&nocache=${Date.now()}`;
-
-        alert("DELETION COMMAND FORCED. Dashboard will update now.");
-
-        setTimeout(() => {
-            location.reload();
-        }, 1200);
+        if(!confirm("⚠️ PERMANENTLY DELETE " + id + "?")) return;
+        const ifrm = document.createElement('iframe'); ifrm.style.display = 'none'; ifrm.name = 'del_frame'; document.body.appendChild(ifrm);
+        const form = document.createElement('form'); form.method = 'POST'; form.action = API_URL; form.target = 'del_frame';
+        const t = document.createElement('input'); t.name = 'type'; t.value = 'DELETE_PATIENT'; form.appendChild(t);
+        const o = document.createElement('input'); o.name = 'opd'; o.value = id; form.appendChild(o);
+        document.body.appendChild(form); form.submit();
+        alert("DELETION COMMAND SENT."); setTimeout(() => { location.reload(); }, 1200);
     }
     
     function aggressiveSearch() {
         const query = document.getElementById('pSearch').value.toUpperCase();
-        const rows = document.querySelectorAll("#tbody tr");
-        rows.forEach(row => {
-            const nameCell = row.getElementsByTagName("td")[1];
-            if (nameCell) {
-                const textValue = nameCell.textContent || nameCell.innerText;
-                row.style.display = textValue.toUpperCase().indexOf(query) > -1 ? "" : "none";
-            }
+        document.querySelectorAll("#tbody tr").forEach(row => {
+            row.style.display = row.innerText.toUpperCase().indexOf(query) > -1 ? "" : "none";
         });
     }
 
@@ -250,9 +206,7 @@
         ['name','age','sex','phone','address','weight','bp','spo2','temp'].forEach(f => document.getElementById('p_'+f).value = selectedP[f] || "");
         document.getElementById('p_pr').value = selectedP.pulse || "";
         document.getElementById('mainActionBtn').innerText = "UPDATE PATIENT DETAILS";
-        document.getElementById('mainActionBtn').style.background = "#ef6c00";
         document.getElementById('actionModal').style.display = "none";
-        window.scrollTo(0,0);
     }
 
     async function savePatient() {
@@ -261,26 +215,25 @@
         location.reload();
     }
 
-    function generatePrint(type) {
-        const header = `<div class="print-header"><img src="logo.jpg" style="width:65px; margin-right:10px;"><div><h1>SRI RAJA RAJESHWARI HOSPITAL</h1><p style="font-size:8.5pt; font-weight:bold; margin:2px 0; color:#1b5e20;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyderabad 500055</p><p style="font-size:9pt; font-weight:bold;">📞 9201955976</p></div><div style="border:2px solid #000; padding:6px; text-align:center; border-radius:8px; min-width:240px;"><div style="font-size:14pt; font-weight:900;">DR. M. JAYACHANDER</div><div style="font-size:9pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div><div style="color:#c62828; font-size:9pt; font-weight:bold;">Reg No: TSMC/FMR/43070</div></div></div>`;
-        const footer = `<div class="print-footer"><div style="text-align:right; margin-bottom:8px;"><div style="font-size:14pt; font-weight:900;">DR. M. JAYACHANDER</div><div style="font-size:9pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div></div><div style="border-top:2px solid #000; margin-bottom:4px;"></div><div style="font-size:9pt; color:#c62828; font-weight:900; text-align:center; margin-bottom:2px;">Note: దయచేసి ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తీసుకురావలెను | Ph: 9201955976</div><div style="font-size:7.5pt; color:#1b5e20; font-weight:bold; text-align:center; line-height:1.1; margin-bottom:4px;">మా ప్రత్యేక సేవలు: బిపి, షుగర్, గుండె వ్యాధులు, కాలేయ వ్యాధులు, కిడ్నీ సమస్యలు, నరాల వ్యాధులు, వైరల్ ఫీవర్, అల్సర్, థైరాయిడ్ మరియు ఫిట్స్.</div><div style="font-size:9pt; font-weight:bold; text-align:center; color:red; margin-bottom:4px;">Note: Not valid for medico legal purpose</div><div style="background:#1565c0 !important; color:white !important; padding:6px; text-align:center; font-weight:bold; font-size:13pt; border-radius:8px;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div></div>`;
-        const details = `<div style="border:2.5px solid #000; padding:8px; font-size:12pt; display:grid; grid-template-columns: 1.2fr 0.8fr; font-weight:bold;"><div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:16pt; text-transform:uppercase;">${selectedP.name}</span><br>Phone: ${selectedP.phone}</div><div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}<br>Address: ${selectedP.address || ''}</div></div><div class="vitals-row"><span>Wt: ${selectedP.weight}kg</span><span>BP: ${selectedP.bp}</span><span>P.R.: ${selectedP.pulse}</span><span>SpO2: ${selectedP.spo2}%</span><span>Temp: ${selectedP.temp}°F</span></div>`;
+    function generatePrint(type, withHeaderFooter) {
+        const headerHTML = withHeaderFooter ? `<div class="print-header"><img src="logo.jpg" style="width:65px; margin-right:10px;"><div><h1>SRI RAJA RAJESHWARI HOSPITAL</h1><p style="font-size:8.5pt; font-weight:bold; margin:2px 0; color:#1b5e20;">Suraram Colony, Hyderabad 500055</p><p style="font-size:9pt; font-weight:bold;">📞 9201955976</p></div><div style="border:2px solid #000; padding:6px; text-align:center; border-radius:8px; min-width:240px;"><div style="font-size:14pt; font-weight:900;">DR. M. JAYACHANDER</div><div style="font-size:9pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div></div></div>` : "";
+        
+        const footerHTML = withHeaderFooter ? `<div class="print-footer"><div style="text-align:right; margin-bottom:8px;"><div style="font-size:14pt; font-weight:900;">DR. M. JAYACHANDER</div></div><div style="border-top:2px solid #000; margin-bottom:4px;"></div><div style="font-size:9pt; color:#c62828; font-weight:900; text-align:center;">Ph: 9201955976 | Not valid for medico legal purpose</div><div style="background:#1565c0 !important; color:white !important; padding:6px; text-align:center; font-weight:bold; font-size:13pt; border-radius:8px;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div></div>` : "";
+
+        const details = `<div style="border:2.5px solid #000; padding:8px; font-size:12pt; display:grid; grid-template-columns: 1.2fr 0.8fr; font-weight:bold;"><div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:16pt; text-transform:uppercase;">${selectedP.name}</span></div><div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}</div></div><div class="vitals-row"><span>Wt: ${selectedP.weight}kg</span><span>BP: ${selectedP.bp}</span><span>P.R.: ${selectedP.pulse}</span><span>SpO2: ${selectedP.spo2}%</span><span>Temp: ${selectedP.temp}°F</span></div>`;
 
         let printHTML = "";
+        const spaceClass = withHeaderFooter ? "" : "no-header-space";
+
         if(type === 'REGISTRATION') {
-            printHTML = `<div class="print-page-wrapper"><img src="logo.jpg" class="watermark">${header}${details}${footer}</div>`;
+            printHTML = `<div class="print-page-wrapper ${spaceClass}">${headerHTML}${details}${footerHTML}</div>`;
         } else {
             const meds = JSON.parse(selectedP.medications || "[]");
-            const chunk = (arr, size) => Array.from({ length: Math.ceil(arr.length / size) }, (v, i) => arr.slice(i * size, i * size + size));
-            const medPages = chunk(meds, 6); 
-            medPages.forEach((pageMeds, index) => {
-                const isLastPage = index === medPages.length - 1;
-                let medRows = pageMeds.map(m => `<tr><td>${m.n}</td><td style="text-align:center;">${m.d}</td><td style="text-align:center;">${m.r}</td><td>${m.rem}</td></tr>`).join('');
-                let history = (index === 0) ? `<p style="font-size:12pt; margin:5px 0;"><b>Complaints:</b> ${selectedP.complaints || ''}</p><p style="font-size:12pt; margin:5px 0;"><b>Investigations:</b> ${selectedP.investigations || ''}</p><p style="font-size:12pt; margin:5px 0;"><b>Past History:</b> ${selectedP.history || ''}</p>` : "";
-                let notesHtml = (isLastPage) ? `<p style="font-size:12pt; margin-top: 10px;"><b>Notes:</b> ${selectedP.notes || ''}</p>` : "";
-                printHTML += `<div class="print-page-wrapper"><img src="logo.jpg" class="watermark">${header}${details}${history}<h3 style="border-bottom:2px solid #000; margin-top:5px;">Rx (Prescription) ${index > 0 ? '(Contd.)' : ''}</h3><table class="med-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${medRows}</tbody></table>${notesHtml}${footer}</div>`;
-            });
+            let medRows = meds.map(m => `<tr><td>${m.n}</td><td style="text-align:center;">${m.d}</td><td style="text-align:center;">${m.r}</td><td>${m.rem}</td></tr>`).join('');
+            let clinicalInfo = `<p><b>Complaints:</b> ${selectedP.complaints || ''}</p><p><b>History:</b> ${selectedP.history || ''}</p>`;
+            printHTML = `<div class="print-page-wrapper ${spaceClass}">${headerHTML}${details}${clinicalInfo}<h3 style="border-bottom:2px solid #000; margin-top:5px;">Rx Prescription</h3><table class="med-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${medRows}</tbody></table><p><b>Notes:</b> ${selectedP.notes || ''}</p>${footerHTML}</div>`;
         }
+
         document.getElementById('printArea').innerHTML = printHTML;
         window.print();
     }
