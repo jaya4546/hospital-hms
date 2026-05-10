@@ -230,7 +230,7 @@
                 <img src="logo.jpg" style="width:70px; margin-right:10px;">
                 <div style="flex:1; min-width: 0;">
                     <h1 class="hosp-title">SRI RAJA RAJESHWARI HOSPITAL</h1>
-                    <p style="font-size:8.5pt; font-weight:bold; margin:2px 0; color:#1b5e20; white-space:nowrap; letter-spacing:-0.4px;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyd-55</p>
+                    <p style="font-size:8.5pt; font-weight:bold; margin:2px 0; color:#1b5e20; white-space:nowrap; letter-spacing:-0.4px;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyd-500055</p>
                     <p style="font-size:10pt; font-weight:bold; margin:0;">📞 9201955976</p>
                 </div>
                 <div style="border:2px solid #000; padding:8px; text-align:center; border-radius:8px; min-width:230px; background:#fffde7; flex-shrink:0;">
@@ -280,7 +280,6 @@
                 const chunk = meds.slice(i, i + chunkSize);
                 let medRows = chunk.map(m => `<tr><td>${m.n}</td><td style="text-align:center;">${m.d}</td><td style="text-align:center;">${m.r}</td><td>${m.rem}</td></tr>`).join('');
                 
-                // Reordered Clinical Info sections for prescription print
                 let clinicalInfo = i === 0 ? `
                     <div style="position:relative; z-index:1; margin-top:10px;">
                         <p><b>Chief Complaints:</b> ${selectedP.complaints || ''}</p>
