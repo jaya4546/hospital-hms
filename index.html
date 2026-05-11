@@ -108,11 +108,16 @@
     <div class="modal-content">
         <h2 style="color:#1565c0; border-bottom: 2px solid #1565c0;">LABORATORY BILLING: <span id="labPatientName"></span></h2>
         
-        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-            <label><b>Select Test:</b></label>
-            <div style="display: flex; gap: 10px; margin-top: 5px;">
-                <select id="test_dropdown" style="flex: 2;"></select>
-                <button class="btn" style="background: #1565c0; color:white; flex: 1;" onclick="addTestToBill()">ADD TO BILL</button>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px; margin-top: 10px;">
+            <div style="flex: 2; background: #e3f2fd; padding: 15px; border-radius: 8px;">
+                <label><b>Select Test:</b></label>
+                <div style="display: flex; gap: 10px; margin-top: 5px;">
+                    <select id="test_dropdown" style="flex: 2;"></select>
+                    <button class="btn" style="background: #1565c0; color:white; flex: 1;" onclick="addTestToBill()">ADD TO BILL</button>
+                </div>
+            </div>
+            <div style="flex: 1; background: #fff3e0; padding: 15px; border-radius: 8px; text-align: center;">
+                <button class="btn" style="background: #ef6c00; color:white; width: 100%; height: 100%;" onclick="showHistory()">VIEW PREVIOUS TESTS</button>
             </div>
         </div>
 
@@ -123,9 +128,16 @@
                 </thead>
                 <tbody id="billBody"></tbody>
             </table>
-            <div style="padding: 15px; background: #f1f8e9; text-align: right; border-top: 2px solid #1565c0;">
-                <h3 style="margin: 0;">TOTAL: ₹ <span id="billTotal">0</span></h3>
-                <p id="billWords" style="font-weight: bold; color: #1b5e20; margin: 5px 0;"></p>
+            <div style="padding: 15px; background: #f1f8e9; border-top: 2px solid #1565c0;">
+                <div style="display: flex; justify-content: flex-end; align-items: center; gap: 20px;">
+                    <div><b>Sub Total: ₹ <span id="billSubTotal">0</span></b></div>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <b>Discount: ₹</b> 
+                        <input type="number" id="billDiscount" value="0" style="width: 80px; padding: 5px;" oninput="updateBillTotals()">
+                    </div>
+                    <div style="color: var(--accent);"><b>Net Total: ₹ <span id="billTotal">0</span></b></div>
+                </div>
+                <p id="billWords" style="font-weight: bold; color: #1b5e20; margin: 5px 0; text-align: right;"></p>
             </div>
         </div>
 
@@ -138,10 +150,19 @@
             </div>
         </div>
 
-        <div style="display: flex; gap: 10px; margin-top: 20px;">
-            <button class="btn" style="flex: 1; background: #2e7d32; color: white;" onclick="saveAndPrintLabBill()">SAVE & PRINT BILL</button>
-            <button class="btn" style="flex: 1; background: #444; color: white;" onclick="document.getElementById('testModal').style.display='none'">CLOSE</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px;">
+            <button class="btn" style="background: #2e7d32; color: white;" onclick="saveAndPrintLabBill(true)">PRINT WITH HEADER</button>
+            <button class="btn" style="background: #c62828; color: white;" onclick="saveAndPrintLabBill(false)">PRINT NO HEADER (5.5cm)</button>
+            <button class="btn" style="background: #444; color: white;" onclick="document.getElementById('testModal').style.display='none'">CLOSE</button>
         </div>
+    </div>
+</div>
+
+<div id="historyModal" class="modal">
+    <div class="modal-content">
+        <h2 style="color:#ef6c00;">Previous Test History: <span id="histName"></span></h2>
+        <div id="histContent" style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"></div>
+        <button class="btn" style="width: 100%; margin-top: 15px; background: #444; color: white;" onclick="document.getElementById('historyModal').style.display='none'">BACK</button>
     </div>
 </div>
 
@@ -219,7 +240,6 @@
         document.getElementById('tbody').innerHTML = html;
     }
 
-    // --- LAB BILLING LOGIC ---
     function populateTestDropdown() {
         const dd = document.getElementById('test_dropdown');
         dd.innerHTML = masterTests.map(t => `<option value="${t.n}">${t.n} (₹${t.p})</option>`).join('');
@@ -241,15 +261,28 @@
         selectedP = patients.find(p => String(p.opd_number) === String(id));
         document.getElementById('labPatientName').innerText = selectedP.name;
         document.getElementById('billBody').innerHTML = "";
-        
-        // Load saved tests for this patient if any
-        try {
-            const savedBill = JSON.parse(selectedP.lab_bill || "[]");
-            savedBill.forEach(t => addRowToBillTable(t.n, t.p));
-        } catch(e) {}
-        
+        document.getElementById('billDiscount').value = "0";
         updateBillTotals();
         document.getElementById('testModal').style.display = "block";
+    }
+
+    function showHistory() {
+        document.getElementById('histName').innerText = selectedP.name;
+        let html = "";
+        try {
+            const billData = JSON.parse(selectedP.lab_bill || "[]");
+            if(billData.length === 0) {
+                html = "<p style='text-align:center;'>No test history found for this patient.</p>";
+            } else {
+                html = "<table style='width:100%;'><thead><tr><th>Test Name</th><th>Price</th></tr></thead><tbody>";
+                billData.forEach(t => {
+                    html += `<tr><td>${t.n}</td><td>₹ ${t.p}</td></tr>`;
+                });
+                html += "</tbody></table>";
+            }
+        } catch(e) { html = "Error loading history."; }
+        document.getElementById('histContent').innerHTML = html;
+        document.getElementById('historyModal').style.display = "block";
     }
 
     function addTestToBill() {
@@ -266,11 +299,15 @@
     }
 
     function updateBillTotals() {
-        let total = 0;
+        let subtotal = 0;
         document.querySelectorAll('#billBody tr').forEach(tr => {
-            total += parseInt(tr.cells[1].innerText);
+            subtotal += parseInt(tr.cells[1].innerText);
         });
-        document.getElementById('billTotal').innerText = total;
+        const discount = parseInt(document.getElementById('billDiscount').value) || 0;
+        const total = subtotal - discount;
+        
+        document.getElementById('billSubTotal').innerText = subtotal;
+        document.getElementById('billTotal').innerText = total < 0 ? 0 : total;
         document.getElementById('billWords').innerText = total > 0 ? "Amount in words: " + numberToWords(total) + " Rupees Only" : "";
     }
 
@@ -288,21 +325,30 @@
         return str.trim();
     }
 
-    async function saveAndPrintLabBill() {
-        const tests = Array.from(document.querySelectorAll('#billBody tr')).map(tr => ({
+    async function saveAndPrintLabBill(withHeader) {
+        const currentTests = Array.from(document.querySelectorAll('#billBody tr')).map(tr => ({
             n: tr.cells[0].innerText,
             p: tr.cells[1].innerText
         }));
         
+        if(currentTests.length === 0) return alert("Add tests first!");
+
+        // Merge current tests into patient history data
+        let history = [];
+        try { history = JSON.parse(selectedP.lab_bill || "[]"); } catch(e){}
+        const updatedHistory = [...history, ...currentTests];
+
+        // Save to Database
+        const data = { type: "SAVE_LAB_BILL", opd: selectedP.opd_number, lab_bill: JSON.stringify(updatedHistory) };
+        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+
+        // Printing Logic
+        const subtotal = document.getElementById('billSubTotal').innerText;
+        const discount = document.getElementById('billDiscount').value;
         const total = document.getElementById('billTotal').innerText;
         const words = document.getElementById('billWords').innerText;
 
-        // Save to Database
-        const data = { type: "SAVE_LAB_BILL", opd: selectedP.opd_number, lab_bill: JSON.stringify(tests) };
-        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-
-        // Generate Print View
-        const headerHTML = `
+        const headerHTML = withHeader ? `
             <div class="print-header">
                 <img src="logo.jpg" style="width:70px; margin-right:10px;">
                 <div style="flex:1; min-width: 0;">
@@ -315,7 +361,7 @@
                     <div style="font-size:8.5pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
                     <div style="font-size:8.5pt; font-weight:900; color:#c62828;">Reg No: TSMC/FMR/43070</div>
                 </div>
-            </div>`;
+            </div>` : "";
         
         const details = `
             <div style="border:2.5px solid #000; padding:10px; font-size:13pt; display:grid; grid-template-columns: 1.2fr 0.8fr; font-weight:bold; position:relative; z-index:1;">
@@ -323,10 +369,12 @@
                 <div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}</div>
             </div>`;
 
-        let testRows = tests.map((t, idx) => `<tr><td>${idx+1}</td><td>${t.n}</td><td style="text-align:right;">${t.p}.00</td></tr>`).join('');
+        let testRows = currentTests.map((t, idx) => `<tr><td>${idx+1}</td><td>${t.n}</td><td style="text-align:right;">${t.p}.00</td></tr>`).join('');
+
+        const spaceClass = withHeader ? "" : "no-header-space";
 
         const labHTML = `
-            <div class="print-page-wrapper">
+            <div class="print-page-wrapper ${spaceClass}">
                 ${headerHTML}
                 ${details}
                 <h2 style="text-align:center; text-decoration:underline; margin-top:20px;">LABORATORY INVESTIGATION BILL</h2>
@@ -334,8 +382,16 @@
                     <thead><tr><th>S.No</th><th>Investigation Name</th><th style="text-align:right;">Price (₹)</th></tr></thead>
                     <tbody>
                         ${testRows}
+                        <tr style="background:#f9f9f9 !important;">
+                            <td colspan="2" style="text-align:right;">Sub Total:</td>
+                            <td style="text-align:right;">₹ ${subtotal}.00</td>
+                        </tr>
+                        <tr style="background:#f9f9f9 !important;">
+                            <td colspan="2" style="text-align:right;">Discount:</td>
+                            <td style="text-align:right;">- ₹ ${discount}.00</td>
+                        </tr>
                         <tr style="font-size:14pt; font-weight:900; background:#eee !important;">
-                            <td colspan="2" style="text-align:right;">GRAND TOTAL:</td>
+                            <td colspan="2" style="text-align:right;">NET PAYABLE:</td>
                             <td style="text-align:right;">₹ ${total}.00</td>
                         </tr>
                     </tbody>
@@ -351,7 +407,7 @@
         location.reload();
     }
 
-    // --- EXISTING LOGIC ---
+    // --- OTHER EXISTING LOGIC ---
     function sendWhatsApp(id) {
         const p = patients.find(pat => String(pat.opd_number) === String(id));
         if (!p) return;
