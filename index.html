@@ -274,9 +274,9 @@
             if(billData.length === 0) {
                 html = "<p style='text-align:center;'>No test history found for this patient.</p>";
             } else {
-                html = "<table style='width:100%;'><thead><tr><th>Test Name</th><th>Price</th></tr></thead><tbody>";
+                html = "<table style='width:100%; border: 1px solid #000;'><thead><tr style='background:#eee;'><th>Test Name</th><th style='text-align:right;'>Price</th></tr></thead><tbody>";
                 billData.forEach(t => {
-                    html += `<tr><td>${t.n}</td><td>₹ ${t.p}</td></tr>`;
+                    html += `<tr><td>${t.n}</td><td style='text-align:right;'>₹ ${t.p}</td></tr>`;
                 });
                 html += "</tbody></table>";
             }
@@ -333,16 +333,18 @@
         
         if(currentTests.length === 0) return alert("Add tests first!");
 
-        // Merge current tests into patient history data
-        let history = [];
-        try { history = JSON.parse(selectedP.lab_bill || "[]"); } catch(e){}
-        const updatedHistory = [...history, ...currentTests];
+        // 1. UPDATED PERSISTENCE LOGIC:
+        // Immediately update the local 'patients' array so history is available right away
+        let existingHistory = [];
+        try { existingHistory = JSON.parse(selectedP.lab_bill || "[]"); } catch(e){}
+        const updatedHistory = [...existingHistory, ...currentTests];
+        selectedP.lab_bill = JSON.stringify(updatedHistory); 
 
-        // Save to Database
-        const data = { type: "SAVE_LAB_BILL", opd: selectedP.opd_number, lab_bill: JSON.stringify(updatedHistory) };
+        // 2. Save to Database (Server side)
+        const data = { type: "SAVE_LAB_BILL", opd: selectedP.opd_number, lab_bill: selectedP.lab_bill };
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
 
-        // Printing Logic
+        // 3. Printing Logic
         const subtotal = document.getElementById('billSubTotal').innerText;
         const discount = document.getElementById('billDiscount').value;
         const total = document.getElementById('billTotal').innerText;
@@ -370,7 +372,6 @@
             </div>`;
 
         let testRows = currentTests.map((t, idx) => `<tr><td>${idx+1}</td><td>${t.n}</td><td style="text-align:right;">${t.p}.00</td></tr>`).join('');
-
         const spaceClass = withHeader ? "" : "no-header-space";
 
         const labHTML = `
@@ -404,6 +405,8 @@
 
         document.getElementById('printArea').innerHTML = labHTML;
         window.print();
+        
+        // Final reload to ensure everything is synced with the server
         location.reload();
     }
 
