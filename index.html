@@ -153,7 +153,7 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-top: 20px;">
             <button class="btn" style="background: #2e7d32; color: white;" onclick="handleLabAction('HEADER')">PRINT HEADER</button>
             <button class="btn" style="background: #c62828; color: white;" onclick="handleLabAction('NO_HEADER')">PRINT 5.5CM</button>
-            <button class="btn" style="background: #000; color: white;" onclick="handleLabAction('SAVE_ONLY')">SAVE ONLY</button>
+            <button class="btn" id="saveOnlyBtn" style="background: #000; color: white;" onclick="handleLabAction('SAVE_ONLY')">SAVE ONLY</button>
             <button class="btn" style="background: #444; color: white;" onclick="document.getElementById('testModal').style.display='none'">CLOSE</button>
         </div>
     </div>
@@ -162,7 +162,7 @@
 <div id="historyModal" class="modal">
     <div class="modal-content">
         <h2 style="color:#ef6c00;">Previous Test History: <span id="histName"></span></h2>
-        <div id="histContent" style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"></div>
+        <div id="histContent" style="max-height: 400px; overflow-y: auto; border: 2px solid #ef6c00; padding: 10px;"></div>
         <button class="btn" style="width: 100%; margin-top: 15px; background: #444; color: white;" onclick="document.getElementById('historyModal').style.display='none'">BACK</button>
     </div>
 </div>
@@ -227,9 +227,10 @@
     function handleResponse(data) { 
         patients = data; 
         renderTable(patients); 
-        // If a patient was previously selected, re-link the object to get updated data
+        // Force update of selectedP if it exists
         if(selectedP) {
-            selectedP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
+            let found = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
+            if(found) selectedP = found;
         }
     }
     
@@ -272,23 +273,26 @@
     }
 
     function showHistory() {
-        document.getElementById('histName').innerText = selectedP.name;
+        // AGGRESSIVE RE-CHECK: Don't just trust the selectedP object, find it again in the master list
+        let latestP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
+        document.getElementById('histName').innerText = latestP.name;
+        
         let html = "";
         try {
-            // Force re-fetch of history string from the patient object
-            const currentBillString = selectedP.lab_bill || "[]";
-            const billData = JSON.parse(currentBillString);
+            const raw = latestP.lab_bill || "[]";
+            const billData = JSON.parse(raw);
             
-            if(!billData || billData.length === 0) {
-                html = "<p style='text-align:center; padding: 20px; font-weight: bold;'>No test history found for this patient.</p>";
+            if(billData.length === 0) {
+                html = "<div style='text-align:center; padding:30px;'><h3 style='color:red;'>⚠️ NO HISTORY FOUND</h3><p>Ensure you have clicked SAVE or PRINT for this patient.</p></div>";
             } else {
-                html = "<table style='width:100%; border: 1.5px solid #000;'><thead><tr style='background:#1565c0; color:white;'><th>Date (Ref)</th><th>Test Name</th><th style='text-align:right;'>Price</th></tr></thead><tbody>";
-                billData.forEach(t => {
-                    html += `<tr><td>Recorded</td><td>${t.n}</td><td style='text-align:right;'>₹ ${t.p}</td></tr>`;
+                html = "<table style='width:100%; border:2px solid #000;'><thead><tr style='background:#ef6c00; color:white;'><th>Ref</th><th>Test Name</th><th style='text-align:right;'>Price</th></tr></thead><tbody>";
+                billData.forEach((t, i) => {
+                    html += `<tr><td>#${i+1}</td><td>${t.n}</td><td style='text-align:right;'>₹ ${t.p}</td></tr>`;
                 });
                 html += "</tbody></table>";
             }
-        } catch(e) { html = "Error loading history format."; }
+        } catch(e) { html = "Error loading history."; }
+        
         document.getElementById('histContent').innerHTML = html;
         document.getElementById('historyModal').style.display = "block";
     }
@@ -302,7 +306,7 @@
 
     function addRowToBillTable(name, price) {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${name}</td><td>${price}</td><td style="color:red; cursor:pointer; font-weight:bold;" onclick="this.parentElement.remove(); updateBillTotals();">REMOVE</td>`;
+        tr.innerHTML = `<td>${name}</td><td>${price}</td><td style="color:red; cursor:pointer;" onclick="this.parentElement.remove(); updateBillTotals();">REMOVE</td>`;
         document.getElementById('billBody').appendChild(tr);
     }
 
@@ -313,7 +317,6 @@
         });
         const discount = parseInt(document.getElementById('billDiscount').value) || 0;
         const total = subtotal - discount;
-        
         document.getElementById('billSubTotal').innerText = subtotal;
         document.getElementById('billTotal').innerText = total < 0 ? 0 : total;
         document.getElementById('billWords').innerText = total > 0 ? "Amount in words: " + numberToWords(total) + " Rupees Only" : "";
@@ -339,37 +342,39 @@
             p: tr.cells[1].innerText
         }));
         
-        if(currentTests.length === 0) return alert("Please add at least one test to the bill!");
+        if(currentTests.length === 0) return alert("Please add tests first!");
 
-        // AGGRESSIVE PERSISTENCE: Immediately build the new JSON string
+        // 1. FETCH LATEST DATA FROM LOCAL ARRAY FIRST
         let existingHistory = [];
         try { 
-            const raw = selectedP.lab_bill || "[]";
-            existingHistory = JSON.parse(raw); 
+            let latestP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
+            existingHistory = JSON.parse(latestP.lab_bill || "[]"); 
         } catch(e){ existingHistory = []; }
 
+        // 2. MERGE & UPDATE LOCAL MEMORY
         const updatedHistory = [...existingHistory, ...currentTests];
         const finalizedJSON = JSON.stringify(updatedHistory);
+        
+        // Push immediately into the main patients list so it is "live"
+        let pIndex = patients.findIndex(p => String(p.opd_number) === String(selectedP.opd_number));
+        patients[pIndex].lab_bill = finalizedJSON;
 
-        // Update local object immediately so VIEW HISTORY works right away
-        selectedP.lab_bill = finalizedJSON; 
-
-        // Send to Database
+        // 3. SEND TO SERVER
+        const saveBtn = document.getElementById('saveOnlyBtn');
+        saveBtn.innerText = "RECORDING...";
+        
         const data = { type: "SAVE_LAB_BILL", opd: selectedP.opd_number, lab_bill: finalizedJSON };
-        
-        // Show loading state on button
-        const originalText = event.target.innerText;
-        event.target.innerText = "SAVING...";
-
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-        
+
         if(actionType === 'SAVE_ONLY') {
-            alert("Tests saved successfully to patient history!");
-            location.reload();
+            alert("Tests successfully recorded in history!");
+            saveBtn.innerText = "SAVE ONLY";
+            document.getElementById('billBody').innerHTML = ""; // Clear bill
+            updateBillTotals();
             return;
         }
 
-        // Proceed to print
+        // 4. PRINTING
         printLabBill(currentTests, actionType === 'HEADER');
     }
 
@@ -405,31 +410,19 @@
 
         const labHTML = `
             <div class="print-page-wrapper ${spaceClass}">
-                ${headerHTML}
-                ${details}
+                ${headerHTML}${details}
                 <h2 style="text-align:center; text-decoration:underline; margin-top:20px;">LABORATORY INVESTIGATION BILL</h2>
                 <table class="med-table" style="margin-top:20px;">
                     <thead><tr><th>S.No</th><th>Investigation Name</th><th style="text-align:right;">Price (₹)</th></tr></thead>
                     <tbody>
                         ${testRows}
-                        <tr style="background:#f9f9f9 !important;">
-                            <td colspan="2" style="text-align:right;">Sub Total:</td>
-                            <td style="text-align:right;">₹ ${subtotal}.00</td>
-                        </tr>
-                        <tr style="background:#f9f9f9 !important;">
-                            <td colspan="2" style="text-align:right;">Discount:</td>
-                            <td style="text-align:right;">- ₹ ${discount}.00</td>
-                        </tr>
-                        <tr style="font-size:14pt; font-weight:900; background:#eee !important;">
-                            <td colspan="2" style="text-align:right;">NET PAYABLE:</td>
-                            <td style="text-align:right;">₹ ${total}.00</td>
-                        </tr>
+                        <tr style="background:#f9f9f9 !important;"><td colspan="2" style="text-align:right;">Sub Total:</td><td style="text-align:right;">₹ ${subtotal}.00</td></tr>
+                        <tr style="background:#f9f9f9 !important;"><td colspan="2" style="text-align:right;">Discount:</td><td style="text-align:right;">- ₹ ${discount}.00</td></tr>
+                        <tr style="font-size:14pt; font-weight:900; background:#eee !important;"><td colspan="2" style="text-align:right;">NET PAYABLE:</td><td style="text-align:right;">₹ ${total}.00</td></tr>
                     </tbody>
                 </table>
                 <p style="margin-top:10px; font-weight:bold; font-size:12pt;">${words}</p>
-                <div style="margin-top:100px; text-align:right; font-weight:bold;">
-                    (Authorized Signature)
-                </div>
+                <div style="margin-top:100px; text-align:right; font-weight:bold;">(Authorized Signature)</div>
             </div>`;
 
         document.getElementById('printArea').innerHTML = labHTML;
@@ -437,7 +430,7 @@
         location.reload();
     }
 
-    // --- OTHER EXISTING LOGIC ---
+    // --- REMAINDER OF YOUR WORKING FUNCTIONS (NO CHANGES) ---
     function sendWhatsApp(id) {
         const p = patients.find(pat => String(pat.opd_number) === String(id));
         if (!p) return;
@@ -514,9 +507,7 @@
                     <div style="font-size:9pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
                 </div>
                 <div class="footer-line"></div>
-                <div class="services-list">
-                    మా ప్రత్యేక సేవలు: బిపి, షుగర్ ,గుండె వ్యాధులు కాలేయ వ్యాధులు (జాండీస్), కిడ్నీ సమస్యలు, నరాల వ్యాధులు (పక్షవాతం) ,వైరల్ ఫీవర్, జీర్ణకోశ వ్యాధులు (అల్సర్), ఊపిరితిత్తుల వ్యాధులు, థైరాయిడ్ మరియు ఫిట్స్ చూడబడును.
-                </div>
+                <div class="services-list">మా ప్రత్యేక సేవలు: బిపి, షుగర్ ,గుండె వ్యాధులు కాలేయ వ్యాధులు (జాండీస్), కిడ్నీ సమస్యలు, నరాల వ్యాధులు (పక్షవాతం) ,వైరల్ ఫీవర్, జీర్ణకోశ వ్యాధులు (అల్సర్), ఊపిరితిత్తుల వ్యాధులు, థైరాయిడ్ మరియు ఫిట్స్ చూడబడును.</div>
                 <div class="notes-section">
                     <span class="telugu-note">NOTE: ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తప్పక తీసుకురావలెను</span><br>
                     <span style="color:#c62828;">NOTE: NOT VALID FOR MEDICO LEGAL PURPOSE.</span>
@@ -546,24 +537,10 @@
             for (let i = 0; i < meds.length || i === 0; i += chunkSize) {
                 const chunk = meds.slice(i, i + chunkSize);
                 let medRows = chunk.map(m => `<tr><td>${m.n}</td><td style="text-align:center;">${m.d}</td><td style="text-align:center;">${m.r}</td><td>${m.rem}</td></tr>`).join('');
-                
-                let clinicalInfo = i === 0 ? `
-                    <div style="position:relative; z-index:1; margin-top:10px;">
-                        <p><b>Chief Complaints:</b> ${selectedP.complaints || ''}</p>
-                        <p><b>Past History:</b> ${selectedP.history || ''}</p>
-                        <p><b>Advice Investigations:</b> ${selectedP.investigations || ''}</p>
-                    </div>` : "";
-                
-                printHTML += `<div class="print-page-wrapper ${spaceClass}">
-                    ${watermarkHTML}${headerHTML}${details}${clinicalInfo}
-                    <h3 style="border-bottom:2px solid #000; margin-top:10px; position:relative; z-index:1;">Rx Prescription ${meds.length > chunkSize ? `(Page ${Math.floor(i/chunkSize)+1})` : ''}</h3>
-                    <table class="med-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${medRows}</tbody></table>
-                    ${i + chunkSize >= meds.length ? `<div style="margin-top:15px; position:relative; z-index:1;"><p><b>Clinical Notes:</b> ${selectedP.notes || ''}</p></div>` : ''}
-                    ${footerHTML}
-                </div>`;
+                let clinicalInfo = i === 0 ? `<div style="position:relative; z-index:1; margin-top:10px;"><p><b>Chief Complaints:</b> ${selectedP.complaints || ''}</p><p><b>Past History:</b> ${selectedP.history || ''}</p><p><b>Advice Investigations:</b> ${selectedP.investigations || ''}</p></div>` : "";
+                printHTML += `<div class="print-page-wrapper ${spaceClass}">${watermarkHTML}${headerHTML}${details}${clinicalInfo}<h3 style="border-bottom:2px solid #000; margin-top:10px; position:relative; z-index:1;">Rx Prescription ${meds.length > chunkSize ? `(Page ${Math.floor(i/chunkSize)+1})` : ''}</h3><table class="med-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${medRows}</tbody></table>${i + chunkSize >= meds.length ? `<div style="margin-top:15px; position:relative; z-index:1;"><p><b>Clinical Notes:</b> ${selectedP.notes || ''}</p></div>` : ''}${footerHTML}</div>`;
             }
         }
-
         document.getElementById('printArea').innerHTML = printHTML;
         window.print();
     }
@@ -587,7 +564,6 @@
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
         location.reload();
     }
-    
     window.onload = loadData;
 </script>
 </body>
