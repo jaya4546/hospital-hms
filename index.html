@@ -161,7 +161,7 @@
 
 <div id="historyModal" class="modal">
     <div class="modal-content">
-        <h2 style="color:#ef6c00;">Previous Test History: <span id="histName"></span></h2>
+        <h2 style="color:#ef6c00;">Cumulative Investigation History: <span id="histName"></span></h2>
         <div id="histContent" style="max-height: 400px; overflow-y: auto; border: 2px solid #ef6c00; padding: 10px;"></div>
         <button class="btn" style="width: 100%; margin-top: 15px; background: #444; color: white;" onclick="document.getElementById('historyModal').style.display='none'">BACK</button>
     </div>
@@ -227,7 +227,6 @@
     function handleResponse(data) { 
         patients = data; 
         renderTable(patients); 
-        // Force update of selectedP if it exists
         if(selectedP) {
             let found = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
             if(found) selectedP = found;
@@ -273,26 +272,22 @@
     }
 
     function showHistory() {
-        // AGGRESSIVE RE-CHECK: Don't just trust the selectedP object, find it again in the master list
         let latestP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
         document.getElementById('histName').innerText = latestP.name;
-        
         let html = "";
         try {
             const raw = latestP.lab_bill || "[]";
             const billData = JSON.parse(raw);
-            
             if(billData.length === 0) {
-                html = "<div style='text-align:center; padding:30px;'><h3 style='color:red;'>⚠️ NO HISTORY FOUND</h3><p>Ensure you have clicked SAVE or PRINT for this patient.</p></div>";
+                html = "<div style='text-align:center; padding:30px;'><h3 style='color:red;'>⚠️ NO HISTORY FOUND</h3></div>";
             } else {
-                html = "<table style='width:100%; border:2px solid #000;'><thead><tr style='background:#ef6c00; color:white;'><th>Ref</th><th>Test Name</th><th style='text-align:right;'>Price</th></tr></thead><tbody>";
-                billData.forEach((t, i) => {
-                    html += `<tr><td>#${i+1}</td><td>${t.n}</td><td style='text-align:right;'>₹ ${t.p}</td></tr>`;
+                html = "<table style='width:100%; border:2px solid #000;'><thead><tr style='background:#ef6c00; color:white;'><th>Date</th><th>Test Detail</th><th style='text-align:right;'>Price</th></tr></thead><tbody>";
+                billData.forEach((t) => {
+                    html += `<tr><td><small>${t.d || 'Old Record'}</small></td><td>${t.n}</td><td style='text-align:right;'>₹ ${t.p}</td></tr>`;
                 });
                 html += "</tbody></table>";
             }
         } catch(e) { html = "Error loading history."; }
-        
         document.getElementById('histContent').innerHTML = html;
         document.getElementById('historyModal').style.display = "block";
     }
@@ -312,9 +307,7 @@
 
     function updateBillTotals() {
         let subtotal = 0;
-        document.querySelectorAll('#billBody tr').forEach(tr => {
-            subtotal += parseInt(tr.cells[1].innerText);
-        });
+        document.querySelectorAll('#billBody tr').forEach(tr => { subtotal += parseInt(tr.cells[1].innerText); });
         const discount = parseInt(document.getElementById('billDiscount').value) || 0;
         const total = subtotal - discount;
         document.getElementById('billSubTotal').innerText = subtotal;
@@ -339,27 +332,24 @@
     async function handleLabAction(actionType) {
         const currentTests = Array.from(document.querySelectorAll('#billBody tr')).map(tr => ({
             n: tr.cells[0].innerText,
-            p: tr.cells[1].innerText
+            p: tr.cells[1].innerText,
+            d: new Date().toLocaleString('en-IN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
         }));
         
         if(currentTests.length === 0) return alert("Please add tests first!");
 
-        // 1. FETCH LATEST DATA FROM LOCAL ARRAY FIRST
         let existingHistory = [];
         try { 
             let latestP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
             existingHistory = JSON.parse(latestP.lab_bill || "[]"); 
         } catch(e){ existingHistory = []; }
 
-        // 2. MERGE & UPDATE LOCAL MEMORY
         const updatedHistory = [...existingHistory, ...currentTests];
         const finalizedJSON = JSON.stringify(updatedHistory);
         
-        // Push immediately into the main patients list so it is "live"
         let pIndex = patients.findIndex(p => String(p.opd_number) === String(selectedP.opd_number));
         patients[pIndex].lab_bill = finalizedJSON;
 
-        // 3. SEND TO SERVER
         const saveBtn = document.getElementById('saveOnlyBtn');
         saveBtn.innerText = "RECORDING...";
         
@@ -367,14 +357,12 @@
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
 
         if(actionType === 'SAVE_ONLY') {
-            alert("Tests successfully recorded in history!");
+            alert("Tests successfully recorded with date/time!");
             saveBtn.innerText = "SAVE ONLY";
-            document.getElementById('billBody').innerHTML = ""; // Clear bill
+            document.getElementById('billBody').innerHTML = "";
             updateBillTotals();
             return;
         }
-
-        // 4. PRINTING
         printLabBill(currentTests, actionType === 'HEADER');
     }
 
@@ -384,11 +372,12 @@
         const total = document.getElementById('billTotal').innerText;
         const words = document.getElementById('billWords').innerText;
 
+        // SPECIFIC HEADER CHANGE FOR DIAGNOSTICS
         const headerHTML = withHeader ? `
             <div class="print-header">
                 <img src="logo.jpg" style="width:70px; margin-right:10px;">
                 <div style="flex:1; min-width: 0;">
-                    <h1 class="hosp-title">SRI RAJA RAJESHWARI HOSPITAL</h1>
+                    <h1 class="hosp-title" style="color:#c62828 !important;">SRI RAJA RAJESHWARI DIAGNOSTIC</h1>
                     <p style="font-size:8.5pt; font-weight:bold; margin:2px 0; color:#1b5e20; white-space:nowrap; letter-spacing:-0.4px;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyd-500055</p>
                     <p style="font-size:10pt; font-weight:bold; margin:0;">📞 9201955976</p>
                 </div>
@@ -430,7 +419,6 @@
         location.reload();
     }
 
-    // --- REMAINDER OF YOUR WORKING FUNCTIONS (NO CHANGES) ---
     function sendWhatsApp(id) {
         const p = patients.find(pat => String(pat.opd_number) === String(id));
         if (!p) return;
