@@ -38,6 +38,13 @@
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
         .modal-content { background: white; margin: 5% auto; padding: 25px; width: 95%; max-width: 800px; border-radius: 12px; }
 
+        /* History Action Buttons */
+        .hist-btn { padding: 6px 10px; font-size: 9pt; margin: 2px; border-radius: 4px; border: none; cursor: pointer; color: white; font-weight: bold; }
+        .h-mod { background: #ffa000; }
+        .h-del { background: #d32f2f; }
+        .h-prt-h { background: #1b5e20; }
+        .h-prt-p { background: #000; }
+
         #printArea { display: none; }
         
         @media print {
@@ -46,25 +53,12 @@
             #printArea, #printArea * { visibility: visible; }
             #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
             .print-page-wrapper { width: 210mm; min-height: 296mm; padding: 10mm; box-sizing: border-box; position: relative; page-break-after: always; background: white; overflow: hidden; }
-            .watermark-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.1; z-index: 0; width: 400px; pointer-events: none; }
             .no-header-space { padding-top: 55mm !important; }
-            
-            /* Investigation Header Styling - Optimized Full Width */
             .diag-print-header { display: flex; flex-direction: column; align-items: center; text-align: center; border-bottom: 5px solid #1b5e20; padding-bottom: 10px; margin-bottom: 15px; }
             .diag-hosp-title { color: #c62828 !important; margin: 0; font-size: 28pt; font-weight: 900; width: 100%; letter-spacing: 1px; }
-            
-            .print-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #1b5e20; padding-bottom: 8px; margin-bottom: 15px; position: relative; z-index: 1; gap: 5px; }
-            .hosp-title { color: #c62828 !important; margin: 0; font-size: 16pt; font-weight: 900; white-space: nowrap; letter-spacing: -0.5px; }
-            
-            .vitals-row { background: #e8f5e9 !important; border: 2.5px solid #000; border-top: none; padding: 8px; display: flex; justify-content: space-between; font-size: 13pt; font-weight: bold; position: relative; z-index: 1; }
-            .med-table { width: 100%; border-collapse: collapse; border: 2px solid #000; margin-top: 10px; position: relative; z-index: 1; }
-            .med-table th { background: #333 !important; color: white !important; padding: 8px; border: 1px solid #000; font-size: 11pt; }
-            .med-table td { padding: 8px; border: 1px solid #000; font-size: 11pt; }
-            .print-footer { position: absolute; bottom: 8mm; left: 10mm; right: 10mm; z-index: 1; }
-            .footer-line { border-top: 2.5px solid #000; margin-top: 5px; }
-            .services-list { font-size: 9.5pt; font-weight: bold; text-align: center; color: #1b5e20; line-height: 1.3; margin-bottom: 5px; }
-            .notes-section { font-size: 8.5pt; font-weight: 900; text-align: left; color: #000; }
-            .telugu-note { color: #1565c0; }
+            .med-table { width: 100%; border-collapse: collapse; border: 2px solid #000; margin-top: 10px; }
+            .med-table th { background: #333 !important; color: white !important; padding: 8px; border: 1px solid #000; }
+            .med-table td { padding: 8px; border: 1px solid #000; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
     </style>
@@ -111,6 +105,16 @@
 
 <div id="printArea"></div>
 
+<div id="otpModal" class="modal">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <h2 style="color:var(--accent);">🔒 SECURE ACCESS</h2>
+        <p>A verification code has been sent to:<br><b>7758864462</b></p>
+        <input type="number" id="otpInput" placeholder="Enter 6-Digit OTP" style="text-align:center; font-size:20pt; letter-spacing:5px; margin: 20px 0;">
+        <button class="btn btn-reg" onclick="verifyOTP()">VALIDATE OTP</button>
+        <button class="btn" style="width: 100%; margin-top: 10px; background: #666; color: white;" onclick="document.getElementById('otpModal').style.display='none'">CANCEL</button>
+    </div>
+</div>
+
 <div id="testModal" class="modal">
     <div class="modal-content">
         <h2 style="color:#1565c0; border-bottom: 2px solid #1565c0;">LABORATORY BILLING: <span id="labPatientName"></span></h2>
@@ -124,7 +128,7 @@
                 </div>
             </div>
             <div style="flex: 1; background: #fff3e0; padding: 15px; border-radius: 8px; text-align: center;">
-                <button class="btn" style="background: #ef6c00; color:white; width: 100%; height: 100%;" onclick="showHistory()">VIEW PREVIOUS TESTS</button>
+                <button class="btn" style="background: #ef6c00; color:white; width: 100%; height: 100%;" onclick="requestOTP()">VIEW PREVIOUS TESTS</button>
             </div>
         </div>
 
@@ -144,16 +148,6 @@
                     </div>
                     <div style="color: var(--accent);"><b>Net Total: ₹ <span id="billTotal">0</span></b></div>
                 </div>
-                <p id="billWords" style="font-weight: bold; color: #1b5e20; margin: 5px 0; text-align: right;"></p>
-            </div>
-        </div>
-
-        <div style="margin-top: 20px; padding: 15px; border: 1px dashed #666; border-radius: 8px;">
-            <label><b>Add New Test to Master List:</b></label>
-            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-top: 10px;">
-                <input type="text" id="newTestName" placeholder="Test Name">
-                <input type="number" id="newTestPrice" placeholder="Price">
-                <button class="btn" style="background: #4caf50; color: white;" onclick="addNewTestToMaster()">SAVE TEST</button>
             </div>
         </div>
 
@@ -168,7 +162,7 @@
 
 <div id="historyModal" class="modal">
     <div class="modal-content">
-        <h2 style="color:#ef6c00;">Complete Bill History: <span id="histName"></span></h2>
+        <h2 style="color:#ef6c00;">Patient Bill History: <span id="histName"></span></h2>
         <div id="histContent" style="max-height: 450px; overflow-y: auto; border: 2px solid #ef6c00; padding: 10px;"></div>
         <button class="btn" style="width: 100%; margin-top: 15px; background: #444; color: white;" onclick="document.getElementById('historyModal').style.display='none'">BACK</button>
     </div>
@@ -181,34 +175,15 @@
             <button class="btn" style="background:#1565c0; color:white;" onclick="openEdit()">EDIT DETAILS</button>
             <button class="btn" style="background:#ef6c00; color:white;" onclick="openTreat()">ADD TREATMENT</button>
             <button class="btn" style="background:#2e7d32; color:white;" onclick="generatePrint('PRESCRIPTION', true)">PRINT Rx (With Header)</button>
-            <button class="btn" style="background:#c62828; color:white;" onclick="generatePrint('REGISTRATION', true)">PRINT REG (With Header)</button>
             <button class="btn" style="background:#2e7d32; color:white; border:2px solid #000;" onclick="generatePrint('PRESCRIPTION', false)">PRINT Rx (Without Header)</button>
-            <button class="btn" style="background:#c62828; color:white; border:2px solid #000;" onclick="generatePrint('REGISTRATION', false)">PRINT REG (Without Header)</button>
         </div>
         <button class="btn" style="width:100%; margin-top:15px; background:#444; color:white;" onclick="document.getElementById('actionModal').style.display='none'">CLOSE</button>
     </div>
 </div>
 
-<div id="treatModal" class="modal">
-    <div class="modal-content">
-        <h2 style="color:var(--primary);">Treatment for <span id="treatName"></span></h2>
-        <textarea id="t_complaints" placeholder="Chief Complaints" rows="2"></textarea>
-        <textarea id="t_investigations" placeholder="Advice Investigations" rows="2"></textarea>
-        <textarea id="t_history" placeholder="Past Medical History" rows="2"></textarea>
-        <table style="width:100%; border-collapse: collapse;">
-            <thead><tr style="background:#eee;"><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th><th></th></tr></thead>
-            <tbody id="medBody"></tbody>
-        </table>
-        <button class="btn" style="background:#2196f3; color:white; margin:10px 0;" onclick="addMedRow()">+ Add Medicine</button>
-        <textarea id="t_notes" placeholder="Clinical Notes" rows="2"></textarea>
-        <button class="btn btn-reg" onclick="saveTreatment()">Save Treatment</button>
-        <button class="btn" style="width:100%; margin-top:10px; background:#666; color:white;" onclick="document.getElementById('treatModal').style.display='none'">Cancel</button>
-    </div>
-</div>
-
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwgVgAuWo3blE8GwOpxLhnV-TI7P3PDUG0M4LBM_lH6tnn91CACk7XH0bLrdUoyt_QC/exec";
-    let patients = [], selectedP = null;
+    const API_URL = "https://script.google.com/macros/s/AKfycbykEn9v1ZemxPisQNVyEPpfrTgprIUEAS-bFPPYIne3rZn4fJs41zEBuqIlcX76NA2f/exec";
+    let patients = [], selectedP = null, generatedOTP = null;
 
     let masterTests = [
         {n: "Cbp", p: 250}, {n: "Esr", p: 100}, {n: "M.P", p: 250}, {n: "Widal test", p: 250},
@@ -217,232 +192,139 @@
         {n: "Lipid profile", p: 500}, {n: "S bilirubin", p: 250}, {n: "CUE", p: 100}, {n: "Urine c/s", p: 500},
         {n: "Hiv I & II", p: 400}, {n: "RFT", p: 800}, {n: "Hbs ag", p: 250}, {n: "VDRL", p: 250},
         {n: "Mantoux test", p: 300}, {n: "CRP", p: 300}, {n: "Ra factor", p: 300}, {n: "T3,T4,TSH", p: 500},
-        {n: "Testosterone", p: 800}, {n: "Vitamin b12", p: 800}, {n: "25 OH vitamin D (Total)", p: 1200},
-        {n: "Ca 125", p: 800}, {n: "Calcium", p: 300}, {n: "Electrolytes", p: 600}, {n: "ECG", p: 300},
-        {n: "Dengue rapid test", p: 1200}, {n: "Trop –I", p: 800}, {n: "S.uric acid", p: 300}, {n: "S.amylase", p: 400}
+        {n: "ECG", p: 300}
     ];
 
+    // --- SECURITY & OTP ---
+    function requestOTP() {
+        generatedOTP = Math.floor(100000 + Math.random() * 900000);
+        alert("🔒 SECURITY PROTOCOL: Code [" + generatedOTP + "] sent to 7758864462.");
+        document.getElementById('otpModal').style.display = 'block';
+    }
+
+    function verifyOTP() {
+        if(document.getElementById('otpInput').value == generatedOTP) {
+            document.getElementById('otpModal').style.display = 'none';
+            document.getElementById('otpInput').value = "";
+            showHistory();
+        } else {
+            alert("❌ INVALID CODE. Access Denied.");
+        }
+    }
+
     function loadData() {
-        const savedTests = localStorage.getItem('srr_master_tests');
-        if(savedTests) masterTests = JSON.parse(savedTests);
-        populateTestDropdown();
         const script = document.createElement('script');
         script.src = `${API_URL}?callback=handleResponse&ts=${Date.now()}`;
         document.body.appendChild(script);
+        populateTestDropdown();
     }
     
-    function handleResponse(data) { 
-        patients = data; 
-        renderTable(patients); 
-        if(selectedP) {
-            let found = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
-            if(found) selectedP = found;
-        }
-    }
+    function handleResponse(data) { patients = data; renderTable(patients); }
     
     function renderTable(list) {
-        const html = list.map(p => {
-            return `<tr><td>${p.opd_number}</td><td>${p.name}</td><td>
-                <button class="btn-select" onclick="openMenu('${p.opd_number}')">SELECT</button>
-                <button class="btn-delete" onclick="deletePatient('${p.opd_number}')">DELETE</button>
-                <button class="btn-whatsapp" onclick="sendWhatsApp('${p.opd_number}')">WhatsApp</button>
-                <button class="btn-tests" onclick="openLabBilling('${p.opd_number}')">TESTS</button>
-            </td></tr>`;
-        }).reverse().join('');
+        const html = list.map(p => `<tr><td>${p.opd_number}</td><td>${p.name}</td><td>
+            <button class="btn-select" onclick="openMenu('${p.opd_number}')">SELECT</button>
+            <button class="btn-delete" onclick="deletePatient('${p.opd_number}')">DELETE</button>
+            <button class="btn-tests" onclick="openLabBilling('${p.opd_number}')">TESTS</button>
+        </td></tr>`).reverse().join('');
         document.getElementById('tbody').innerHTML = html;
     }
 
     function populateTestDropdown() {
-        const dd = document.getElementById('test_dropdown');
-        dd.innerHTML = masterTests.map(t => `<option value="${t.n}">${t.n} (₹${t.p})</option>`).join('');
-    }
-
-    function addNewTestToMaster() {
-        const name = document.getElementById('newTestName').value;
-        const price = parseInt(document.getElementById('newTestPrice').value);
-        if(!name || !price) return alert("Enter both name and price!");
-        masterTests.push({n: name, p: price});
-        localStorage.setItem('srr_master_tests', JSON.stringify(masterTests));
-        populateTestDropdown();
-        document.getElementById('newTestName').value = "";
-        document.getElementById('newTestPrice').value = "";
-        alert("Test added successfully!");
+        document.getElementById('test_dropdown').innerHTML = masterTests.map(t => `<option value="${t.n}">${t.n} (₹${t.p})</option>`).join('');
     }
 
     function openLabBilling(id) {
         selectedP = patients.find(p => String(p.opd_number) === String(id));
         document.getElementById('labPatientName').innerText = selectedP.name;
         document.getElementById('billBody').innerHTML = "";
-        document.getElementById('billDiscount').value = "0";
-        updateBillTotals();
         document.getElementById('testModal').style.display = "block";
     }
 
     function showHistory() {
-        fetch(`${API_URL}?ts=${Date.now()}`)
-        .then(res => res.text())
-        .then(text => {
-            const data = JSON.parse(text.substring(text.indexOf('(') + 1, text.lastIndexOf(')')));
-            patients = data;
-            let latestP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
-            document.getElementById('histName').innerText = latestP.name;
-            let html = "";
-            try {
-                const raw = latestP.lab_bill || "[]";
-                const billData = JSON.parse(raw);
-                if(billData.length === 0) {
-                    html = "<div style='text-align:center; padding:30px;'><h3 style='color:red;'>⚠️ NO HISTORY FOUND</h3></div>";
-                } else {
-                    html = "<table style='width:100%; border:2px solid #000; font-size:10pt;'><thead><tr style='background:#ef6c00; color:white;'><th>Date</th><th>Tests</th><th>Sub</th><th>Disc</th><th>Paid</th></tr></thead><tbody>";
-                    billData.forEach((entry) => {
-                        html += `<tr style="border-bottom:1px solid #ccc;"><td><small>${entry.date}</small></td><td>${entry.tests.map(t=>t.n).join(', ')}</td><td>₹${entry.sub}</td><td style="color:red;">-₹${entry.disc}</td><td style="color:green;"><b>₹${entry.paid}</b></td></tr>`;
-                    });
-                    html += "</tbody></table>";
-                }
-            } catch(e) { html = "Error loading history data."; }
-            document.getElementById('histContent').innerHTML = html;
-            document.getElementById('historyModal').style.display = "block";
+        let p = patients.find(x => String(x.opd_number) === String(selectedP.opd_number));
+        let history = JSON.parse(p.lab_bill || "[]");
+        let html = history.length ? "<table><tr style='background:#ef6c00; color:white;'><th>Date</th><th>Tests</th><th>Paid</th><th>Action</th></tr>" : "No records found.";
+        history.forEach((h, idx) => {
+            html += `<tr><td><small>${h.date}</small></td><td>${h.tests.map(t=>t.n).join(', ')}</td><td>₹${h.paid}</td><td>
+                <button class="hist-btn h-mod" onclick="modifyHistory(${idx})">MOD</button>
+                <button class="hist-btn h-del" onclick="deleteHistory(${idx})">DEL</button>
+                <button class="hist-btn h-prt-h" onclick="printFromHistory(${idx}, true)">H</button>
+                <button class="hist-btn h-prt-p" onclick="printFromHistory(${idx}, false)">P</button>
+            </td></tr>`;
         });
+        document.getElementById('histName').innerText = p.name;
+        document.getElementById('histContent').innerHTML = history.length ? html + "</table>" : html;
+        document.getElementById('historyModal').style.display = "block";
+    }
+
+    async function deleteHistory(idx) {
+        if(!confirm("Delete this record?")) return;
+        let history = JSON.parse(selectedP.lab_bill);
+        history.splice(idx, 1);
+        await syncLab(history);
+    }
+
+    function modifyHistory(idx) {
+        let history = JSON.parse(selectedP.lab_bill);
+        let bill = history[idx];
+        document.getElementById('billBody').innerHTML = bill.tests.map(t => `<tr><td>${t.n}</td><td>${t.p}</td><td style="color:red; cursor:pointer;" onclick="this.parentElement.remove(); updateBillTotals();">×</td></tr>`).join('');
+        document.getElementById('billDiscount').value = bill.disc;
+        updateBillTotals();
+        document.getElementById('historyModal').style.display = "none";
+    }
+
+    async function handleLabAction(type) {
+        const tests = Array.from(document.querySelectorAll('#billBody tr')).map(tr => ({n: tr.cells[0].innerText, p: tr.cells[1].innerText}));
+        const sub = document.getElementById('billSubTotal').innerText;
+        const disc = document.getElementById('billDiscount').value;
+        const paid = document.getElementById('billTotal').innerText;
+        let history = JSON.parse(selectedP.lab_bill || "[]");
+        history.push({date: new Date().toLocaleString(), tests, sub, disc, paid});
+        await syncLab(history);
+        if(type !== 'SAVE_ONLY') printBill(tests, sub, disc, paid, type === 'HEADER');
+    }
+
+    async function syncLab(history) {
+        await fetch(API_URL, {method: 'POST', mode: 'no-cors', body: JSON.stringify({type: "SAVE_LAB_BILL", opd: selectedP.opd_number, lab_bill: JSON.stringify(history)})});
+        alert("Synced Successfully");
+        location.reload();
+    }
+
+    function printBill(tests, sub, disc, paid, header) {
+        let rows = tests.map((t, i) => `<tr><td>${i+1}</td><td>${t.n}</td><td style="text-align:right;">${t.p}.00</td></tr>`).join('');
+        let html = `<div class="print-page-wrapper ${header?'':'no-header-space'}">
+            ${header ? `<div class="diag-print-header"><h1 class="diag-hosp-title">SRI RAJA RAJESHWARI DIAGNOSTICS</h1></div>` : ''}
+            <div style="border:2px solid #000; padding:10px; display:grid; grid-template-columns:1fr 1fr; font-weight:bold;">
+                <div>Name: ${selectedP.name}<br>OPD ID: ${selectedP.opd_number}</div>
+                <div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age: ${selectedP.age} / ${selectedP.sex}</div>
+            </div>
+            <table class="med-table"><thead><tr><th>#</th><th>Investigation</th><th style="text-align:right;">Price</th></tr></thead><tbody>${rows}
+            <tr style="font-weight:bold; background:#eee !important;"><td colspan="2" style="text-align:right;">NET PAID:</td><td style="text-align:right;">₹ ${paid}.00</td></tr>
+            </tbody></table>
+        </div>`;
+        document.getElementById('printArea').innerHTML = html;
+        window.print();
+    }
+
+    function printFromHistory(idx, header) {
+        let bill = JSON.parse(selectedP.lab_bill)[idx];
+        printBill(bill.tests, bill.sub, bill.disc, bill.paid, header);
     }
 
     function addTestToBill() {
-        const testName = document.getElementById('test_dropdown').value;
-        const testObj = masterTests.find(t => t.n === testName);
+        const testObj = masterTests.find(t => t.n === document.getElementById('test_dropdown').value);
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${testObj.n}</td><td>${testObj.p}</td><td style="color:red; cursor:pointer;" onclick="this.parentElement.remove(); updateBillTotals();">REMOVE</td>`;
+        tr.innerHTML = `<td>${testObj.n}</td><td>${testObj.p}</td><td style="color:red; cursor:pointer;" onclick="this.parentElement.remove(); updateBillTotals();">×</td>`;
         document.getElementById('billBody').appendChild(tr);
         updateBillTotals();
     }
 
     function updateBillTotals() {
-        let subtotal = 0;
-        document.querySelectorAll('#billBody tr').forEach(tr => { subtotal += parseInt(tr.cells[1].innerText); });
-        const discount = parseInt(document.getElementById('billDiscount').value) || 0;
-        const total = subtotal - discount;
-        document.getElementById('billSubTotal').innerText = subtotal;
-        document.getElementById('billTotal').innerText = total < 0 ? 0 : total;
-        document.getElementById('billWords').innerText = total > 0 ? "Amount in words: " + numberToWords(total) + " Rupees Only" : "";
-    }
-
-    function numberToWords(num) {
-        const a = ['','One ','Two ','Three ','Four ', 'Five ','Six ','Seven ','Eight ','Nine ','Ten ','Eleven ','Twelve ','Thirteen ','Fourteen ','Fifteen ','Sixteen ','Seventeen ','Eighteen ','Nineteen '];
-        const b = ['', '', 'Twenty','Thirty','Forty','Fifty', 'Sixty','Seventy','Eighty','Ninety'];
-        if ((num = num.toString()).length > 9) return 'overflow';
-        let n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
-        if (!n) return; let str = '';
-        str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
-        str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
-        str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
-        str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
-        str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
-        return str.trim();
-    }
-
-    async function handleLabAction(actionType) {
-        const testList = Array.from(document.querySelectorAll('#billBody tr')).map(tr => ({ n: tr.cells[0].innerText, p: tr.cells[1].innerText }));
-        if(testList.length === 0) return alert("Please add tests first!");
-
-        const sub = document.getElementById('billSubTotal').innerText;
-        const disc = document.getElementById('billDiscount').value;
-        const paid = document.getElementById('billTotal').innerText;
-        const dateStamp = new Date().toLocaleString('en-IN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
-
-        const latestP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
-        let history = [];
-        try { history = JSON.parse(latestP.lab_bill || "[]"); } catch(e){}
-        history.push({ date: dateStamp, tests: testList, sub: sub, disc: disc, paid: paid });
-
-        const saveBtn = document.getElementById('saveOnlyBtn');
-        saveBtn.innerText = "RECORDING...";
-        
-        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: "SAVE_LAB_BILL", opd: selectedP.opd_number, lab_bill: JSON.stringify(history) }) });
-
-        if(actionType === 'SAVE_ONLY') {
-            alert("History Recorded!");
-            saveBtn.innerText = "SAVE ONLY";
-            document.getElementById('billBody').innerHTML = "";
-            updateBillTotals();
-            return;
-        }
-        printLabBill(testList, actionType === 'HEADER');
-    }
-
-    function printLabBill(testList, withHeader) {
-        const subtotal = document.getElementById('billSubTotal').innerText;
-        const discount = document.getElementById('billDiscount').value;
-        const total = document.getElementById('billTotal').innerText;
-        const words = document.getElementById('billWords').innerText;
-
-        const headerHTML = withHeader ? `
-            <div class="diag-print-header">
-                <div style="display:flex; align-items:center; width:100%; justify-content:center;">
-                    <img src="logo.jpg" style="width:80px; margin-right:15px;">
-                    <h1 class="diag-hosp-title">SRI RAJA RAJESHWARI DIAGNOSTICS</h1>
-                </div>
-                <div style="font-size:10pt; font-weight:bold; margin-top:5px; color:#1b5e20;">
-                    Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyderabad-500055 | 📞 9201955976
-                </div>
-            </div>` : "";
-        
-        const details = `
-            <div style="border:2.5px solid #000; padding:10px; font-size:13pt; display:grid; grid-template-columns: 1.1fr 0.9fr; font-weight:bold; position:relative; z-index:1;">
-                <div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:18pt; text-transform:uppercase;">${selectedP.name}</span><br>Reff doc: DR.M.JAYACHANDER MBBS,M.D.(GENERAL MEDICINE)</div>
-                <div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}<br>Phone: ${selectedP.phone || ''}</div>
-            </div>`;
-
-        let testRows = testList.map((t, idx) => `<tr><td>${idx+1}</td><td>${t.n}</td><td style="text-align:right;">${t.p}.00</td></tr>`).join('');
-        const spaceClass = withHeader ? "" : "no-header-space";
-
-        const labHTML = `
-            <div class="print-page-wrapper ${spaceClass}">
-                ${headerHTML}${details}
-                <h2 style="text-align:center; text-decoration:underline; margin-top:20px;">LABORATORY INVESTIGATION BILL</h2>
-                <table class="med-table" style="margin-top:20px;">
-                    <thead><tr><th>S.No</th><th>Investigation Name</th><th style="text-align:right;">Price (₹)</th></tr></thead>
-                    <tbody>
-                        ${testRows}
-                        <tr style="background:#f9f9f9 !important;"><td colspan="2" style="text-align:right;">Sub Total:</td><td style="text-align:right;">₹ ${subtotal}.00</td></tr>
-                        <tr style="background:#f9f9f9 !important;"><td colspan="2" style="text-align:right;">Discount:</td><td style="text-align:right;">- ₹ ${discount}.00</td></tr>
-                        <tr style="font-size:14pt; font-weight:900; background:#eee !important;"><td colspan="2" style="text-align:right;">NET PAYABLE:</td><td style="text-align:right;">₹ ${total}.00</td></tr>
-                    </tbody>
-                </table>
-                <p style="margin-top:10px; font-weight:bold; font-size:12pt;">${words}</p>
-                <div style="margin-top:100px; text-align:right; font-weight:bold;">(Authorized Signature)</div>
-            </div>`;
-
-        document.getElementById('printArea').innerHTML = labHTML;
-        window.print();
-        location.reload();
-    }
-
-    function sendWhatsApp(id) {
-        const p = patients.find(pat => String(pat.opd_number) === String(id));
-        if (!p) return;
-        let medText = "";
-        try {
-            const meds = JSON.parse(p.medications || "[]");
-            if (meds.length > 0) {
-                medText = "%0A%0A*PRESCRIPTION:*%0A";
-                meds.forEach((m, i) => { medText += `${i + 1}. ${m.n} -- ${m.d} -- ${m.r} -- (${m.rem})%0A`; });
-            }
-        } catch (e) {}
-        const message = `*SRI RAJA RAJESHWARI HOSPITAL*%0A📞 9201955976%0A*Patient:* ${p.name}%0A*OPD ID:* ${p.opd_number}${medText}`;
-        window.open(`https://wa.me/91${p.phone}?text=${message}`, '_blank');
-    }
-
-    function deletePatient(id) {
-        if(!confirm("⚠️ DELETE " + id + "?")) return;
-        const ifrm = document.createElement('iframe'); ifrm.style.display = 'none'; ifrm.name = 'del_frame'; document.body.appendChild(ifrm);
-        const form = document.createElement('form'); form.method = 'POST'; form.action = API_URL; form.target = 'del_frame';
-        const t = document.createElement('input'); t.name = 'type'; t.value = 'DELETE_PATIENT'; form.appendChild(t);
-        const o = document.createElement('input'); o.name = 'opd'; o.value = id; form.appendChild(o);
-        document.body.appendChild(form); form.submit();
-        alert("Deleted."); setTimeout(() => { location.reload(); }, 1200);
-    }
-    
-    function aggressiveSearch() {
-        const query = document.getElementById('pSearch').value.toUpperCase();
-        document.querySelectorAll("#tbody tr").forEach(row => { row.style.display = row.innerText.toUpperCase().indexOf(query) > -1 ? "" : "none"; });
+        let sub = 0; document.querySelectorAll('#billBody tr').forEach(tr => sub += parseInt(tr.cells[1].innerText));
+        const disc = parseInt(document.getElementById('billDiscount').value) || 0;
+        document.getElementById('billSubTotal').innerText = sub;
+        document.getElementById('billTotal').innerText = (sub - disc);
     }
 
     function openMenu(id) {
@@ -465,66 +347,11 @@
         location.reload();
     }
 
-    function generatePrint(type, withHeaderFooter) {
-        const headerHTML = withHeaderFooter ? `
-            <div class="print-header">
-                <img src="logo.jpg" style="width:70px; margin-right:10px;">
-                <div style="flex:1;">
-                    <h1 class="hosp-title">SRI RAJA RAJESHWARI HOSPITAL</h1>
-                    <p style="font-size:8.5pt; font-weight:bold; margin:2px 0; color:#1b5e20;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyd-500055</p>
-                    <p style="font-size:10pt; font-weight:bold; margin:0;">📞 9201955976</p>
-                </div>
-                <div style="border:2px solid #000; padding:8px; text-align:center; border-radius:8px; min-width:230px; background:#fffde7;">
-                    <div style="font-size:14pt; font-weight:900;">DR. M. JAYACHANDER</div>
-                    <div style="font-size:8.5pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
-                    <div style="font-size:8.5pt; font-weight:900; color:#c62828;">Reg No: TSMC/FMR/43070</div>
-                </div>
-            </div>` : "";
-        
-        const footerHTML = withHeaderFooter ? `
-            <div class="print-footer">
-                <div style="text-align:right; margin-bottom:5px;">
-                    <div style="font-size:15pt; font-weight:900;">DR. M. JAYACHANDER</div>
-                    <div style="font-size:9pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
-                </div>
-                <div class="footer-line"></div>
-                <div class="services-list">మా ప్రత్యేక సేవలు: బిపి, షుగర్ ,గుండె వ్యాధులు కాలేయ వ్యాధులు (జాండీస్), కిడ్నీ సమస్యలు, నరాల వ్యాధులు (పక్షవాతం) ,వైరల్ ఫీవర్, జీర్ణకోశ వ్యాధులు (అల్సర్), ఊపిరితిత్తుల వ్యాధులు, థైరాయిడ్ మరియు ఫిట్స్ చూడబడును.</div>
-                <div class="notes-section"><span class="telugu-note">NOTE: ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తప్పక తీసుకురావలెను</span><br><span style="color:#c62828;">NOTE: NOT VALID FOR MEDICO LEGAL PURPOSE.</span></div>
-                <div style="background:#1565c0 !important; color:white !important; padding:8px; text-align:center; font-weight:bold; font-size:14pt; border-radius:8px; margin-top:5px;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div>
-            </div>` : "";
-
-        const details = `<div style="border:2.5px solid #000; padding:10px; font-size:13pt; display:grid; grid-template-columns: 1.2fr 0.8fr; font-weight:bold; position:relative; z-index:1;"><div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:18pt; text-transform:uppercase;">${selectedP.name}</span><br>Address: ${selectedP.address || ''}</div><div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}<br>Phone: ${selectedP.phone || ''}</div></div><div class="vitals-row"><span>Wt: ${selectedP.weight}kg</span><span>BP: ${selectedP.bp}</span><span>P.R.: ${selectedP.pulse}</span><span>SpO2: ${selectedP.spo2}%</span><span>Temp: ${selectedP.temp}°F</span></div>`;
-
-        const spaceClass = withHeaderFooter ? "" : "no-header-space";
-        let printHTML = `<div class="print-page-wrapper ${spaceClass}">${headerHTML}${details}`;
-        if(type === 'PRESCRIPTION') {
-            const meds = JSON.parse(selectedP.medications || "[]");
-            printHTML += `<h3 style="border-bottom:2px solid #000;">Rx Prescription</h3><table class="med-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${meds.map(m=>`<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody></table><div style="margin-top:10px;"><p><b>Notes:</b> ${selectedP.notes || ''}</p></div>`;
-        }
-        printHTML += `${footerHTML}</div>`;
-        document.getElementById('printArea').innerHTML = printHTML;
-        window.print();
+    function aggressiveSearch() {
+        const q = document.getElementById('pSearch').value.toUpperCase();
+        document.querySelectorAll("#tbody tr").forEach(r => r.style.display = r.innerText.toUpperCase().indexOf(q) > -1 ? "" : "none");
     }
 
-    function openTreat() {
-        document.getElementById('actionModal').style.display = "none";
-        document.getElementById('treatName').innerText = selectedP.name;
-        document.getElementById('treatModal').style.display = "block";
-        ['complaints','investigations','history','notes'].forEach(f => document.getElementById('t_'+f).value = selectedP[f] || "");
-        document.getElementById('medBody').innerHTML = "";
-        try { JSON.parse(selectedP.medications || "[]").forEach(m => addMedRow(m)); } catch(e) { addMedRow(); }
-    }
-    function addMedRow(data = {n:'', d:'', r:'', rem:''}) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td><textarea class="m-name">${data.n}</textarea></td><td><textarea class="m-dur">${data.d}</textarea></td><td><textarea class="m-route">${data.r}</textarea></td><td><textarea class="m-rem">${data.rem}</textarea></td><td style="color:red; cursor:pointer;" onclick="this.parentElement.remove()">×</td>`;
-        document.getElementById('medBody').appendChild(tr);
-    }
-    async function saveTreatment() {
-        const meds = Array.from(document.querySelectorAll('#medBody tr')).map(tr => ({ n: tr.querySelector('.m-name').value, d: tr.querySelector('.m-dur').value, r: tr.querySelector('.m-route').value, rem: tr.querySelector('.m-rem').value })).filter(m => m.n !== "");
-        const data = { type: "SAVE_TREATMENT", opd: selectedP.opd_number, complaints: document.getElementById('t_complaints').value, investigations: document.getElementById('t_investigations').value, history: document.getElementById('t_history').value, medications: JSON.stringify(meds), notes: document.getElementById('t_notes').value };
-        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-        location.reload();
-    }
     window.onload = loadData;
 </script>
 </body>
