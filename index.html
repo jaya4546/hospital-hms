@@ -49,7 +49,7 @@
             .watermark-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.1; z-index: 0; width: 400px; pointer-events: none; }
             .no-header-space { padding-top: 55mm !important; }
             
-            /* Investigation Header Styling */
+            /* Investigation Header Styling - Optimized Full Width */
             .diag-print-header { display: flex; flex-direction: column; align-items: center; text-align: center; border-bottom: 5px solid #1b5e20; padding-bottom: 10px; margin-bottom: 15px; }
             .diag-hosp-title { color: #c62828 !important; margin: 0; font-size: 28pt; font-weight: 900; width: 100%; letter-spacing: 1px; }
             
@@ -207,7 +207,7 @@
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwuHAceOQ9uOA60sIxpfBgpZ1Dv9uNAl9dwh3eMNtXz83hq0v39BSvB-232mru-Cdm-/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbwgVgAuWo3blE8GwOpxLhnV-TI7P3PDUG0M4LBM_lH6tnn91CACk7XH0bLrdUoyt_QC/exec";
     let patients = [], selectedP = null;
 
     let masterTests = [
@@ -279,7 +279,6 @@
     }
 
     function showHistory() {
-        // AGGRESSIVE DATA PULL: Refresh patient list before showing history
         fetch(`${API_URL}?ts=${Date.now()}`)
         .then(res => res.text())
         .then(text => {
@@ -294,15 +293,9 @@
                 if(billData.length === 0) {
                     html = "<div style='text-align:center; padding:30px;'><h3 style='color:red;'>⚠️ NO HISTORY FOUND</h3></div>";
                 } else {
-                    html = "<table style='width:100%; border:2px solid #000; font-size:10pt;'><thead><tr style='background:#ef6c00; color:white;'><th>Date</th><th>Test Names</th><th>Sub</th><th>Disc</th><th>Paid</th></tr></thead><tbody>";
+                    html = "<table style='width:100%; border:2px solid #000; font-size:10pt;'><thead><tr style='background:#ef6c00; color:white;'><th>Date</th><th>Tests</th><th>Sub</th><th>Disc</th><th>Paid</th></tr></thead><tbody>";
                     billData.forEach((entry) => {
-                        html += `<tr style="border-bottom:1px solid #ccc;">
-                            <td><small>${entry.date || '---'}</small></td>
-                            <td>${entry.tests.map(t => t.n).join(', ')}</td>
-                            <td>₹${entry.sub}</td>
-                            <td style="color:red;">-₹${entry.disc}</td>
-                            <td style="color:green;"><b>₹${entry.paid}</b></td>
-                        </tr>`;
+                        html += `<tr style="border-bottom:1px solid #ccc;"><td><small>${entry.date}</small></td><td>${entry.tests.map(t=>t.n).join(', ')}</td><td>₹${entry.sub}</td><td style="color:red;">-₹${entry.disc}</td><td style="color:green;"><b>₹${entry.paid}</b></td></tr>`;
                     });
                     html += "</tbody></table>";
                 }
@@ -315,14 +308,10 @@
     function addTestToBill() {
         const testName = document.getElementById('test_dropdown').value;
         const testObj = masterTests.find(t => t.n === testName);
-        addRowToBillTable(testObj.n, testObj.p);
-        updateBillTotals();
-    }
-
-    function addRowToBillTable(name, price) {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${name}</td><td>${price}</td><td style="color:red; cursor:pointer;" onclick="this.parentElement.remove(); updateBillTotals();">REMOVE</td>`;
+        tr.innerHTML = `<td>${testObj.n}</td><td>${testObj.p}</td><td style="color:red; cursor:pointer;" onclick="this.parentElement.remove(); updateBillTotals();">REMOVE</td>`;
         document.getElementById('billBody').appendChild(tr);
+        updateBillTotals();
     }
 
     function updateBillTotals() {
@@ -350,11 +339,7 @@
     }
 
     async function handleLabAction(actionType) {
-        const testList = Array.from(document.querySelectorAll('#billBody tr')).map(tr => ({
-            n: tr.cells[0].innerText,
-            p: tr.cells[1].innerText
-        }));
-        
+        const testList = Array.from(document.querySelectorAll('#billBody tr')).map(tr => ({ n: tr.cells[0].innerText, p: tr.cells[1].innerText }));
         if(testList.length === 0) return alert("Please add tests first!");
 
         const sub = document.getElementById('billSubTotal').innerText;
@@ -362,26 +347,18 @@
         const paid = document.getElementById('billTotal').innerText;
         const dateStamp = new Date().toLocaleString('en-IN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
 
-        const newBillEntry = { date: dateStamp, tests: testList, sub: sub, disc: disc, paid: paid };
-
-        let latestP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
-        let existingHistory = [];
-        try { existingHistory = JSON.parse(latestP.lab_bill || "[]"); } catch(e){ existingHistory = []; }
-
-        const updatedHistory = [...existingHistory, newBillEntry];
-        const finalizedJSON = JSON.stringify(updatedHistory);
-        
-        let pIndex = patients.findIndex(p => String(p.opd_number) === String(selectedP.opd_number));
-        patients[pIndex].lab_bill = finalizedJSON;
+        const latestP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
+        let history = [];
+        try { history = JSON.parse(latestP.lab_bill || "[]"); } catch(e){}
+        history.push({ date: dateStamp, tests: testList, sub: sub, disc: disc, paid: paid });
 
         const saveBtn = document.getElementById('saveOnlyBtn');
         saveBtn.innerText = "RECORDING...";
         
-        const data = { type: "SAVE_LAB_BILL", opd: selectedP.opd_number, lab_bill: finalizedJSON };
-        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: "SAVE_LAB_BILL", opd: selectedP.opd_number, lab_bill: JSON.stringify(history) }) });
 
         if(actionType === 'SAVE_ONLY') {
-            alert("History Recorded Successfully!");
+            alert("History Recorded!");
             saveBtn.innerText = "SAVE ONLY";
             document.getElementById('billBody').innerHTML = "";
             updateBillTotals();
@@ -396,7 +373,6 @@
         const total = document.getElementById('billTotal').innerText;
         const words = document.getElementById('billWords').innerText;
 
-        // AGGRESSIVE DIAGNOSTICS HEADER (FULL WIDTH, NO DOC BOX)
         const headerHTML = withHeader ? `
             <div class="diag-print-header">
                 <div style="display:flex; align-items:center; width:100%; justify-content:center;">
@@ -449,27 +425,24 @@
                 medText = "%0A%0A*PRESCRIPTION:*%0A";
                 meds.forEach((m, i) => { medText += `${i + 1}. ${m.n} -- ${m.d} -- ${m.r} -- (${m.rem})%0A`; });
             }
-        } catch (e) { medText = ""; }
-        const clinicalNotes = p.notes ? `%0A*Clinical Notes:* ${p.notes}` : "";
-        const message = `*SRI RAJA RAJESHWARI HOSPITAL*%0A📞 9201955976%0A*Patient:* ${p.name}%0A*OPD ID:* ${p.opd_number}${medText}${clinicalNotes}`;
+        } catch (e) {}
+        const message = `*SRI RAJA RAJESHWARI HOSPITAL*%0A📞 9201955976%0A*Patient:* ${p.name}%0A*OPD ID:* ${p.opd_number}${medText}`;
         window.open(`https://wa.me/91${p.phone}?text=${message}`, '_blank');
     }
 
     function deletePatient(id) {
-        if(!confirm("⚠️ PERMANENTLY DELETE " + id + "?")) return;
+        if(!confirm("⚠️ DELETE " + id + "?")) return;
         const ifrm = document.createElement('iframe'); ifrm.style.display = 'none'; ifrm.name = 'del_frame'; document.body.appendChild(ifrm);
         const form = document.createElement('form'); form.method = 'POST'; form.action = API_URL; form.target = 'del_frame';
         const t = document.createElement('input'); t.name = 'type'; t.value = 'DELETE_PATIENT'; form.appendChild(t);
         const o = document.createElement('input'); o.name = 'opd'; o.value = id; form.appendChild(o);
         document.body.appendChild(form); form.submit();
-        alert("DELETION COMMAND SENT."); setTimeout(() => { location.reload(); }, 1200);
+        alert("Deleted."); setTimeout(() => { location.reload(); }, 1200);
     }
     
     function aggressiveSearch() {
         const query = document.getElementById('pSearch').value.toUpperCase();
-        document.querySelectorAll("#tbody tr").forEach(row => {
-            row.style.display = row.innerText.toUpperCase().indexOf(query) > -1 ? "" : "none";
-        });
+        document.querySelectorAll("#tbody tr").forEach(row => { row.style.display = row.innerText.toUpperCase().indexOf(query) > -1 ? "" : "none"; });
     }
 
     function openMenu(id) {
@@ -482,7 +455,7 @@
         document.getElementById('current_opd_id').value = selectedP.opd_number;
         ['name','age','sex','phone','address','weight','bp','spo2','temp'].forEach(f => document.getElementById('p_'+f).value = selectedP[f] || "");
         document.getElementById('p_pr').value = selectedP.pulse || "";
-        document.getElementById('mainActionBtn').innerText = "UPDATE PATIENT DETAILS";
+        document.getElementById('mainActionBtn').innerText = "UPDATE PATIENT";
         document.getElementById('actionModal').style.display = "none";
     }
 
@@ -496,12 +469,12 @@
         const headerHTML = withHeaderFooter ? `
             <div class="print-header">
                 <img src="logo.jpg" style="width:70px; margin-right:10px;">
-                <div style="flex:1; min-width: 0;">
+                <div style="flex:1;">
                     <h1 class="hosp-title">SRI RAJA RAJESHWARI HOSPITAL</h1>
-                    <p style="font-size:8.5pt; font-weight:bold; margin:2px 0; color:#1b5e20; white-space:nowrap; letter-spacing:-0.4px;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyd-500055</p>
+                    <p style="font-size:8.5pt; font-weight:bold; margin:2px 0; color:#1b5e20;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyd-500055</p>
                     <p style="font-size:10pt; font-weight:bold; margin:0;">📞 9201955976</p>
                 </div>
-                <div style="border:2px solid #000; padding:8px; text-align:center; border-radius:8px; min-width:230px; background:#fffde7; flex-shrink:0;">
+                <div style="border:2px solid #000; padding:8px; text-align:center; border-radius:8px; min-width:230px; background:#fffde7;">
                     <div style="font-size:14pt; font-weight:900;">DR. M. JAYACHANDER</div>
                     <div style="font-size:8.5pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
                     <div style="font-size:8.5pt; font-weight:900; color:#c62828;">Reg No: TSMC/FMR/43070</div>
@@ -516,39 +489,19 @@
                 </div>
                 <div class="footer-line"></div>
                 <div class="services-list">మా ప్రత్యేక సేవలు: బిపి, షుగర్ ,గుండె వ్యాధులు కాలేయ వ్యాధులు (జాండీస్), కిడ్నీ సమస్యలు, నరాల వ్యాధులు (పక్షవాతం) ,వైరల్ ఫీవర్, జీర్ణకోశ వ్యాధులు (అల్సర్), ఊపిరితిత్తుల వ్యాధులు, థైరాయిడ్ మరియు ఫిట్స్ చూడబడును.</div>
-                <div class="notes-section">
-                    <span class="telugu-note">NOTE: ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తప్పక తీసుకురావలెను</span><br>
-                    <span style="color:#c62828;">NOTE: NOT VALID FOR MEDICO LEGAL PURPOSE.</span>
-                </div>
+                <div class="notes-section"><span class="telugu-note">NOTE: ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తప్పక తీసుకురావలెను</span><br><span style="color:#c62828;">NOTE: NOT VALID FOR MEDICO LEGAL PURPOSE.</span></div>
                 <div style="background:#1565c0 !important; color:white !important; padding:8px; text-align:center; font-weight:bold; font-size:14pt; border-radius:8px; margin-top:5px;">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div>
             </div>` : "";
 
-        const watermarkHTML = withHeaderFooter ? `<div class="watermark-container"><img src="logo.jpg" style="width:100%;"></div>` : "";
+        const details = `<div style="border:2.5px solid #000; padding:10px; font-size:13pt; display:grid; grid-template-columns: 1.2fr 0.8fr; font-weight:bold; position:relative; z-index:1;"><div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:18pt; text-transform:uppercase;">${selectedP.name}</span><br>Address: ${selectedP.address || ''}</div><div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}<br>Phone: ${selectedP.phone || ''}</div></div><div class="vitals-row"><span>Wt: ${selectedP.weight}kg</span><span>BP: ${selectedP.bp}</span><span>P.R.: ${selectedP.pulse}</span><span>SpO2: ${selectedP.spo2}%</span><span>Temp: ${selectedP.temp}°F</span></div>`;
 
-        const details = `
-            <div style="border:2.5px solid #000; padding:10px; font-size:13pt; display:grid; grid-template-columns: 1.2fr 0.8fr; font-weight:bold; position:relative; z-index:1;">
-                <div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:18pt; text-transform:uppercase;">${selectedP.name}</span><br>Address: ${selectedP.address || ''}</div>
-                <div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}<br>Phone: ${selectedP.phone || ''}</div>
-            </div>
-            <div class="vitals-row">
-                <span>Wt: ${selectedP.weight}kg</span><span>BP: ${selectedP.bp}</span><span>P.R.: ${selectedP.pulse}</span><span>SpO2: ${selectedP.spo2}%</span><span>Temp: ${selectedP.temp}°F</span>
-            </div>`;
-
-        let printHTML = "";
         const spaceClass = withHeaderFooter ? "" : "no-header-space";
-
-        if(type === 'REGISTRATION') {
-            printHTML = `<div class="print-page-wrapper ${spaceClass}">${watermarkHTML}${headerHTML}${details}${footerHTML}</div>`;
-        } else {
+        let printHTML = `<div class="print-page-wrapper ${spaceClass}">${headerHTML}${details}`;
+        if(type === 'PRESCRIPTION') {
             const meds = JSON.parse(selectedP.medications || "[]");
-            const chunkSize = 6;
-            for (let i = 0; i < meds.length || i === 0; i += chunkSize) {
-                const chunk = meds.slice(i, i + chunkSize);
-                let medRows = chunk.map(m => `<tr><td>${m.n}</td><td style="text-align:center;">${m.d}</td><td style="text-align:center;">${m.r}</td><td>${m.rem}</td></tr>`).join('');
-                let clinicalInfo = i === 0 ? `<div style="position:relative; z-index:1; margin-top:10px;"><p><b>Chief Complaints:</b> ${selectedP.complaints || ''}</p><p><b>Past History:</b> ${selectedP.history || ''}</p><p><b>Advice Investigations:</b> ${selectedP.investigations || ''}</p></div>` : "";
-                printHTML += `<div class="print-page-wrapper ${spaceClass}">${watermarkHTML}${headerHTML}${details}${clinicalInfo}<h3 style="border-bottom:2px solid #000; margin-top:10px; position:relative; z-index:1;">Rx Prescription ${meds.length > chunkSize ? `(Page ${Math.floor(i/chunkSize)+1})` : ''}</h3><table class="med-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${medRows}</tbody></table>${i + chunkSize >= meds.length ? `<div style="margin-top:15px; position:relative; z-index:1;"><p><b>Clinical Notes:</b> ${selectedP.notes || ''}</p></div>` : ''}${footerHTML}</div>`;
-            }
+            printHTML += `<h3 style="border-bottom:2px solid #000;">Rx Prescription</h3><table class="med-table"><thead><tr><th>Drug Name</th><th>Dur</th><th>Route</th><th>Remarks</th></tr></thead><tbody>${meds.map(m=>`<tr><td>${m.n}</td><td>${m.d}</td><td>${m.r}</td><td>${m.rem}</td></tr>`).join('')}</tbody></table><div style="margin-top:10px;"><p><b>Notes:</b> ${selectedP.notes || ''}</p></div>`;
         }
+        printHTML += `${footerHTML}</div>`;
         document.getElementById('printArea').innerHTML = printHTML;
         window.print();
     }
