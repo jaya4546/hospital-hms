@@ -74,7 +74,7 @@
         }
     </style>
 </head>
-<body onload="loadData()">
+<body>
 
 <div class="container">
     <div class="header">
@@ -174,8 +174,8 @@
 <div id="otpModal" class="modal">
     <div class="modal-content" style="max-width: 400px; text-align: center;">
         <h2 style="color:var(--accent);">🔒 SECURE ACCESS</h2>
-        <p>A verification code has been sent to WhatsApp:<br><b>7758864462</b></p>
-        <input type="number" id="otpInput" placeholder="Enter Code" style="text-align:center; font-size:20pt; border: 3px solid var(--primary);">
+        <p>A verification code has been sent to:<br><b>7758864462</b></p>
+        <input type="number" id="otpInput" placeholder="Enter OTP" style="text-align:center; font-size:20pt; border: 3px solid var(--primary);">
         <button class="btn btn-reg" onclick="verifyOTP()">VALIDATE ACCESS</button>
         <button class="btn" style="background:#444; color:white; width:100%; margin-top:10px;" onclick="document.getElementById('otpModal').style.display='none'">CANCEL</button>
     </div>
@@ -222,7 +222,7 @@
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzw3-jzxrJwhvC1yYibbTNsL6TRBcv_MUC5nv285Uck9QOPBecMvAm_SobxcLjpZF5C/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbxMImu6CwCPeUiX4xpff5qnBnzt_3QZT0TqCriQXFE_1H5QxASwQdGhw7L26uP1M_qw/exec";
     let patients = [], selectedP = null, generatedOTP = null;
 
     let masterTests = [
@@ -267,25 +267,15 @@
         document.getElementById('tbody').innerHTML = html;
     }
 
-    // UPDATED FUNCTION: Sends OTP directly to 7758864462 via WhatsApp
     function requestOTP() {
-        // 1. Generate 6-digit Code
         generatedOTP = Math.floor(100000 + Math.random() * 900000);
-        
-        // 2. Prepare WhatsApp Link for the Target Number
-        const targetNumber = "917758864462";
-        const message = encodeURIComponent("SRR HOSPITAL SECURE ACCESS\nVerification Code: " + generatedOTP);
-        const whatsappUrl = "https://wa.me/" + targetNumber + "?text=" + message;
-
-        // 3. Open WhatsApp in new tab and show validation modal
-        window.open(whatsappUrl, '_blank');
+        alert("🔒 SECURE CODE: " + generatedOTP);
         document.getElementById('otpModal').style.display = 'block';
     }
 
     function verifyOTP() {
         if(document.getElementById('otpInput').value == generatedOTP) {
             document.getElementById('otpModal').style.display = 'none';
-            document.getElementById('otpInput').value = ""; 
             showHistory();
         } else {
             alert("❌ INVALID CODE!");
@@ -386,6 +376,7 @@
         let history = JSON.parse(latestP.lab_bill || "[]");
         let entry = history[idx];
         
+        // Temporarily set totals for print function
         document.getElementById('billSubTotal').innerText = entry.sub;
         document.getElementById('billDiscount').value = entry.disc;
         document.getElementById('billTotal').innerText = entry.paid;
@@ -501,8 +492,60 @@
 
         document.getElementById('printArea').innerHTML = labHTML;
         window.print();
+        location.reload();
     }
-</script>
 
+    function sendWhatsApp(id) {
+        const p = patients.find(pat => String(pat.opd_number) === String(id));
+        if (!p) return;
+        let medText = "";
+        try {
+            const meds = JSON.parse(p.medications || "[]");
+            if (meds.length > 0) {
+                medText = "%0A%0A*PRESCRIPTION:*%0A";
+                meds.forEach((m, i) => { medText += `${i + 1}. ${m.n} -- ${m.d} -- ${m.r} -- (${m.rem})%0A`; });
+            }
+        } catch (e) {}
+        const message = `*SRI RAJA RAJESHWARI HOSPITAL*%0A📞 9201955976%0A*Patient:* ${p.name}%0A*OPD ID:* ${p.opd_number}${medText}`;
+        window.open(`https://wa.me/91${p.phone}?text=${message}`, '_blank');
+    }
+
+    function deletePatient(id) {
+        if(!confirm("⚠️ DELETE " + id + "?")) return;
+        const ifrm = document.createElement('iframe'); ifrm.style.display = 'none'; ifrm.name = 'del_frame'; document.body.appendChild(ifrm);
+        const form = document.createElement('form'); form.method = 'POST'; form.action = API_URL; form.target = 'del_frame';
+        const t = document.createElement('input'); t.name = 'type'; t.value = 'DELETE_PATIENT'; form.appendChild(t);
+        const o = document.createElement('input'); o.name = 'opd'; o.value = id; form.appendChild(o);
+        document.body.appendChild(form); form.submit();
+        alert("Deleted."); setTimeout(() => { location.reload(); }, 1200);
+    }
+    
+    function aggressiveSearch() {
+        const query = document.getElementById('pSearch').value.toUpperCase();
+        document.querySelectorAll("#tbody tr").forEach(row => { row.style.display = row.innerText.toUpperCase().indexOf(query) > -1 ? "" : "none"; });
+    }
+
+    function openMenu(id) {
+        selectedP = patients.find(p => String(p.opd_number) === String(id));
+        document.getElementById('menuPatientName').innerText = selectedP.name;
+        document.getElementById('actionModal').style.display = "block";
+    }
+
+    function openEdit() {
+        document.getElementById('current_opd_id').value = selectedP.opd_number;
+        ['name','age','sex','phone','address','weight','bp','spo2','temp'].forEach(f => document.getElementById('p_'+f).value = selectedP[f] || "");
+        document.getElementById('p_pr').value = selectedP.pulse || "";
+        document.getElementById('mainActionBtn').innerText = "UPDATE PATIENT";
+        document.getElementById('actionModal').style.display = "none";
+    }
+
+    async function savePatient() {
+        const data = { type: "REGISTRATION", opd: document.getElementById('current_opd_id').value || "SRR-"+Date.now().toString().slice(-4), name: document.getElementById('p_name').value, age: document.getElementById('p_age').value, sex: document.getElementById('p_sex').value, phone: document.getElementById('p_phone').value, address: document.getElementById('p_address').value, weight: document.getElementById('p_weight').value, bp: document.getElementById('p_bp').value, pulse: document.getElementById('p_pr').value, spo2: document.getElementById('p_spo2').value, temp: document.getElementById('p_temp').value };
+        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+        location.reload();
+    }
+
+    window.onload = loadData;
+</script>
 </body>
 </html>
