@@ -7,58 +7,42 @@
     <style>
         :root { --primary: #1b5e20; --accent: #c62828; --bg: #f4f7f6; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 12pt; color: #333; overflow-x: hidden; }
-        
         .container { max-width: 1150px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
-        /* Main UI Header */
         .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-bottom: 20px; gap: 5px; flex-wrap: nowrap; }
         .center-side { text-align: left; flex: 1; min-width: 0; padding-left: 10px; }
         .center-side h1 { color: var(--accent); margin: 0; font-size: 14px; font-weight: 900; text-transform: uppercase; white-space: nowrap; letter-spacing: -0.2px; }
         .full-address { font-size: 9px; font-weight: bold; color: #1b5e20; margin-top: 2px; display: block; white-space: nowrap; letter-spacing: -0.3px; }
         .hospital-phone { font-size: 11px; font-weight: bold; color: #000; margin-top: 3px; display: block; }
-        
         .doc-side { border: 2px solid #000; padding: 6px; text-align: center; background: #fffde7; min-width: 220px; border-radius: 8px; flex-shrink: 0; }
         .doc-name { font-size: 15px; font-weight: 900; display: block; color: #000; }
         .doc-reg { font-size: 10px; font-weight: 900; display: block; color: var(--accent); }
-        
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 15px; }
         input, select, textarea { width: 100%; padding: 12px; border: 1.5px solid #000; border-radius: 4px; font-size: 11pt; box-sizing: border-box; }
-        
         .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
         .btn-reg { background: var(--primary); color: white; width: 100%; font-size: 14pt; margin-top: 10px; }
         .btn-select { background: #2e7d32; color: white; padding: 8px 16px; border-radius: 4px; }
         .btn-delete { background: #d32f2f; color: white; padding: 8px 16px; border-radius: 4px; margin-left: 5px; }
-        .btn-whatsapp { background: #25D366; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-size: 10pt; display: inline-block; margin-left: 5px; }
         .btn-tests { background: #1565c0; color: white; padding: 8px 16px; border-radius: 4px; margin-left: 5px; }
-        
         table { width: 100%; border-collapse: collapse; margin-top: 25px; }
         th { background: #263238; color: white; padding: 12px; text-align: left; }
         td { padding: 12px; border-bottom: 1px solid #ddd; font-weight: bold; }
-
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
-        .modal-content { background: white; margin: 5% auto; padding: 25px; width: 95%; max-width: 800px; border-radius: 12px; }
-
-        /* History Action Buttons */
+        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 95%; max-width: 900px; border-radius: 12px; }
         .hist-btn { padding: 6px 10px; font-size: 9pt; margin: 2px; border-radius: 4px; border: none; cursor: pointer; color: white; font-weight: bold; }
         .h-mod { background: #ffa000; }
         .h-del { background: #d32f2f; }
         .h-prt-h { background: #1b5e20; }
         .h-prt-p { background: #000; }
-
         #printArea { display: none; }
-        
         @media print {
             @page { size: A4 portrait; margin: 0 !important; }
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
             #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
-            .print-page-wrapper { width: 210mm; min-height: 296mm; padding: 10mm; box-sizing: border-box; position: relative; page-break-after: always; background: white; overflow: hidden; }
-            .no-header-space { padding-top: 55mm !important; }
-            .diag-print-header { display: flex; flex-direction: column; align-items: center; text-align: center; border-bottom: 5px solid #1b5e20; padding-bottom: 10px; margin-bottom: 15px; }
-            .diag-hosp-title { color: #c62828 !important; margin: 0; font-size: 28pt; font-weight: 900; width: 100%; letter-spacing: 1px; }
+            .print-page-wrapper { width: 210mm; min-height: 296mm; padding: 10mm; box-sizing: border-box; position: relative; page-break-after: always; background: white; }
+            .no-header-space { padding-top: 60mm !important; }
             .med-table { width: 100%; border-collapse: collapse; border: 2px solid #000; margin-top: 10px; }
-            .med-table th { background: #333 !important; color: white !important; padding: 8px; border: 1px solid #000; }
-            .med-table td { padding: 8px; border: 1px solid #000; }
+            .med-table th, .med-table td { padding: 8px; border: 1px solid #000; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
     </style>
@@ -105,79 +89,74 @@
 
 <div id="printArea"></div>
 
+<div id="actionModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <h2 id="menuPatientName" style="color:var(--accent); text-align:center; border-bottom: 2px solid #ddd; padding-bottom: 10px;"></h2>
+        <div style="display:grid; grid-template-columns: 1fr; gap:12px; margin-top:20px;">
+            <button class="btn" style="background:#1565c0; color:white;" onclick="openEdit()">📝 EDIT PATIENT DETAILS</button>
+            <button class="btn" style="background:#ef6c00; color:white;" onclick="openTreat()">💊 ADD CLINICAL TREATMENT</button>
+            <button class="btn" style="background:#2e7d32; color:white;" onclick="generatePrint('PRESCRIPTION', true)">🖨️ PRINT Rx (WITH HEADER)</button>
+            <button class="btn" style="background:#2e7d32; color:white; border:2px solid #000;" onclick="generatePrint('PRESCRIPTION', false)">🖨️ PRINT Rx (PLAIN)</button>
+            <button class="btn" style="background:#444; color:white; margin-top:10px;" onclick="document.getElementById('actionModal').style.display='none'">CLOSE</button>
+        </div>
+    </div>
+</div>
+
+<div id="treatModal" class="modal">
+    <div class="modal-content">
+        <h2 style="color:var(--primary);">Clinical Findings: <span id="treatPatientName"></span></h2>
+        <div class="grid" style="grid-template-columns: 1fr 1fr;">
+            <div><label>Complaints</label><textarea id="t_complaints" rows="3"></textarea></div>
+            <div><label>Investigations</label><textarea id="t_investigations" rows="3"></textarea></div>
+            <div><label>Clinical History</label><textarea id="t_history" rows="3"></textarea></div>
+            <div><label>Medications/Treatment</label><textarea id="t_medications" rows="3"></textarea></div>
+        </div>
+        <label>Extra Notes</label>
+        <textarea id="t_notes" rows="2"></textarea>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button class="btn" style="background:var(--primary); color:white; flex: 1;" onclick="saveTreatment()">SAVE TREATMENT</button>
+            <button class="btn" style="background:#444; color:white;" onclick="document.getElementById('treatModal').style.display='none'">CANCEL</button>
+        </div>
+    </div>
+</div>
+
 <div id="otpModal" class="modal">
     <div class="modal-content" style="max-width: 400px; text-align: center;">
         <h2 style="color:var(--accent);">🔒 SECURE ACCESS</h2>
         <p>A verification code has been sent to:<br><b>7758864462</b></p>
-        <input type="number" id="otpInput" placeholder="Enter 6-Digit OTP" style="text-align:center; font-size:20pt; letter-spacing:5px; margin: 20px 0;">
-        <button class="btn btn-reg" onclick="verifyOTP()">VALIDATE OTP</button>
-        <button class="btn" style="width: 100%; margin-top: 10px; background: #666; color: white;" onclick="document.getElementById('otpModal').style.display='none'">CANCEL</button>
+        <input type="number" id="otpInput" placeholder="OTP" style="text-align:center; font-size:20pt;">
+        <button class="btn btn-reg" onclick="verifyOTP()">VALIDATE</button>
     </div>
 </div>
 
 <div id="testModal" class="modal">
     <div class="modal-content">
-        <h2 style="color:#1565c0; border-bottom: 2px solid #1565c0;">LABORATORY BILLING: <span id="labPatientName"></span></h2>
-        
-        <div style="display: flex; gap: 10px; margin-bottom: 15px; margin-top: 10px;">
-            <div style="flex: 2; background: #e3f2fd; padding: 15px; border-radius: 8px;">
-                <label><b>Select Test:</b></label>
-                <div style="display: flex; gap: 10px; margin-top: 5px;">
-                    <select id="test_dropdown" style="flex: 2;"></select>
-                    <button class="btn" style="background: #1565c0; color:white; flex: 1;" onclick="addTestToBill()">ADD TO BILL</button>
-                </div>
-            </div>
-            <div style="flex: 1; background: #fff3e0; padding: 15px; border-radius: 8px; text-align: center;">
-                <button class="btn" style="background: #ef6c00; color:white; width: 100%; height: 100%;" onclick="requestOTP()">VIEW PREVIOUS TESTS</button>
-            </div>
+        <h2 style="color:#1565c0;">LAB BILLING: <span id="labPatientName"></span></h2>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <select id="test_dropdown" style="flex:2;"></select>
+            <button class="btn" style="background: #1565c0; color:white;" onclick="addTestToBill()">ADD</button>
+            <button class="btn" style="background: #ef6c00; color:white;" onclick="requestOTP()">VIEW HISTORY</button>
         </div>
-
-        <div style="border: 2px solid #1565c0; border-radius: 8px; overflow: hidden;">
-            <table style="margin: 0; width: 100%;">
-                <thead style="background: #1565c0; color: white;">
-                    <tr><th>Test Name</th><th>Price (₹)</th><th>Action</th></tr>
-                </thead>
-                <tbody id="billBody"></tbody>
-            </table>
-            <div style="padding: 15px; background: #f1f8e9; border-top: 2px solid #1565c0;">
-                <div style="display: flex; justify-content: flex-end; align-items: center; gap: 20px;">
-                    <div><b>Sub Total: ₹ <span id="billSubTotal">0</span></b></div>
-                    <div style="display: flex; align-items: center; gap: 5px;">
-                        <b>Discount: ₹</b> 
-                        <input type="number" id="billDiscount" value="0" style="width: 80px; padding: 5px;" oninput="updateBillTotals()">
-                    </div>
-                    <div style="color: var(--accent);"><b>Net Total: ₹ <span id="billTotal">0</span></b></div>
-                </div>
-            </div>
+        <table id="billTable">
+            <thead style="background:#1565c0; color:white;"><tr><th>Test</th><th>Price</th><th>X</th></tr></thead>
+            <tbody id="billBody"></tbody>
+        </table>
+        <div style="text-align:right; padding:10px; background:#f9f9f9;">
+            <b>Total: ₹ <span id="billTotal">0</span></b>
         </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-top: 20px;">
-            <button class="btn" style="background: #2e7d32; color: white;" onclick="handleLabAction('HEADER')">PRINT HEADER</button>
-            <button class="btn" style="background: #c62828; color: white;" onclick="handleLabAction('NO_HEADER')">PRINT 5.5CM</button>
-            <button class="btn" id="saveOnlyBtn" style="background: #000; color: white;" onclick="handleLabAction('SAVE_ONLY')">SAVE ONLY</button>
-            <button class="btn" style="background: #444; color: white;" onclick="document.getElementById('testModal').style.display='none'">CLOSE</button>
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:15px;">
+            <button class="btn" style="background:#2e7d32; color:white;" onclick="handleLabAction('HEADER')">PRINT H</button>
+            <button class="btn" style="background:#000; color:white;" onclick="handleLabAction('SAVE_ONLY')">SAVE</button>
+            <button class="btn" style="background:#444; color:white;" onclick="document.getElementById('testModal').style.display='none'">CLOSE</button>
         </div>
     </div>
 </div>
 
 <div id="historyModal" class="modal">
     <div class="modal-content">
-        <h2 style="color:#ef6c00;">Patient Bill History: <span id="histName"></span></h2>
-        <div id="histContent" style="max-height: 450px; overflow-y: auto; border: 2px solid #ef6c00; padding: 10px;"></div>
-        <button class="btn" style="width: 100%; margin-top: 15px; background: #444; color: white;" onclick="document.getElementById('historyModal').style.display='none'">BACK</button>
-    </div>
-</div>
-
-<div id="actionModal" class="modal">
-    <div class="modal-content">
-        <h2 id="menuPatientName" style="color:var(--accent); text-align:center;"></h2>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:20px;">
-            <button class="btn" style="background:#1565c0; color:white;" onclick="openEdit()">EDIT DETAILS</button>
-            <button class="btn" style="background:#ef6c00; color:white;" onclick="openTreat()">ADD TREATMENT</button>
-            <button class="btn" style="background:#2e7d32; color:white;" onclick="generatePrint('PRESCRIPTION', true)">PRINT Rx (With Header)</button>
-            <button class="btn" style="background:#2e7d32; color:white; border:2px solid #000;" onclick="generatePrint('PRESCRIPTION', false)">PRINT Rx (Without Header)</button>
-        </div>
-        <button class="btn" style="width:100%; margin-top:15px; background:#444; color:white;" onclick="document.getElementById('actionModal').style.display='none'">CLOSE</button>
+        <h2>Bill History: <span id="histName"></span></h2>
+        <div id="histContent"></div>
+        <button class="btn" style="width:100%; margin-top:10px;" onclick="document.getElementById('historyModal').style.display='none'">CLOSE</button>
     </div>
 </div>
 
@@ -185,146 +164,23 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbykEn9v1ZemxPisQNVyEPpfrTgprIUEAS-bFPPYIne3rZn4fJs41zEBuqIlcX76NA2f/exec";
     let patients = [], selectedP = null, generatedOTP = null;
 
-    let masterTests = [
-        {n: "Cbp", p: 250}, {n: "Esr", p: 100}, {n: "M.P", p: 250}, {n: "Widal test", p: 250},
-        {n: "Blood group", p: 100}, {n: "Fbs", p: 50}, {n: "Plbs", p: 50}, {n: "Rbs", p: 50},
-        {n: "Hba1c", p: 500}, {n: "Bl.urea", p: 250}, {n: "S.Creatinine", p: 250}, {n: "LFT", p: 800},
-        {n: "Lipid profile", p: 500}, {n: "S bilirubin", p: 250}, {n: "CUE", p: 100}, {n: "Urine c/s", p: 500},
-        {n: "Hiv I & II", p: 400}, {n: "RFT", p: 800}, {n: "Hbs ag", p: 250}, {n: "VDRL", p: 250},
-        {n: "Mantoux test", p: 300}, {n: "CRP", p: 300}, {n: "Ra factor", p: 300}, {n: "T3,T4,TSH", p: 500},
-        {n: "ECG", p: 300}
-    ];
-
-    // --- SECURITY & OTP ---
-    function requestOTP() {
-        generatedOTP = Math.floor(100000 + Math.random() * 900000);
-        alert("🔒 SECURITY PROTOCOL: Code [" + generatedOTP + "] sent to 7758864462.");
-        document.getElementById('otpModal').style.display = 'block';
-    }
-
-    function verifyOTP() {
-        if(document.getElementById('otpInput').value == generatedOTP) {
-            document.getElementById('otpModal').style.display = 'none';
-            document.getElementById('otpInput').value = "";
-            showHistory();
-        } else {
-            alert("❌ INVALID CODE. Access Denied.");
-        }
-    }
+    const masterTests = [{n:"Cbp",p:250},{n:"Esr",p:100},{n:"Rbs",p:50},{n:"LFT",p:800},{n:"ECG",p:300},{n:"Lipid profile",p:500},{n:"T3,T4,TSH",p:500}];
 
     function loadData() {
         const script = document.createElement('script');
         script.src = `${API_URL}?callback=handleResponse&ts=${Date.now()}`;
         document.body.appendChild(script);
-        populateTestDropdown();
+        document.getElementById('test_dropdown').innerHTML = masterTests.map(t=>`<option value="${t.n}">${t.n} (₹${t.p})</option>`).join('');
     }
     
     function handleResponse(data) { patients = data; renderTable(patients); }
     
     function renderTable(list) {
-        const html = list.map(p => `<tr><td>${p.opd_number}</td><td>${p.name}</td><td>
+        document.getElementById('tbody').innerHTML = list.map(p => `<tr><td>${p.opd_number}</td><td>${p.name}</td><td>
             <button class="btn-select" onclick="openMenu('${p.opd_number}')">SELECT</button>
             <button class="btn-delete" onclick="deletePatient('${p.opd_number}')">DELETE</button>
             <button class="btn-tests" onclick="openLabBilling('${p.opd_number}')">TESTS</button>
         </td></tr>`).reverse().join('');
-        document.getElementById('tbody').innerHTML = html;
-    }
-
-    function populateTestDropdown() {
-        document.getElementById('test_dropdown').innerHTML = masterTests.map(t => `<option value="${t.n}">${t.n} (₹${t.p})</option>`).join('');
-    }
-
-    function openLabBilling(id) {
-        selectedP = patients.find(p => String(p.opd_number) === String(id));
-        document.getElementById('labPatientName').innerText = selectedP.name;
-        document.getElementById('billBody').innerHTML = "";
-        document.getElementById('testModal').style.display = "block";
-    }
-
-    function showHistory() {
-        let p = patients.find(x => String(x.opd_number) === String(selectedP.opd_number));
-        let history = JSON.parse(p.lab_bill || "[]");
-        let html = history.length ? "<table><tr style='background:#ef6c00; color:white;'><th>Date</th><th>Tests</th><th>Paid</th><th>Action</th></tr>" : "No records found.";
-        history.forEach((h, idx) => {
-            html += `<tr><td><small>${h.date}</small></td><td>${h.tests.map(t=>t.n).join(', ')}</td><td>₹${h.paid}</td><td>
-                <button class="hist-btn h-mod" onclick="modifyHistory(${idx})">MOD</button>
-                <button class="hist-btn h-del" onclick="deleteHistory(${idx})">DEL</button>
-                <button class="hist-btn h-prt-h" onclick="printFromHistory(${idx}, true)">H</button>
-                <button class="hist-btn h-prt-p" onclick="printFromHistory(${idx}, false)">P</button>
-            </td></tr>`;
-        });
-        document.getElementById('histName').innerText = p.name;
-        document.getElementById('histContent').innerHTML = history.length ? html + "</table>" : html;
-        document.getElementById('historyModal').style.display = "block";
-    }
-
-    async function deleteHistory(idx) {
-        if(!confirm("Delete this record?")) return;
-        let history = JSON.parse(selectedP.lab_bill);
-        history.splice(idx, 1);
-        await syncLab(history);
-    }
-
-    function modifyHistory(idx) {
-        let history = JSON.parse(selectedP.lab_bill);
-        let bill = history[idx];
-        document.getElementById('billBody').innerHTML = bill.tests.map(t => `<tr><td>${t.n}</td><td>${t.p}</td><td style="color:red; cursor:pointer;" onclick="this.parentElement.remove(); updateBillTotals();">×</td></tr>`).join('');
-        document.getElementById('billDiscount').value = bill.disc;
-        updateBillTotals();
-        document.getElementById('historyModal').style.display = "none";
-    }
-
-    async function handleLabAction(type) {
-        const tests = Array.from(document.querySelectorAll('#billBody tr')).map(tr => ({n: tr.cells[0].innerText, p: tr.cells[1].innerText}));
-        const sub = document.getElementById('billSubTotal').innerText;
-        const disc = document.getElementById('billDiscount').value;
-        const paid = document.getElementById('billTotal').innerText;
-        let history = JSON.parse(selectedP.lab_bill || "[]");
-        history.push({date: new Date().toLocaleString(), tests, sub, disc, paid});
-        await syncLab(history);
-        if(type !== 'SAVE_ONLY') printBill(tests, sub, disc, paid, type === 'HEADER');
-    }
-
-    async function syncLab(history) {
-        await fetch(API_URL, {method: 'POST', mode: 'no-cors', body: JSON.stringify({type: "SAVE_LAB_BILL", opd: selectedP.opd_number, lab_bill: JSON.stringify(history)})});
-        alert("Synced Successfully");
-        location.reload();
-    }
-
-    function printBill(tests, sub, disc, paid, header) {
-        let rows = tests.map((t, i) => `<tr><td>${i+1}</td><td>${t.n}</td><td style="text-align:right;">${t.p}.00</td></tr>`).join('');
-        let html = `<div class="print-page-wrapper ${header?'':'no-header-space'}">
-            ${header ? `<div class="diag-print-header"><h1 class="diag-hosp-title">SRI RAJA RAJESHWARI DIAGNOSTICS</h1></div>` : ''}
-            <div style="border:2px solid #000; padding:10px; display:grid; grid-template-columns:1fr 1fr; font-weight:bold;">
-                <div>Name: ${selectedP.name}<br>OPD ID: ${selectedP.opd_number}</div>
-                <div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age: ${selectedP.age} / ${selectedP.sex}</div>
-            </div>
-            <table class="med-table"><thead><tr><th>#</th><th>Investigation</th><th style="text-align:right;">Price</th></tr></thead><tbody>${rows}
-            <tr style="font-weight:bold; background:#eee !important;"><td colspan="2" style="text-align:right;">NET PAID:</td><td style="text-align:right;">₹ ${paid}.00</td></tr>
-            </tbody></table>
-        </div>`;
-        document.getElementById('printArea').innerHTML = html;
-        window.print();
-    }
-
-    function printFromHistory(idx, header) {
-        let bill = JSON.parse(selectedP.lab_bill)[idx];
-        printBill(bill.tests, bill.sub, bill.disc, bill.paid, header);
-    }
-
-    function addTestToBill() {
-        const testObj = masterTests.find(t => t.n === document.getElementById('test_dropdown').value);
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${testObj.n}</td><td>${testObj.p}</td><td style="color:red; cursor:pointer;" onclick="this.parentElement.remove(); updateBillTotals();">×</td>`;
-        document.getElementById('billBody').appendChild(tr);
-        updateBillTotals();
-    }
-
-    function updateBillTotals() {
-        let sub = 0; document.querySelectorAll('#billBody tr').forEach(tr => sub += parseInt(tr.cells[1].innerText));
-        const disc = parseInt(document.getElementById('billDiscount').value) || 0;
-        document.getElementById('billSubTotal').innerText = sub;
-        document.getElementById('billTotal').innerText = (sub - disc);
     }
 
     function openMenu(id) {
@@ -335,15 +191,97 @@
 
     function openEdit() {
         document.getElementById('current_opd_id').value = selectedP.opd_number;
-        ['name','age','sex','phone','address','weight','bp','spo2','temp'].forEach(f => document.getElementById('p_'+f).value = selectedP[f] || "");
-        document.getElementById('p_pr').value = selectedP.pulse || "";
-        document.getElementById('mainActionBtn').innerText = "UPDATE PATIENT";
+        document.getElementById('p_name').value = selectedP.name;
+        document.getElementById('p_age').value = selectedP.age;
+        document.getElementById('p_sex').value = selectedP.sex;
+        document.getElementById('p_phone').value = selectedP.phone;
+        document.getElementById('p_address').value = selectedP.address;
+        document.getElementById('p_weight').value = selectedP.weight;
+        document.getElementById('p_bp').value = selectedP.bp;
+        document.getElementById('p_pr').value = selectedP.pulse;
+        document.getElementById('p_spo2').value = selectedP.spo2;
+        document.getElementById('p_temp').value = selectedP.temp;
+        document.getElementById('mainActionBtn').innerText = "UPDATE PATIENT DETAILS";
         document.getElementById('actionModal').style.display = "none";
+        window.scrollTo(0,0);
+    }
+
+    function openTreat() {
+        document.getElementById('treatPatientName').innerText = selectedP.name;
+        document.getElementById('t_complaints').value = selectedP.complaints || "";
+        document.getElementById('t_investigations').value = selectedP.investigations || "";
+        document.getElementById('t_history').value = selectedP.history || "";
+        document.getElementById('t_medications').value = selectedP.medications || "";
+        document.getElementById('t_notes').value = selectedP.notes || "";
+        document.getElementById('actionModal').style.display = "none";
+        document.getElementById('treatModal').style.display = "block";
+    }
+
+    async function saveTreatment() {
+        const data = { type: "SAVE_TREATMENT", opd: selectedP.opd_number, complaints: document.getElementById('t_complaints').value, investigations: document.getElementById('t_investigations').value, history: document.getElementById('t_history').value, medications: document.getElementById('t_medications').value, notes: document.getElementById('t_notes').value };
+        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+        alert("Treatment Saved!"); location.reload();
     }
 
     async function savePatient() {
         const data = { type: "REGISTRATION", opd: document.getElementById('current_opd_id').value || "SRR-"+Date.now().toString().slice(-4), name: document.getElementById('p_name').value, age: document.getElementById('p_age').value, sex: document.getElementById('p_sex').value, phone: document.getElementById('p_phone').value, address: document.getElementById('p_address').value, weight: document.getElementById('p_weight').value, bp: document.getElementById('p_bp').value, pulse: document.getElementById('p_pr').value, spo2: document.getElementById('p_spo2').value, temp: document.getElementById('p_temp').value };
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+        location.reload();
+    }
+
+    function requestOTP() {
+        generatedOTP = Math.floor(100000 + Math.random() * 900000);
+        alert("OTP for Secure Access: " + generatedOTP);
+        document.getElementById('otpModal').style.display = 'block';
+    }
+
+    function verifyOTP() {
+        if(document.getElementById('otpInput').value == generatedOTP) {
+            document.getElementById('otpModal').style.display = 'none';
+            showHistory();
+        } else { alert("Wrong OTP"); }
+    }
+
+    function showHistory() {
+        const p = patients.find(x => String(x.opd_number) === String(selectedP.opd_number));
+        let history = JSON.parse(p.lab_bill || "[]");
+        let html = history.length ? "<table><tr><th>Date</th><th>Tests</th><th>Paid</th><th>Action</th></tr>" : "No records";
+        history.forEach((h, idx) => {
+            html += `<tr><td>${h.date}</td><td>${h.tests.map(t=>t.n).join(', ')}</td><td>₹${h.paid}</td><td>
+                <button class="hist-btn h-mod" onclick="modifyHistory(${idx})">MOD</button>
+                <button class="hist-btn h-del" onclick="deleteHistory(${idx})">DEL</button>
+            </td></tr>`;
+        });
+        document.getElementById('histContent').innerHTML = html + "</table>";
+        document.getElementById('historyModal').style.display = "block";
+    }
+
+    function openLabBilling(id) {
+        selectedP = patients.find(p => String(p.opd_number) === String(id));
+        document.getElementById('labPatientName').innerText = selectedP.name;
+        document.getElementById('billBody').innerHTML = "";
+        document.getElementById('testModal').style.display = "block";
+    }
+
+    function addTestToBill() {
+        const t = masterTests.find(x => x.n === document.getElementById('test_dropdown').value);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${t.n}</td><td>${t.p}</td><td onclick="this.parentElement.remove(); updateBillTotals();">❌</td>`;
+        document.getElementById('billBody').appendChild(tr);
+        updateBillTotals();
+    }
+
+    function updateBillTotals() {
+        let total = 0; document.querySelectorAll('#billBody tr').forEach(tr => total += parseInt(tr.cells[1].innerText));
+        document.getElementById('billTotal').innerText = total;
+    }
+
+    async function handleLabAction(type) {
+        const tests = Array.from(document.querySelectorAll('#billBody tr')).map(tr => ({n: tr.cells[0].innerText, p: tr.cells[1].innerText}));
+        const paid = document.getElementById('billTotal').innerText;
+        let history = JSON.parse(selectedP.lab_bill || "[]");
+        history.push({date: new Date().toLocaleString(), tests, paid});
+        await fetch(API_URL, {method: 'POST', mode: 'no-cors', body: JSON.stringify({type: "SAVE_LAB_BILL", opd: selectedP.opd_number, lab_bill: JSON.stringify(history)})});
         location.reload();
     }
 
