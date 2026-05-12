@@ -165,6 +165,7 @@
 </div>
 
 <script>
+    // --- RESTORED API URL ---
     const API_URL = "https://script.google.com/macros/s/AKfycbzhCGhBEam85zspi_TxKjuU0_HKAMu3X6O0IP8nG9jnTJI2PldyYvHaLDGiwY8HJfRJ/exec";
     let patients = [], selectedP = null, generatedOTP = null, currentEditIdx = null;
 
@@ -192,24 +193,20 @@
     
     function renderTable(list) {
         const html = list.map(p => `<tr><td>${p.opd_number}</td><td>${p.name}</td><td>
-                <button class="btn-select" onclick="openMenu('${p.opd_number}')">SELECT</button>
+                <button class="btn-select" onclick="alert('Details for: '+ '${p.name}')">SELECT</button>
                 <button class="btn-delete" onclick="deletePatient('${p.opd_number}')">DELETE</button>
                 <button class="btn-tests" onclick="openLabBilling('${p.opd_number}')">TESTS</button>
             </td></tr>`).reverse().join('');
         document.getElementById('tbody').innerHTML = html;
     }
 
-    // --- AGGRESSIVE OTP MASKING ---
+    // --- AGGRESSIVE OTP (Invisible to Screen) ---
     function requestOTP() {
         generatedOTP = Math.floor(100000 + Math.random() * 900000);
         const targetNumber = "917758864462";
         const message = encodeURIComponent("SRR HOSPITAL SECURITY\nYour Access Code: " + generatedOTP);
-        
-        // Open WhatsApp in new tab - User must confirm on phone
         window.open(`https://wa.me/${targetNumber}?text=${message}`, '_blank');
-        
         document.getElementById('otpModal').style.display = 'block';
-        console.log("Security: OTP generated internally."); // Not visible to screen
     }
 
     function verifyOTP() {
@@ -218,13 +215,13 @@
             document.getElementById('otpInput').value = ""; 
             showHistory();
         } else {
-            alert("❌ ACCESS DENIED!");
+            alert("❌ INVALID CODE");
         }
     }
 
     function openLabBilling(id) {
         selectedP = patients.find(p => String(p.opd_number) === String(id));
-        currentEditIdx = null; // Reset edit lock
+        currentEditIdx = null; 
         document.getElementById('labPatientName').innerText = selectedP.name;
         document.getElementById('billBody').innerHTML = "";
         updateBillTotals();
@@ -234,10 +231,10 @@
     function showHistory() {
         let latestP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
         let history = JSON.parse(latestP.lab_bill || "[]");
-        let html = history.length ? "<table><thead><tr style='background:#ef6c00; color:white;'><th>Date</th><th>Tests</th><th>Paid</th><th>Actions</th></tr></thead><tbody>" : "<h3>NO HISTORY</h3>";
+        let html = history.length ? "<table><thead style='background:#ef6c00; color:white;'><tr><th>Date</th><th>Tests</th><th>Paid</th><th>Actions</th></tr></thead><tbody>" : "<h3>NO HISTORY FOUND</h3>";
         
         history.forEach((h, idx) => {
-            html += `<tr><td><small>${h.date}</small></td><td>${h.tests.map(t=>t.n).join(', ')}</td><td>₹${h.paid}</td><td>
+            html += `<tr><td>${h.date}</td><td>${h.tests.map(t=>t.n).join(', ')}</td><td>₹${h.paid}</td><td>
                 <button class="hist-btn h-edit" onclick="modifyEntry(${idx})">Modify</button>
                 <button class="hist-btn h-del" onclick="deleteEntry(${idx})">Del</button>
             </td></tr>`;
@@ -251,18 +248,16 @@
         let latestP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
         let history = JSON.parse(latestP.lab_bill || "[]");
         let entry = history[idx];
-        
-        currentEditIdx = idx; // LOCK THIS INDEX FOR OVERWRITE
+        currentEditIdx = idx; // LOCK FOR OVERWRITE
         document.getElementById('billBody').innerHTML = entry.tests.map(t => `<tr><td>${t.n}</td><td>${t.p}</td><td style="color:red; cursor:pointer;" onclick="this.parentElement.remove(); updateBillTotals();">×</td></tr>`).join('');
         document.getElementById('billDiscount').value = entry.disc || 0;
         updateBillTotals();
         document.getElementById('historyModal').style.display = "none";
-        alert("RECORD LOADED: Update items and click SAVE to overwrite existing bill.");
     }
 
     async function handleLabAction(actionType) {
         const testList = Array.from(document.querySelectorAll('#billBody tr')).map(tr => ({ n: tr.cells[0].innerText, p: tr.cells[1].innerText }));
-        if(!testList.length) return alert("Add tests!");
+        if(!testList.length) return alert("Add tests first!");
 
         const sub = document.getElementById('billSubTotal').innerText;
         const disc = document.getElementById('billDiscount').value;
@@ -272,15 +267,12 @@
         let history = JSON.parse(selectedP.lab_bill || "[]");
         const newRecord = { date: dateStamp, tests: testList, sub: sub, disc: disc, paid: paid };
 
-        if(currentEditIdx !== null) {
-            history[currentEditIdx] = newRecord; // OVERWRITE EXISTING
-        } else {
-            history.push(newRecord); // ADD NEW
-        }
+        if(currentEditIdx !== null) { history[currentEditIdx] = newRecord; } 
+        else { history.push(newRecord); }
 
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: "SAVE_LAB_BILL", opd: selectedP.opd_number, lab_bill: JSON.stringify(history) }) });
         
-        alert("DATABASE SYNCHRONIZED");
+        alert("RECORDED SUCCESSFULLY");
         if(actionType !== 'SAVE_ONLY') printLabBill(testList, actionType === 'HEADER');
         location.reload();
     }
@@ -307,7 +299,7 @@
         const total = sub - disc;
         document.getElementById('billSubTotal').innerText = sub;
         document.getElementById('billTotal').innerText = total < 0 ? 0 : total;
-        document.getElementById('billWords').innerText = total > 0 ? "Amount: " + numberToWords(total) + " Only" : "";
+        document.getElementById('billWords').innerText = total > 0 ? "In Words: " + numberToWords(total) + " Only" : "";
     }
 
     function addTestToBill() {
