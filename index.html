@@ -10,6 +10,7 @@
         
         .container { max-width: 1150px; margin: auto; background: white; padding: 20px; border-radius: 8px; border-top: 8px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
+        /* Main UI Header */
         .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-bottom: 20px; gap: 5px; flex-wrap: nowrap; }
         .center-side { text-align: left; flex: 1; min-width: 0; padding-left: 10px; }
         .center-side h1 { color: var(--accent); margin: 0; font-size: 14px; font-weight: 900; text-transform: uppercase; white-space: nowrap; letter-spacing: -0.2px; }
@@ -47,8 +48,14 @@
             .print-page-wrapper { width: 210mm; min-height: 296mm; padding: 10mm; box-sizing: border-box; position: relative; page-break-after: always; background: white; overflow: hidden; }
             .watermark-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.1; z-index: 0; width: 400px; pointer-events: none; }
             .no-header-space { padding-top: 55mm !important; }
+            
+            /* Investigation Header Styling */
+            .diag-print-header { display: flex; flex-direction: column; align-items: center; text-align: center; border-bottom: 5px solid #1b5e20; padding-bottom: 10px; margin-bottom: 15px; }
+            .diag-hosp-title { color: #c62828 !important; margin: 0; font-size: 28pt; font-weight: 900; width: 100%; letter-spacing: 1px; }
+            
             .print-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #1b5e20; padding-bottom: 8px; margin-bottom: 15px; position: relative; z-index: 1; gap: 5px; }
             .hosp-title { color: #c62828 !important; margin: 0; font-size: 16pt; font-weight: 900; white-space: nowrap; letter-spacing: -0.5px; }
+            
             .vitals-row { background: #e8f5e9 !important; border: 2.5px solid #000; border-top: none; padding: 8px; display: flex; justify-content: space-between; font-size: 13pt; font-weight: bold; position: relative; z-index: 1; }
             .med-table { width: 100%; border-collapse: collapse; border: 2px solid #000; margin-top: 10px; position: relative; z-index: 1; }
             .med-table th { background: #333 !important; color: white !important; padding: 8px; border: 1px solid #000; font-size: 11pt; }
@@ -272,31 +279,37 @@
     }
 
     function showHistory() {
-        // AGGRESSIVE RE-FETCH: Ensure we are showing the absolute latest data from patients list
-        let latestP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
-        document.getElementById('histName').innerText = latestP.name;
-        let html = "";
-        try {
-            const raw = latestP.lab_bill || "[]";
-            const billData = JSON.parse(raw);
-            if(billData.length === 0) {
-                html = "<div style='text-align:center; padding:30px;'><h3 style='color:red;'>⚠️ NO HISTORY FOUND</h3></div>";
-            } else {
-                html = "<table style='width:100%; border:2px solid #000; font-size:10pt;'><thead><tr style='background:#ef6c00; color:white;'><th>Date</th><th>Test Names</th><th>Sub</th><th>Disc</th><th>Paid</th></tr></thead><tbody>";
-                billData.forEach((entry) => {
-                    html += `<tr style="border-bottom:1px solid #ccc;">
-                        <td><small>${entry.date || '---'}</small></td>
-                        <td>${entry.tests.map(t => t.n).join(', ')}</td>
-                        <td>₹${entry.sub}</td>
-                        <td style="color:red;">-₹${entry.disc}</td>
-                        <td style="color:green;"><b>₹${entry.paid}</b></td>
-                    </tr>`;
-                });
-                html += "</tbody></table>";
-            }
-        } catch(e) { html = "Error loading history data."; }
-        document.getElementById('histContent').innerHTML = html;
-        document.getElementById('historyModal').style.display = "block";
+        // AGGRESSIVE DATA PULL: Refresh patient list before showing history
+        fetch(`${API_URL}?ts=${Date.now()}`)
+        .then(res => res.text())
+        .then(text => {
+            const data = JSON.parse(text.substring(text.indexOf('(') + 1, text.lastIndexOf(')')));
+            patients = data;
+            let latestP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
+            document.getElementById('histName').innerText = latestP.name;
+            let html = "";
+            try {
+                const raw = latestP.lab_bill || "[]";
+                const billData = JSON.parse(raw);
+                if(billData.length === 0) {
+                    html = "<div style='text-align:center; padding:30px;'><h3 style='color:red;'>⚠️ NO HISTORY FOUND</h3></div>";
+                } else {
+                    html = "<table style='width:100%; border:2px solid #000; font-size:10pt;'><thead><tr style='background:#ef6c00; color:white;'><th>Date</th><th>Test Names</th><th>Sub</th><th>Disc</th><th>Paid</th></tr></thead><tbody>";
+                    billData.forEach((entry) => {
+                        html += `<tr style="border-bottom:1px solid #ccc;">
+                            <td><small>${entry.date || '---'}</small></td>
+                            <td>${entry.tests.map(t => t.n).join(', ')}</td>
+                            <td>₹${entry.sub}</td>
+                            <td style="color:red;">-₹${entry.disc}</td>
+                            <td style="color:green;"><b>₹${entry.paid}</b></td>
+                        </tr>`;
+                    });
+                    html += "</tbody></table>";
+                }
+            } catch(e) { html = "Error loading history data."; }
+            document.getElementById('histContent').innerHTML = html;
+            document.getElementById('historyModal').style.display = "block";
+        });
     }
 
     function addTestToBill() {
@@ -349,25 +362,15 @@
         const paid = document.getElementById('billTotal').innerText;
         const dateStamp = new Date().toLocaleString('en-IN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
 
-        // AGGRESSIVE DATA PACKING
-        const newBillEntry = {
-            date: dateStamp,
-            tests: testList,
-            sub: sub,
-            disc: disc,
-            paid: paid
-        };
+        const newBillEntry = { date: dateStamp, tests: testList, sub: sub, disc: disc, paid: paid };
 
+        let latestP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
         let existingHistory = [];
-        try { 
-            let latestP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
-            existingHistory = JSON.parse(latestP.lab_bill || "[]"); 
-        } catch(e){ existingHistory = []; }
+        try { existingHistory = JSON.parse(latestP.lab_bill || "[]"); } catch(e){ existingHistory = []; }
 
         const updatedHistory = [...existingHistory, newBillEntry];
         const finalizedJSON = JSON.stringify(updatedHistory);
         
-        // FORCE LOCAL UPDATE SO IT PERSISTS WITHOUT RELOAD
         let pIndex = patients.findIndex(p => String(p.opd_number) === String(selectedP.opd_number));
         patients[pIndex].lab_bill = finalizedJSON;
 
@@ -378,7 +381,7 @@
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
 
         if(actionType === 'SAVE_ONLY') {
-            alert("Tests, Price, and Discounts saved to history!");
+            alert("History Recorded Successfully!");
             saveBtn.innerText = "SAVE ONLY";
             document.getElementById('billBody').innerHTML = "";
             updateBillTotals();
@@ -393,26 +396,22 @@
         const total = document.getElementById('billTotal').innerText;
         const words = document.getElementById('billWords').innerText;
 
-        // UPDATED BRANDING: DIAGNOSTICS (PLURAL)
+        // AGGRESSIVE DIAGNOSTICS HEADER (FULL WIDTH, NO DOC BOX)
         const headerHTML = withHeader ? `
-            <div class="print-header">
-                <img src="logo.jpg" style="width:70px; margin-right:10px;">
-                <div style="flex:1; min-width: 0;">
-                    <h1 class="hosp-title" style="color:#c62828 !important;">SRI RAJA RAJESHWARI DIAGNOSTICS</h1>
-                    <p style="font-size:8.5pt; font-weight:bold; margin:2px 0; color:#1b5e20; white-space:nowrap; letter-spacing:-0.4px;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyd-500055</p>
-                    <p style="font-size:10pt; font-weight:bold; margin:0;">📞 9201955976</p>
+            <div class="diag-print-header">
+                <div style="display:flex; align-items:center; width:100%; justify-content:center;">
+                    <img src="logo.jpg" style="width:80px; margin-right:15px;">
+                    <h1 class="diag-hosp-title">SRI RAJA RAJESHWARI DIAGNOSTICS</h1>
                 </div>
-                <div style="border:2px solid #000; padding:8px; text-align:center; border-radius:8px; min-width:230px; background:#fffde7; flex-shrink:0;">
-                    <div style="font-size:14pt; font-weight:900;">DR. M. JAYACHANDER</div>
-                    <div style="font-size:8.5pt; font-weight:bold;">MBBS, M.D. (GENERAL MEDICINE)</div>
-                    <div style="font-size:8.5pt; font-weight:900; color:#c62828;">Reg No: TSMC/FMR/43070</div>
+                <div style="font-size:10pt; font-weight:bold; margin-top:5px; color:#1b5e20;">
+                    Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyderabad-500055 | 📞 9201955976
                 </div>
             </div>` : "";
         
         const details = `
-            <div style="border:2.5px solid #000; padding:10px; font-size:13pt; display:grid; grid-template-columns: 1.2fr 0.8fr; font-weight:bold; position:relative; z-index:1;">
-                <div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:18pt; text-transform:uppercase;">${selectedP.name}</span></div>
-                <div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}</div>
+            <div style="border:2.5px solid #000; padding:10px; font-size:13pt; display:grid; grid-template-columns: 1.1fr 0.9fr; font-weight:bold; position:relative; z-index:1;">
+                <div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:18pt; text-transform:uppercase;">${selectedP.name}</span><br>Reff doc: DR.M.JAYACHANDER MBBS,M.D.(GENERAL MEDICINE)</div>
+                <div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}<br>Phone: ${selectedP.phone || ''}</div>
             </div>`;
 
         let testRows = testList.map((t, idx) => `<tr><td>${idx+1}</td><td>${t.n}</td><td style="text-align:right;">${t.p}.00</td></tr>`).join('');
@@ -440,7 +439,6 @@
         location.reload();
     }
 
-    // --- OTHER WORKING FUNCTIONS REMAIN UNTOUCHED ---
     function sendWhatsApp(id) {
         const p = patients.find(pat => String(pat.opd_number) === String(id));
         if (!p) return;
