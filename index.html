@@ -2,143 +2,99 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SRI RAJA RAJESHWARI HOSPITAL</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #f4f7f6; font-family: sans-serif; }
-        .header-container { 
-            background: white; padding: 20px; border-bottom: 5px solid #dc3545; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px;
-        }
-        .hospital-title { color: #dc3545; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-        .dr-details { text-align: right; border-left: 2px solid #ddd; padding-left: 20px; }
-        .card-custom { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        .section-header { border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 20px; color: #007bff; }
+        body { background: #f0f2f5; font-family: 'Segoe UI', Arial, sans-serif; }
+        .header-container { background: white; padding: 15px 30px; border-bottom: 4px solid #d9534f; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .hospital-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #d9534f; font-weight: 900; font-size: 2.2rem; }
+        .hospital-addr { font-size: 0.9rem; color: #555; margin-top: -5px; font-weight: 500; }
+        .dr-box { border: 2px solid #2c3e50; padding: 10px; border-radius: 8px; text-align: center; background: #f8f9fa; }
+        .card-custom { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 25px; }
+        .section-header { border-bottom: 2px solid #007bff; padding-bottom: 8px; margin-bottom: 20px; color: #007bff; font-weight: bold; }
         .hidden { display: none; }
-        .table-container { max-height: 400px; overflow-y: auto; }
+        .btn-add { background-color: #28a745; color: white; margin-bottom: 10px; }
+        .delete-btn { color: #d9534f; cursor: pointer; font-weight: bold; font-size: 1.2rem; }
     </style>
 </head>
 <body>
 
 <div class="header-container container-fluid">
     <div class="row align-items-center">
-        <div class="col-md-2 text-center">
-            <img src="logo.jpg" alt="Hospital Logo" style="max-height: 100px; width: auto;">
+        <div class="col-md-1">
+            <img src="logo.jpg" alt="Logo" style="max-height: 80px; width: auto;">
         </div>
-        <div class="col-md-5">
-            <h1 class="hospital-title mb-0">SRI RAJA RAJESHWARI HOSPITAL</h1>
-            <p class="mb-0 text-muted">Dedicated to Patient Care & Excellence</p>
+        <div class="col-md-7">
+            <div class="hospital-line">SRI RAJA RAJESHWARI HOSPITAL</div>
+            <div class="hospital-addr">ADD: Suraram colony IDA Jeedimetla NTR Road Opp: Axis ATM Hyderabad TG-500055</div>
         </div>
-        <div class="col-md-5 dr-details">
-            <h4 class="mb-0">DR. M. JAYACHANDER</h4>
-            <p class="mb-0"><strong>MBBS, M.D. (GENERAL MEDICINE)</strong></p>
-            <p class="mb-0">REG NO: TSMC/FMR/43070</p>
+        <div class="col-md-4">
+            <div class="dr-box">
+                <h5 class="mb-0">DR. M. JAYACHANDER</h5>
+                <p class="mb-0 small"><strong>MBBS, M.D. (GENERAL MEDICINE)</strong></p>
+                <p class="mb-0 small">REG NO: TSMC/FMR/43070</p>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="container">
-    <!-- REGISTRATION FORM -->
+<div class="container mb-5">
+    <!-- REGISTRATION -->
     <div class="card-custom">
-        <h4 class="section-header">1. New Patient Registration</h4>
+        <h4 class="section-header">Patient Registration</h4>
         <form id="regForm">
             <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">Date</label>
-                    <input type="date" name="date" id="currentDate" class="form-control" required>
-                </div>
-                <div class="col-md-5">
-                    <label class="form-label">Patient Name</label>
-                    <input type="text" name="name" class="form-control" required placeholder="Full Name">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Age</label>
-                    <input type="number" name="age" class="form-control" required>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Sex</label>
-                    <select name="sex" class="form-select">
-                        <option>Male</option>
-                        <option>Female</option>
-                        <option>Other</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Village / Address</label>
-                    <input type="text" name="village" class="form-control">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Phone Number</label>
-                    <input type="text" name="phone" class="form-control">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Weight (kg)</label>
-                    <input type="text" name="weight" class="form-control">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">BP (mmHg)</label>
-                    <input type="text" name="bp" class="form-control">
-                </div>
-                <div class="col-12">
-                    <button type="submit" id="regBtn" class="btn btn-danger w-100 py-2 fw-bold">SAVE BASIC DETAILS</button>
-                </div>
+                <div class="col-md-2"><label>Date</label><input type="date" name="date" id="currentDate" class="form-control" required></div>
+                <div class="col-md-4"><label>Patient Name</label><input type="text" name="name" class="form-control" required></div>
+                <div class="col-md-1"><label>Age</label><input type="number" name="age" class="form-control" required></div>
+                <div class="col-md-2"><label>Sex</label><select name="sex" class="form-select"><option>Male</option><option>Female</option></select></div>
+                <div class="col-md-3"><label>Phone</label><input type="text" name="phone" class="form-control"></div>
+                <div class="col-md-4"><label>Village</label><input type="text" name="village" class="form-control"></div>
+                <div class="col-md-1"><label>Weight</label><input type="text" name="weight" class="form-control"></div>
+                <div class="col-md-1"><label>BP</label><input type="text" name="bp" class="form-control"></div>
+                <div class="col-md-2"><label>P.R. (Pulse)</label><input type="text" name="pr" class="form-control"></div>
+                <div class="col-md-2"><label>SPO2 %</label><input type="text" name="spo2" class="form-control"></div>
+                <div class="col-md-2"><label>Temp °F</label><input type="text" name="temp" class="form-control"></div>
+                <div class="col-12 mt-3"><button type="submit" id="regBtn" class="btn btn-danger w-100 fw-bold">SAVE BASIC DETAILS</button></div>
             </div>
         </form>
     </div>
 
-    <!-- OLD PATIENTS LIST -->
+    <!-- LIST -->
     <div class="card-custom">
-        <div class="d-flex justify-content-between align-items-center section-header">
-            <h4 class="mb-0">2. Old Patients List</h4>
-            <button onclick="fetchPatients()" class="btn btn-sm btn-outline-primary">Refresh Records</button>
-        </div>
-        <div class="table-container">
-            <table class="table table-striped align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th>OPD No</th>
-                        <th>Patient Name</th>
-                        <th>Village</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="patientListBody">
-                    <!-- Data loaded via JavaScript -->
-                </tbody>
+        <h4 class="section-header d-flex justify-content-between">Old Patients List <button onclick="fetchPatients()" class="btn btn-sm btn-link">Refresh</button></h4>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark"><tr><th>OPD</th><th>Name</th><th>Village</th><th>Action</th></tr></thead>
+                <tbody id="patientListBody"></tbody>
             </table>
         </div>
     </div>
 
-    <!-- TREATMENT SECTION (HIDDEN UNTIL 'TREAT' CLICKED) -->
-    <div id="treatmentArea" class="card-custom hidden border border-primary border-3">
-        <h4 id="treatHeader" class="text-primary border-bottom pb-2 mb-3">Treating Patient: </h4>
+    <!-- TREATMENT -->
+    <div id="treatmentArea" class="card-custom hidden border-primary border-top border-4">
+        <h4 id="treatHeader" class="text-primary mb-4">Treatment: </h4>
         <form id="treatForm">
             <input type="hidden" name="opd" id="treatOpd">
             <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label fw-bold">Chief Complaints</label>
-                    <textarea name="complaints" class="form-control" rows="3"></textarea>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-bold">Past History</label>
-                    <textarea name="pastHistory" class="form-control" rows="3"></textarea>
-                </div>
-                <div class="col-md-12">
-                    <label class="form-label fw-bold">Investigations</label>
-                    <textarea name="investigations" class="form-control" rows="2"></textarea>
-                </div>
-                <div class="col-md-12">
-                    <label class="form-label fw-bold">Medications / Prescription</label>
-                    <textarea name="medications" class="form-control" rows="6" style="background-color: #fff9e6;"></textarea>
-                </div>
-                <div class="col-md-12">
-                    <label class="form-label fw-bold">Clinical Notes</label>
-                    <textarea name="notes" class="form-control" rows="2"></textarea>
-                </div>
+                <div class="col-md-6"><label>Complaints</label><textarea name="complaints" class="form-control" rows="2"></textarea></div>
+                <div class="col-md-6"><label>Past History</label><textarea name="pastHistory" class="form-control" rows="2"></textarea></div>
+                <div class="col-12"><label>Investigations</label><textarea name="investigations" class="form-control" rows="2"></textarea></div>
+                
                 <div class="col-12">
-                    <button type="submit" id="treatBtn" class="btn btn-primary w-100 py-2 fw-bold">UPDATE CLINICAL RECORDS</button>
+                    <label class="fw-bold text-success">Medications / Prescription</label>
+                    <button type="button" class="btn btn-add btn-sm float-end" onclick="addDrugRow()">+ Add Drug</button>
+                    <table class="table table-bordered bg-light">
+                        <thead class="small text-center">
+                            <tr><th>Drug Name</th><th>Duration</th><th>Route</th><th>Remarks</th><th></th></tr>
+                        </thead>
+                        <tbody id="drugTableBody"></tbody>
+                    </table>
+                    <textarea name="medications" id="finalMedOutput" class="hidden"></textarea>
                 </div>
+
+                <div class="col-12"><label>Clinical Notes</label><textarea name="notes" class="form-control" rows="2"></textarea></div>
+                <div class="col-12 mt-3"><button type="submit" id="treatBtn" class="btn btn-primary w-100 fw-bold">UPDATE CLINICAL RECORDS</button></div>
             </div>
         </form>
     </div>
@@ -146,85 +102,80 @@
 
 <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycby0TvtdLZKfUIO-VnOAHkENq2VPOBAwvzXzHgrclbpYUu4WZ3j943csSb8tzEPo5ivV/exec';
-    
-    // Set Default Date
     document.getElementById('currentDate').valueAsDate = new Date();
 
-    // 1. Register Patient
+    function addDrugRow() {
+        const tbody = document.getElementById('drugTableBody');
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><input type="text" class="form-control form-control-sm drug-name"></td>
+            <td><input type="text" class="form-control form-control-sm drug-dur"></td>
+            <td><input type="text" class="form-control form-control-sm drug-route"></td>
+            <td><input type="text" class="form-control form-control-sm drug-rem"></td>
+            <td class="text-center align-middle"><span class="delete-btn" onclick="this.parentElement.parentElement.remove()">×</span></td>
+        `;
+        tbody.appendChild(row);
+    }
+
     document.getElementById('regForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const btn = document.getElementById('regBtn');
         btn.disabled = true; btn.innerText = "Saving...";
-
         const data = Object.fromEntries(new FormData(this));
         data.action = "register";
-
-        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) })
-            .then(() => {
-                alert("Basic Details Saved! Refreshing list...");
-                this.reset();
-                document.getElementById('currentDate').valueAsDate = new Date();
-                btn.disabled = false; btn.innerText = "SAVE BASIC DETAILS";
-                fetchPatients();
-            });
+        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) }).then(() => {
+            alert("Patient Registered!");
+            this.reset(); document.getElementById('currentDate').valueAsDate = new Date();
+            btn.disabled = false; btn.innerText = "SAVE BASIC DETAILS";
+            fetchPatients();
+        });
     });
 
-    // 2. Fetch All Patients
     function fetchPatients() {
-        const body = document.getElementById('patientListBody');
-        body.innerHTML = '<tr><td colspan="4" class="text-center">Loading patients...</td></tr>';
-        
-        fetch(scriptURL)
-            .then(res => res.json())
-            .then(data => {
-                body.innerHTML = '';
-                if(data.length === 0) {
-                    body.innerHTML = '<tr><td colspan="4" class="text-center">No patients found.</td></tr>';
-                    return;
-                }
-                data.reverse().forEach(row => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td><strong>${row[0]}</strong></td>
-                        <td>${row[2]}</td>
-                        <td>${row[5] || '-'}</td>
-                        <td><button class="btn btn-primary btn-sm" onclick="startTreatment('${row[0]}', '${row[2]}')">Treat</button></td>
-                    `;
-                    body.appendChild(tr);
-                });
-            });
+        fetch(scriptURL).then(res => res.json()).then(data => {
+            const body = document.getElementById('patientListBody');
+            body.innerHTML = data.reverse().map(row => `
+                <tr><td>${row[0]}</td><td>${row[2]}</td><td>${row[5] || '-'}</td>
+                <td><button class="btn btn-primary btn-sm" onclick="startTreatment('${row[0]}', '${row[2]}')">Treat</button></td></tr>
+            `).join('');
+        });
     }
 
-    // 3. Open Treatment UI
     function startTreatment(opd, name) {
-        const area = document.getElementById('treatmentArea');
-        area.classList.remove('hidden');
+        document.getElementById('treatmentArea').classList.remove('hidden');
         document.getElementById('treatHeader').innerText = `Treating: ${name} (OPD: ${opd})`;
         document.getElementById('treatOpd').value = opd;
-        area.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('drugTableBody').innerHTML = '';
+        addDrugRow();
+        window.scrollTo(0, document.body.scrollHeight);
     }
 
-    // 4. Save Treatment Data
     document.getElementById('treatForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const btn = document.getElementById('treatBtn');
-        btn.disabled = true; btn.innerText = "Updating Sheet...";
+        btn.disabled = true;
+
+        // Collect Drugs into text format for Google Sheets
+        let medText = "";
+        document.querySelectorAll('#drugTableBody tr').forEach(tr => {
+            const name = tr.querySelector('.drug-name').value;
+            const dur = tr.querySelector('.drug-dur').value;
+            const route = tr.querySelector('.drug-route').value;
+            const rem = tr.querySelector('.drug-rem').value;
+            if(name) medText += `${name} (${dur}) - [${route}] ${rem}\n`;
+        });
+        document.getElementById('finalMedOutput').value = medText;
 
         const data = Object.fromEntries(new FormData(this));
         data.action = "update";
-
-        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) })
-            .then(() => {
-                alert("Clinical records updated successfully in Google Sheet!");
-                document.getElementById('treatmentArea').classList.add('hidden');
-                this.reset();
-                btn.disabled = false; btn.innerText = "UPDATE CLINICAL RECORDS";
-            });
+        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) }).then(() => {
+            alert("Records Updated!");
+            document.getElementById('treatmentArea').classList.add('hidden');
+            btn.disabled = false;
+        });
     });
 
-    // Initial Load
     window.onload = fetchPatients;
 </script>
-
 </body>
 </html>
