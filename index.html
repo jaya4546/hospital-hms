@@ -39,10 +39,9 @@
 </div>
 
 <div class="container mb-5">
-    <!-- REGISTRATION & EDIT FORM -->
+    <!-- REGISTRATION / EDIT BASIC INFO -->
     <div class="card-custom" id="mainFormCard">
         <h4 class="section-header" id="formHeader">Patient Registration</h4>
-        <div id="regStatus" class="status-msg hidden success-bg">Patient Saved Successfully!</div>
         <form id="regForm">
             <input type="hidden" name="opd" id="editOpd">
             <div class="row g-3">
@@ -58,68 +57,56 @@
                 <div class="col-md-2"><label class="form-label">SPO2 %</label><input type="text" name="spo2" id="regSpo2" class="form-control"></div>
                 <div class="col-md-2"><label class="form-label">Temp °F</label><input type="text" name="temp" id="regTemp" class="form-control"></div>
                 
-                <div class="col-12 mt-3">
-                    <button type="submit" id="regBtn" class="btn btn-danger w-100 fw-bold py-2">SAVE NEW PATIENT</button>
-                    <button type="button" id="updateBasicBtn" class="btn btn-warning w-100 hidden py-2 fw-bold">UPDATE PATIENT INFO</button>
-                    <button type="button" id="cancelEditBtn" class="btn btn-link w-100 hidden" onclick="resetToRegMode()">Cancel Edit</button>
+                <div class="col-12 mt-3 text-center">
+                    <button type="submit" id="regBtn" class="btn btn-danger w-100 fw-bold">SAVE NEW PATIENT</button>
+                    <button type="button" id="updateBasicBtn" class="btn btn-warning w-100 hidden fw-bold">UPDATE BASIC INFO</button>
+                    <button type="button" id="cancelEditBtn" class="btn btn-link hidden" onclick="resetToRegMode()">Cancel Edit</button>
                 </div>
             </div>
         </form>
     </div>
 
-    <!-- LIST & SELECTION -->
+    <!-- LIST & SELECTION MENU -->
     <div class="card-custom">
-        <h4 class="section-header d-flex justify-content-between align-items-center">
-            Patient Records
-            <button onclick="fetchPatients()" class="btn btn-sm btn-outline-primary">Refresh List</button>
-        </h4>
-        
+        <h4 class="section-header d-flex justify-content-between">Patient Records <button onclick="fetchPatients()" class="btn btn-sm btn-outline-primary">Refresh</button></h4>
         <div id="selectionMenu" class="hidden text-center mb-4 p-3 border rounded bg-light shadow-sm">
             <h5 id="selText" class="text-dark mb-3"></h5>
             <div class="btn-group w-100">
-                <button class="btn btn-primary py-2 fw-bold" id="btnTreatMenu">TREAT (Prescription)</button>
+                <button class="btn btn-primary py-2 fw-bold" id="btnTreatMenu">TREAT / PRESCRIPTION</button>
                 <button class="btn btn-warning py-2 fw-bold" id="btnEditMenu">EDIT BASIC INFO</button>
             </div>
         </div>
-
         <div class="table-responsive">
             <table class="table table-hover align-middle">
-                <thead class="table-dark">
-                    <tr><th>OPD</th><th>Name</th><th>Village</th><th>Action</th></tr>
-                </thead>
+                <thead class="table-dark"><tr><th>OPD</th><th>Name</th><th>Village</th><th>Action</th></tr></thead>
                 <tbody id="patientListBody"></tbody>
             </table>
         </div>
     </div>
 
-    <!-- TREATMENT AREA -->
+    <!-- TREATMENT AREA (RETRIEVES DATA AUTOMATICALLY) -->
     <div id="treatmentArea" class="card-custom hidden border-primary border-top border-4">
         <h4 id="treatHeader" class="text-primary mb-4 fw-bold">Treatment Console</h4>
-        <div id="treatStatus" class="status-msg hidden success-bg">MEDICATIONS SAVED TO GOOGLE SHEET!</div>
+        <div id="treatStatus" class="status-msg hidden success-bg">SAVED TO GOOGLE SHEET!</div>
         <form id="treatForm">
             <input type="hidden" name="opd" id="treatOpd">
             <div class="row g-3">
-                <div class="col-md-6"><label class="fw-bold">Chief Complaints</label><textarea name="complaints" class="form-control" rows="2"></textarea></div>
-                <div class="col-md-6"><label class="fw-bold">Past History</label><textarea name="pastHistory" class="form-control" rows="2"></textarea></div>
-                <div class="col-12"><label class="fw-bold">Investigations</label><textarea name="investigations" class="form-control" rows="2"></textarea></div>
+                <div class="col-md-6"><label class="fw-bold">Chief Complaints</label><textarea name="complaints" id="treatComplaints" class="form-control" rows="2"></textarea></div>
+                <div class="col-md-6"><label class="fw-bold">Past History</label><textarea name="pastHistory" id="treatPastHistory" class="form-control" rows="2"></textarea></div>
+                <div class="col-12"><label class="fw-bold">Investigations</label><textarea name="investigations" id="treatInvestigations" class="form-control" rows="2"></textarea></div>
                 
                 <div class="col-12 bg-light p-3 border rounded">
                     <div class="d-flex justify-content-between mb-2">
-                        <label class="fw-bold text-success">MEDICATIONS / PRESCRIPTION</label>
+                        <label class="fw-bold text-success">MEDICATIONS</label>
                         <button type="button" class="btn btn-success btn-sm" onclick="addDrugRow()">+ Add Medicine</button>
                     </div>
                     <table class="table table-bordered bg-white shadow-sm">
-                        <thead class="small bg-secondary text-white">
-                            <tr><th>Drug</th><th>Dur</th><th>Dose</th><th>Remarks</th><th></th></tr>
-                        </thead>
                         <tbody id="drugTableBody"></tbody>
                     </table>
                 </div>
 
-                <div class="col-12"><label class="fw-bold">Clinical Notes</label><textarea name="notes" class="form-control" rows="2"></textarea></div>
-                <div class="col-12 mt-3">
-                    <button type="submit" id="treatBtn" class="btn btn-primary w-100 fw-bold py-3 shadow">CONFIRM & SAVE ALL DETAILS</button>
-                </div>
+                <div class="col-12"><label class="fw-bold">Clinical Notes</label><textarea name="notes" id="treatNotes" class="form-control" rows="2"></textarea></div>
+                <div class="col-12 mt-3"><button type="submit" id="treatBtn" class="btn btn-primary w-100 fw-bold py-3 shadow">SAVE ALL CLINICAL DATA</button></div>
             </div>
         </form>
     </div>
@@ -131,77 +118,85 @@
 
     document.getElementById('currentDate').valueAsDate = new Date();
 
-    function addDrugRow() {
+    function addDrugRow(name="", dur="", route="", rem="") {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><input type="text" class="form-control form-control-sm d-name" placeholder="Drug"></td>
-            <td><input type="text" class="form-control form-control-sm d-dur" placeholder="Days"></td>
-            <td><input type="text" class="form-control form-control-sm d-route" placeholder="1-0-1"></td>
-            <td><input type="text" class="form-control form-control-sm d-rem" placeholder="Remarks"></td>
+            <td><input type="text" class="form-control form-control-sm d-name" placeholder="Drug" value="${name}"></td>
+            <td><input type="text" class="form-control form-control-sm d-dur" placeholder="Days" value="${dur}"></td>
+            <td><input type="text" class="form-control form-control-sm d-route" placeholder="Dose" value="${route}"></td>
+            <td><input type="text" class="form-control form-control-sm d-rem" placeholder="Remarks" value="${rem}"></td>
             <td class="text-center"><span class="delete-btn" onclick="this.parentElement.parentElement.remove()">×</span></td>
         `;
         document.getElementById('drugTableBody').appendChild(tr);
     }
 
-    // 1. SAVE NEW PATIENT (STOPS REFRESH)
+    // 1. REGISTER
     document.getElementById('regForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const btn = document.getElementById('regBtn');
-        const status = document.getElementById('regStatus');
         btn.disabled = true; btn.innerText = "Saving...";
-        
         const data = Object.fromEntries(new FormData(this));
         data.action = "register";
-        
-        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) })
-        .then(() => {
-            status.classList.remove('hidden');
-            btn.innerText = "SAVED!";
-            fetchPatients();
-            setTimeout(() => { 
-                status.classList.add('hidden'); 
-                resetToRegMode(); 
-                btn.disabled = false; 
-                btn.innerText = "SAVE NEW PATIENT"; 
-            }, 3000);
+        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) }).then(() => {
+            alert("Registered!");
+            location.reload();
         });
     });
 
-    // 2. FETCH RECORDS
+    // 2. FETCH LIST
     function fetchPatients() {
         fetch(scriptURL).then(res => res.json()).then(data => {
             globalPatients = data;
             document.getElementById('patientListBody').innerHTML = data.reverse().map(row => `
                 <tr id="row-${row[0]}">
-                    <td><strong>${row[0]}</strong></td>
-                    <td>${row[2]}</td>
-                    <td>${row[5] || '-'}</td>
-                    <td><button class="btn btn-info btn-sm text-white px-3" onclick="selectPatient('${row[0]}')">Select</button></td>
+                    <td><strong>${row[0]}</strong></td><td>${row[2]}</td><td>${row[5] || '-'}</td>
+                    <td><button class="btn btn-info btn-sm text-white" onclick="selectPatient('${row[0]}')">Select</button></td>
                 </tr>
             `).join('');
         });
     }
 
-    // 3. SELECT WORKFLOW
+    // 3. SELECT & RETRIEVE (THE FIX)
     function selectPatient(opd) {
         const p = globalPatients.find(x => x[0].toString() === opd.toString());
         document.querySelectorAll('tr').forEach(r => r.classList.remove('selected-row'));
         document.getElementById(`row-${opd}`).classList.add('selected-row');
         
         document.getElementById('selectionMenu').classList.remove('hidden');
-        document.getElementById('selText').innerText = `Current Selection: ${p[2]} (OPD: ${opd})`;
+        document.getElementById('selText').innerText = `Selection: ${p[2]} (OPD: ${opd})`;
         
+        // TREAT BUTTON: AUTO-FILLS FORM FROM GOOGLE SHEET DATA
         document.getElementById('btnTreatMenu').onclick = () => {
             document.getElementById('treatmentArea').classList.remove('hidden');
             document.getElementById('treatOpd').value = opd;
-            document.getElementById('treatHeader').innerText = `Treatment Console: ${p[2]}`;
-            document.getElementById('drugTableBody').innerHTML = ''; 
-            addDrugRow();
+            document.getElementById('treatHeader').innerText = `Treating: ${p[2]}`;
+            
+            // AGGRESSIVELY FILL CLINICAL FIELDS
+            document.getElementById('treatComplaints').value = p[11] || "";    // Col L
+            document.getElementById('treatInvestigations').value = p[12] || ""; // Col M
+            document.getElementById('treatNotes').value = p[14] || "";         // Col O
+            document.getElementById('treatPastHistory').value = p[15] || "";    // Col P
+            
+            // AGGRESSIVELY REBUILD MEDICATION TABLE
+            document.getElementById('drugTableBody').innerHTML = '';
+            const medData = p[13] || ""; // Col N
+            if(medData) {
+                const rows = medData.split('\n');
+                rows.forEach(r => {
+                    if(r.trim()){
+                        const cols = r.split(' | ');
+                        addDrugRow(cols[0] || "", cols[1] || "", cols[2] || "", cols[3] || "");
+                    }
+                });
+            } else {
+                addDrugRow();
+            }
             document.getElementById('treatmentArea').scrollIntoView({ behavior: 'smooth' });
         };
 
+        // EDIT BASIC INFO
         document.getElementById('btnEditMenu').onclick = () => {
-            document.getElementById('formHeader').innerText = "Edit Patient: " + p[2];
+            document.getElementById('formHeader').innerText = "Edit Details: " + p[2];
             document.getElementById('regBtn').classList.add('hidden');
             document.getElementById('updateBasicBtn').classList.remove('hidden');
             document.getElementById('cancelEditBtn').classList.remove('hidden');
@@ -216,45 +211,33 @@
             document.getElementById('regSpo2').value = p[9];
             document.getElementById('regTemp').value = p[10];
             document.getElementById('regPhone').value = p[16];
-            document.getElementById('mainFormCard').scrollIntoView({ behavior: 'smooth' });
+            window.scrollTo(0,0);
         };
     }
 
     function resetToRegMode() {
-        document.getElementById('regForm').reset();
-        document.getElementById('currentDate').valueAsDate = new Date();
-        document.getElementById('formHeader').innerText = "Patient Registration";
-        document.getElementById('regBtn').classList.remove('hidden');
-        document.getElementById('updateBasicBtn').classList.add('hidden');
-        document.getElementById('cancelEditBtn').classList.add('hidden');
+        location.reload();
     }
 
-    // 4. UPDATE BASIC INFO
+    // 4. UPDATE BASIC
     document.getElementById('updateBasicBtn').onclick = function() {
-        this.disabled = true; this.innerText = "Updating Sheet...";
+        this.disabled = true; this.innerText = "Updating...";
         const data = Object.fromEntries(new FormData(document.getElementById('regForm')));
         data.action = "edit_basic";
-        
-        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) })
-        .then(() => {
-            alert("Updated Successfully!");
+        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) }).then(() => {
+            alert("Updated!");
             location.reload();
         });
     };
 
-    // 5. SAVE TREATMENT (AGGRESSIVE DATA BUNDLING)
+    // 5. SAVE TREATMENT
     document.getElementById('treatForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const btn = document.getElementById('treatBtn');
-        const status = document.getElementById('treatStatus');
-        
-        btn.disabled = true; 
-        btn.classList.replace('btn-primary', 'btn-secondary');
-        btn.innerText = "SENDING TO GOOGLE SHEETS...";
+        btn.disabled = true; btn.innerText = "Saving Clinical Data...";
 
         let meds = "";
-        const rows = document.querySelectorAll('#drugTableBody tr');
-        rows.forEach(tr => {
+        document.querySelectorAll('#drugTableBody tr').forEach(tr => {
             const n = tr.querySelector('.d-name').value;
             const d = tr.querySelector('.d-dur').value;
             const r = tr.querySelector('.d-route').value;
@@ -266,29 +249,10 @@
         data.medications = meds;
         data.action = "update";
 
-        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) })
-        .then(() => {
-            // AGGRESSIVE SUCCESS UI
-            status.classList.remove('hidden');
-            btn.classList.replace('btn-secondary', 'btn-success');
-            btn.innerText = "SUCCESSFULLY SAVED!";
-            
-            // DON'T REFRESH IMMEDIATELY - LET THE USER SEE IT
-            setTimeout(() => {
-                if(confirm("Treatment Saved. Refresh list?")) {
-                    location.reload();
-                } else {
-                    status.classList.add('hidden');
-                    btn.disabled = false;
-                    btn.innerText = "CONFIRM & SAVE ALL DETAILS";
-                    btn.classList.replace('btn-success', 'btn-primary');
-                }
-            }, 1500);
-        })
-        .catch(err => {
-            alert("FAILED! Check Internet Connection.");
-            btn.disabled = false;
-            btn.innerText = "TRY AGAIN";
+        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) }).then(() => {
+            document.getElementById('treatStatus').classList.remove('hidden');
+            btn.innerText = "SAVED!";
+            setTimeout(() => { location.reload(); }, 1500);
         });
     });
 
