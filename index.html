@@ -21,27 +21,27 @@
         @media print {
             @page { margin: 0.5cm; }
             .no-print, .btn, #selectionMenu { display: none !important; }
-            #printSection { display: block !important; position: relative; min-height: 100vh; padding: 0; color: #000; background: #fff; }
+            #printSection { display: flex !important; flex-direction: column; min-height: 98vh; padding: 0; color: #000; background: #fff; }
             
             .watermark {
                 position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-                opacity: 0.05; z-index: -1; width: 450px;
+                opacity: 0.08 !important; z-index: -100; width: 450px; display: block !important;
             }
 
-            /* Strict 4cm Header */
+            /* Strict 4cm Header with Colors */
             .print-header { 
                 display: flex; justify-content: space-between; align-items: center; 
                 height: 4cm; border-bottom: 2px solid #000; margin-bottom: 10px; overflow: hidden;
             }
             .logo-img { width: 70px; height: 70px; object-fit: contain; }
             .header-text-center { text-align: center; flex-grow: 1; padding: 0 10px; }
-            .hosp-name-print { font-size: 22px; font-weight: 900; color: #000; white-space: nowrap; margin: 0; }
-            .hosp-addr-print { font-size: 11px; font-weight: bold; white-space: nowrap; margin: 2px 0; }
+            .hosp-name-print { font-size: 24px; font-weight: 900; color: #ff0000 !important; white-space: nowrap; margin: 0; text-transform: uppercase; }
+            .hosp-addr-print { font-size: 11px; font-weight: bold; color: #008000 !important; white-space: nowrap; margin: 2px 0; }
             
             .doc-print-box { border: 1.5px solid #000; background-color: #fffde7 !important; padding: 5px; text-align: center; width: 230px; border-radius: 5px; }
 
             /* Patient & Vitals */
-            .patient-info-box { border: 1.5px solid #000; display: flex; padding: 8px; margin-bottom: 8px; font-size: 13px; }
+            .patient-info-box { border: 1.5px solid #000; display: flex; padding: 8px; margin-bottom: 8px; font-size: 13px; z-index: 10; background: transparent; }
             .info-left { flex: 1; }
             .info-right { flex: 1; text-align: right; }
             
@@ -50,21 +50,23 @@
                 border: 1.5px solid #000; padding: 6px; font-size: 13px; font-weight: bold; margin-bottom: 10px;
             }
 
-            /* Rx Table Clean */
+            /* Rx Table with Black Header */
             .rx-title { font-weight: 900; font-size: 16px; margin: 5px 0; text-decoration: underline; }
             .med-table { width: 100%; border-collapse: collapse; border: 1.5px solid #000; }
-            .med-table th { border: 1px solid #000; padding: 6px; text-align: left; background: #fff !important; }
+            .med-table th { border: 1px solid #000; padding: 6px; text-align: left; background: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; }
             .med-table td { border: 1px solid #000; padding: 6px; font-weight: bold; }
 
-            .sig-area { text-align: right; margin-top: 30px; padding-right: 20px; }
+            .main-content-area { flex-grow: 1; }
+
+            /* Signature Fixed Above Footer */
+            .sig-area { text-align: right; padding-right: 20px; margin-top: 20px; margin-bottom: 10px; }
             
-            /* Strict Footer */
+            /* Strict Footer Positioning */
             .footer-container { 
-                position: fixed; bottom: 0; width: 100%; left: 0;
-                border-top: 2px solid #000; background: white; padding: 5px 0;
+                width: 100%; border-top: 2px solid #000; background: white; padding: 5px 0; margin-top: auto;
             }
             .telugu-footer { font-size: 11px; color: #1a7431; line-height: 1.1; font-weight: bold; text-align: center; width: 95%; margin: 0 auto; }
-            .store-strip { background: var(--dark-blue) !important; color: white !important; text-align: center; font-weight: 900; padding: 5px; font-size: 14px; width: 100%; margin-top: 4px; }
+            .store-strip { background: var(--dark-blue) !important; color: white !important; text-align: center; font-weight: 900; padding: 5px; font-size: 14px; width: 100%; margin-top: 4px; -webkit-print-color-adjust: exact; }
             
             .margin-55-top { margin-top: 4.2cm !important; }
         }
@@ -153,7 +155,7 @@
             <div class="header-text-center">
                 <h1 class="hosp-name-print">SRI RAJA RAJESHWARI HOSPITAL</h1>
                 <p class="hosp-addr-print">Suraram colony NTR Road Opp: Axis ATM Hyderabad TG-500055</p>
-                <p class="hosp-addr-print" style="font-size:14px;">Phone: 9201955976</p>
+                <p class="hosp-addr-print" style="font-size:14px; color:#000 !important;">Phone: 9201955976</p>
             </div>
             <div class="doc-print-box">
                 <div style="font-size:16px; font-weight:900;">DR. M. JAYACHANDER</div>
@@ -163,7 +165,7 @@
         </div>
     </div>
 
-    <div id="dynamicPrintContent"></div>
+    <div id="dynamicPrintContent" class="main-content-area"></div>
 
     <div class="sig-area">
         <div style="font-size:16px; font-weight:900;">DR. M. JAYACHANDER</div>
@@ -227,6 +229,9 @@
         document.getElementById('printHeaderContent').style.display = showHeader ? 'block' : 'none';
         document.getElementById('printWatermark').style.display = showHeader ? 'block' : 'none';
         
+        // Strip time from date
+        let cleanDate = p[1] ? p[1].split('T')[0] : '';
+
         let content = `
             <div class="${!showHeader ? 'margin-55-top' : ''}">
                 <div class="patient-info-box">
@@ -236,7 +241,7 @@
                         <div><b>Address:</b> ${p[5]}</div>
                     </div>
                     <div class="info-right">
-                        <div><b>Date:</b> ${p[1]}</div>
+                        <div><b>Date:</b> ${cleanDate}</div>
                         <div><b>Age/Sex:</b> ${p[3]} / ${p[4]}</div>
                         <div><b>Phone:</b> ${p[16]||'-'}</div>
                     </div>
