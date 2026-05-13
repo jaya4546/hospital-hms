@@ -42,21 +42,28 @@
             @page { size: A4; margin: 0; }
             .no-print { display: none !important; }
             #printSection { display: block !important; position: relative; min-height: 29.7cm; background: white; }
-            .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.08; width: 400px; z-index: -1; }
+            .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.15; width: 500px; z-index: -1; pointer-events: none; }
             .print-header { height: 3cm; border-bottom: 2px solid #000; padding: 5px 20px; display: flex; align-items: center; justify-content: space-between; }
             .hosp-name { font-size: 20px; font-weight: 900; color: var(--primary-red); margin: 0; }
             .hosp-addr { font-size: 11px; margin: 0; font-weight: bold; }
             .doc-box { background-color: #fffde7 !important; border: 1px solid #fbc02d; padding: 5px 10px; border-radius: 4px; text-align: right; line-height: 1.2; }
-            .patient-box { border: 1px solid #000; padding: 8px; margin-top: 0.2cm; font-size: 13px; }
+            
+            /* Revised Patient Info Box */
+            .patient-box { border: 1px solid #000; padding: 8px; margin-top: 0.2cm; font-size: 14px; display: flex; justify-content: space-between; line-height: 1.4; }
+            .patient-left { text-align: left; }
+            .patient-right { text-align: right; }
+
             .vitals-box { background-color: #e8f5e9 !important; border: 1px solid #a5d6a7; padding: 6px; margin-top: 5px; font-size: 12px; display: flex; justify-content: space-around; }
             .med-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
             .med-table th { background-color: #000 !important; color: #fff !important; padding: 5px; border: 1px solid #000; -webkit-print-color-adjust: exact; }
             .med-table td { border: 1px solid #000; padding: 5px; }
-            .print-footer { height: 3cm; border-top: 2px solid #000; position: absolute; bottom: 0; width: 100%; text-align: center; padding: 5px; font-size: 11px; line-height: 1.2; }
-            .telugu-text { color: green !important; font-weight: bold; }
-            .notes-blue { color: blue !important; }
-            .legal-red { color: red !important; font-weight: bold; }
-            .footer-store { font-weight: 900; font-size: 13px; border-top: 1px solid #ccc; margin-top: 2px; }
+            
+            /* Revised Footer */
+            .print-footer { height: 4.5cm; border-top: 2px solid #000; position: absolute; bottom: 0; width: 100%; text-align: center; padding: 10px; line-height: 1.4; }
+            .footer-services { color: #2e7d32 !important; font-weight: bold; font-size: 13px; -webkit-print-color-adjust: exact; }
+            .footer-note-blue { color: #1565c0 !important; font-weight: bold; font-size: 12px; -webkit-print-color-adjust: exact; }
+            .footer-note-red { color: #c62828 !important; font-weight: bold; font-size: 12px; -webkit-print-color-adjust: exact; }
+            .footer-store-name { color: #b71c1c !important; font-weight: 900; font-size: 16px; margin-top: 5px; text-transform: uppercase; -webkit-print-color-adjust: exact; }
         }
         #printSection { display: none; }
     </style>
@@ -176,10 +183,10 @@
         <div id="rxContent" class="mt-2"></div>
     </div>
     <div class="print-footer">
-        <div class="telugu-text">బిపి, షుగర్, గుండె, కాలేయ, కిడ్నీ, నరాల వ్యాధులు, వైరల్ ఫీవర్, జీర్ణకోశ సమస్యలు చూడబడును.</div>
-        <div class="notes-blue">ప్రతిసారి వచ్చేటప్పుడు ఈ ఫైల్ తప్పక తీసుకురావలెను</div>
-        <div class="legal-red">NOT VALID FOR MEDICO LEGAL PURPOSE</div>
-        <div class="footer-store">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div>
+        <div class="footer-services">మా ప్రత్యేక సేవలు: బిపి, షుగర్ ,గుండె వ్యాధులు కాలేయ వ్యాధులు (జాండీస్), కిడ్నీ సమస్యలు, నరాల వ్యాధులు (పక్షవాతం) ,వైరల్ ఫీవర్, జీర్ణకోశ వ్యాధులు (అల్సర్), ఊపిరితిత్తుల వ్యాధులు, థైరాయిడ్ మరియు ఫిట్స్ చూడబడును.</div>
+        <div class="footer-note-blue">NOTE:ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తప్పక తీసుకురావలెను</div>
+        <div class="footer-note-red">NOTE:NOT VALID FOR MEDICO LEGAL PURPOSE</div>
+        <div class="footer-store-name">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div>
     </div>
 </div>
 
@@ -229,7 +236,20 @@
     function printDoc(type, withHeader) {
         const p = patients.find(x => x[0] == currentOpd);
         document.getElementById('printHeader').style.display = withHeader ? 'flex' : 'none';
-        document.getElementById('patientDetails').innerHTML = `<div class="row"><div class="col-7"><strong>OPD:</strong> ${p[0]} | <strong>Name:</strong> ${p[2]} | <strong>Add:</strong> ${p[5]}</div><div class="col-5 text-end"><strong>Date:</strong> ${p[1]} | <strong>Age/Sex:</strong> ${p[3]}/${p[4]}</div></div>`;
+        
+        // Revised detail layout for the box
+        document.getElementById('patientDetails').innerHTML = `
+            <div class="patient-left">
+                <strong>OPD No:</strong> ${p[0]}<br>
+                <strong>Name:</strong> ${p[2]}<br>
+                <strong>Address:</strong> ${p[5]}
+            </div>
+            <div class="patient-right">
+                <strong>Date:</strong> ${p[1]}<br>
+                <strong>Age / Sex:</strong> ${p[3]} / ${p[4]}<br>
+                <strong>Phone:</strong> ${p[16]||'-'}
+            </div>`;
+
         document.getElementById('vitalsDetails').innerHTML = `<span><strong>WT:</strong> ${p[6]||'-'} kg</span><span><strong>BP:</strong> ${p[7]||'-'} mmHg</span><span><strong>Pulse:</strong> ${p[8]||'-'} bpm</span><span><strong>SpO2:</strong> ${p[9]||'-'} %</span><span><strong>Temp:</strong> ${p[10]||'-'} °F</span>`;
         let rxHtml = `<div class="mt-2"><strong>Chief Complaints:</strong> ${p[11]||'-'}</div><div class="mt-1"><strong>Past History:</strong> ${p[15]||'-'}</div><div class="mt-1"><strong>Investigations:</strong> ${p[12]||'-'}</div><table class="med-table"><thead><tr><th>Medicine Name</th><th>Route</th><th>Duration</th><th>Remarks</th></tr></thead><tbody>${(p[13]||'').split('\n').map(m => { let parts = m.split(' | '); return parts.length > 1 ? `<tr><td>${parts[0]}</td><td>${parts[1]}</td><td>${parts[2]}</td><td>${parts[3]}</td></tr>` : ''; }).join('')}</tbody></table><div class="mt-2"><strong>Clinical Notes/Advice:</strong> ${p[14]||'-'}</div>`;
         document.getElementById('rxContent').innerHTML = rxHtml;
