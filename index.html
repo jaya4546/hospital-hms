@@ -19,7 +19,7 @@
         .hosp-subtitle { font-size: 15px; font-weight: bold; color: #555; margin: 0; }
         .ui-doc-box { border: 2px solid var(--accent-gold); background: #fffde7; padding: 12px; border-radius: 10px; text-align: right; line-height: 1.3; }
 
-        /* Enhanced Colorful Selection Menu */
+        /* Selection Menu */
         #selectionMenu { border: 2px solid var(--primary-red); background: #fdfdfd; }
         .btn-giant { padding: 20px 30px; font-size: 18px; font-weight: 800; text-transform: uppercase; border-radius: 12px; transition: transform 0.2s; border: none; flex: 1; margin: 5px; }
         .btn-giant:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
@@ -29,66 +29,64 @@
         .btn-del { background: linear-gradient(135deg, #e53935, #c62828); color: white; }
         .btn-print { background: linear-gradient(135deg, #43a047, #2e7d32); color: white; margin-top: 10px; min-width: 250px; }
 
-        /* Table Select Button */
         .btn-select-row { 
             background: linear-gradient(135deg, #6a11cb, #2575fc); 
             color: white; font-weight: bold; border: none; border-radius: 20px; 
             padding: 5px 20px; transition: 0.3s;
         }
-        .btn-select-row:hover { background: #000; color: #fff; transform: scale(1.05); }
 
         /* Print Styles */
         @media print {
             @page { size: A4; margin: 0; }
             .no-print { display: none !important; }
-            #printSection { display: block !important; position: relative; min-height: 29.7cm; background: white; overflow: hidden; }
+            #printSection { display: block !important; position: relative; min-height: 29.7cm; background: white !important; -webkit-print-color-adjust: exact; }
             
-            /* Watermark Implementation */
+            /* Watermark Correction - Positioned behind all text */
             .watermark { 
-                position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-                opacity: 0.20 !important; width: 550px; z-index: -1; pointer-events: none; 
+                position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); 
+                opacity: 0.20 !important; width: 500px; z-index: -1; pointer-events: none; 
+                display: block !important; visibility: visible !important;
                 -webkit-print-color-adjust: exact; 
             }
 
-            .print-header { height: 3cm; border-bottom: 2px solid #000; padding: 5px 20px; display: flex; align-items: center; justify-content: space-between; }
-            .hosp-name { font-size: 20px; font-weight: 900; color: var(--primary-red); margin: 0; }
-            .hosp-addr { font-size: 11px; margin: 0; font-weight: bold; }
+            .print-header { height: 3.5cm; border-bottom: 2px solid #000; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; }
+            .hosp-name { font-size: 22px; font-weight: 900; color: #b71c1c !important; margin: 0; -webkit-print-color-adjust: exact; }
             
             /* Cool Yellow Doctor Box */
             .doc-box { 
-                background-color: #f9fbe7 !important; border: 1px solid #c0ca33; 
-                padding: 5px 10px; border-radius: 4px; text-align: right; line-height: 1.2; 
+                background-color: #FFFDE7 !important; border: 1px solid #FBC02D; 
+                padding: 8px 15px; border-radius: 8px; text-align: right; 
                 -webkit-print-color-adjust: exact;
             }
-            .reg-no-red { color: #d32f2f !important; font-weight: bold; -webkit-print-color-adjust: exact; }
+            .reg-no-red { color: #D32F2F !important; font-weight: bold; -webkit-print-color-adjust: exact; }
 
-            .patient-box { border: 1px solid #000; padding: 8px; margin-top: 0.2cm; font-size: 14px; display: flex; justify-content: space-between; line-height: 1.4; }
-            .patient-left { text-align: left; }
-            .patient-right { text-align: right; }
+            .patient-box { border: 1px solid #000; padding: 10px; margin-top: 5px; font-size: 15px; display: flex; justify-content: space-between; }
 
             /* Cool Greenish Vitals Box */
             .vitals-box { 
-                background-color: #f1f8e9 !important; border: 1px solid #8bc34a; 
-                padding: 6px; margin-top: 5px; font-size: 12px; display: flex; justify-content: space-around; 
+                background-color: #E8F5E9 !important; border: 1px solid #4CAF50; 
+                padding: 8px; margin-top: 5px; font-size: 13px; display: flex; justify-content: space-around; 
                 -webkit-print-color-adjust: exact;
             }
 
-            .med-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            .med-table th { background-color: #000 !important; color: #fff !important; padding: 5px; border: 1px solid #000; -webkit-print-color-adjust: exact; }
-            .med-table td { border: 1px solid #000; padding: 5px; }
+            .med-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+            .med-table th { background-color: #333 !important; color: #fff !important; padding: 8px; border: 1px solid #000; -webkit-print-color-adjust: exact; }
+            .med-table td { border: 1px solid #000; padding: 8px; }
             
-            /* Blue Background Footer */
-            .print-footer { height: 4.8cm; border-top: 2px solid #000; position: absolute; bottom: 0; width: 100%; text-align: center; padding: 0; line-height: 1.4; }
-            .footer-content { padding: 10px; }
-            .footer-services { color: #2e7d32 !important; font-weight: bold; font-size: 13px; -webkit-print-color-adjust: exact; }
-            .footer-note-blue { color: #1565c0 !important; font-weight: bold; font-size: 12px; -webkit-print-color-adjust: exact; }
-            .footer-note-red { color: #c62828 !important; font-weight: bold; font-size: 12px; -webkit-print-color-adjust: exact; }
+            /* Blue Footer Section */
+            .print-footer { 
+                height: 5cm; border-top: 2px solid #000; position: absolute; bottom: 0; width: 100%; 
+                text-align: center; background-color: #0D47A1 !important; color: white !important;
+                -webkit-print-color-adjust: exact; 
+            }
+            .footer-top-area { background-color: white !important; color: black !important; padding: 5px; -webkit-print-color-adjust: exact; }
+            .footer-services { color: #1B5E20 !important; font-weight: bold; font-size: 13px; -webkit-print-color-adjust: exact; }
+            .footer-note-blue { color: #0D47A1 !important; font-weight: bold; -webkit-print-color-adjust: exact; }
+            .footer-note-red { color: #B71C1C !important; font-weight: bold; -webkit-print-color-adjust: exact; }
             
-            .footer-store-blue-bg { 
-                background-color: #0d47a1 !important; color: white !important; 
-                padding: 10px; font-weight: 900; font-size: 17px; 
+            .footer-store-name { 
+                padding: 15px; font-weight: 900; font-size: 18px; 
                 text-transform: uppercase; width: 100%; display: block; 
-                margin-top: 10px; -webkit-print-color-adjust: exact; 
             }
         }
         #printSection { display: none; }
@@ -96,12 +94,11 @@
 </head>
 <body>
 
+<!-- UI DASHBOARD HEADER -->
 <div class="dash-header no-print">
     <div class="container-fluid">
         <div class="row align-items-center">
-            <div class="col-md-2">
-                <img src="logo.jpg" alt="Logo" style="height: 90px; width: 90px; object-fit: contain; border-radius: 8px;">
-            </div>
+            <div class="col-md-2"><img src="logo.jpg" style="height: 90px; border-radius: 8px;"></div>
             <div class="col-md-7 text-center">
                 <h1 class="hosp-title-main">SRI RAJA RAJESHWARI HOSPITAL</h1>
                 <p class="hosp-subtitle">SURARAM COLONY, NTR ROAD, OPP: AXIS ATM, HYDERABAD TG-500055</p>
@@ -110,7 +107,7 @@
             <div class="col-md-3">
                 <div class="ui-doc-box">
                     <strong style="font-size: 19px; color: #b71c1c;">DR. M. JAYACHANDER</strong><br>
-                    <span class="text-dark">MBBS, M.D. (GENERAL MEDICINE)</span><br>
+                    <span>MBBS, M.D. (GENERAL MEDICINE)</span><br>
                     <small class="text-primary fw-bold">REG NO: TSMC/FMR/43070</small>
                 </div>
             </div>
@@ -119,6 +116,7 @@
 </div>
 
 <div class="no-print container-fluid">
+    <!-- PATIENT REGISTRATION FORM -->
     <div class="card-custom">
         <form id="patientForm">
             <input type="hidden" id="f_opd" value="NEW">
@@ -135,36 +133,35 @@
                 <div class="col-md-2"><label>SpO2 (%)</label><input type="text" id="f_spo2" class="form-control"></div>
                 <div class="col-md-2"><label>Temp (°F)</label><input type="text" id="f_temp" class="form-control"></div>
                 <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" id="saveBtn" class="btn btn-danger w-100 fw-bold py-2 shadow-sm">SAVE / UPDATE</button>
+                    <button type="submit" class="btn btn-danger w-100 fw-bold py-2">SAVE PATIENT</button>
                 </div>
             </div>
         </form>
     </div>
 
+    <!-- SELECTION ACTION MENU -->
     <div id="selectionMenu" class="card-custom hidden text-center">
-        <h3 id="selTitle" class="text-dark fw-bold mb-4"></h3>
+        <h3 id="selTitle" class="mb-4"></h3>
         <div class="d-flex flex-wrap justify-content-center">
             <button class="btn-giant btn-rx" onclick="openRx()"><i class="fas fa-prescription"></i> Rx PANEL</button>
             <button class="btn-giant btn-edit" onclick="editInfo()"><i class="fas fa-edit"></i> EDIT INFO</button>
             <button class="btn-giant btn-del" onclick="deletePatient()"><i class="fas fa-trash-alt"></i> DELETE</button>
         </div>
         <div class="d-flex flex-wrap justify-content-center mt-3">
-            <button class="btn-giant btn-print" onclick="printDoc('rx', true)"><i class="fas fa-print"></i> PRINT Rx + HEADER</button>
-            <button class="btn-giant btn-print" style="background: #333;" onclick="printDoc('rx', false)"><i class="fas fa-file-alt"></i> PRINT Rx (PLAIN)</button>
+            <button class="btn-giant btn-print" onclick="printDoc(true)"><i class="fas fa-print"></i> PRINT Rx + HEADER</button>
+            <button class="btn-giant btn-print" style="background: #333;" onclick="printDoc(false)"><i class="fas fa-file-alt"></i> PRINT Rx (PLAIN)</button>
         </div>
     </div>
 
     <div class="card-custom">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-dark"><tr><th>OPD</th><th>Name</th><th>Village</th><th>Vitals</th><th>Action</th></tr></thead>
-                <tbody id="patientListBody"></tbody>
-            </table>
-        </div>
+        <table class="table table-hover">
+            <thead class="table-dark"><tr><th>OPD</th><th>Name</th><th>Village</th><th>Vitals</th><th>Action</th></tr></thead>
+            <tbody id="patientListBody"></tbody>
+        </table>
     </div>
 
+    <!-- RX TREATMENT PANEL -->
     <div id="treatmentPanel" class="card-custom hidden">
-        <h5 class="text-primary border-bottom pb-2 fw-bold">Prescription Details</h5>
         <form id="treatmentForm">
             <div class="row g-3">
                 <div class="col-md-6"><label class="fw-bold">Chief Complaints</label><textarea id="t_cc" class="form-control" rows="2"></textarea></div>
@@ -173,47 +170,50 @@
                 <div class="col-12">
                     <button type="button" class="btn btn-success btn-sm mb-2" onclick="addRow()">+ Add Medicine</button>
                     <table class="table table-bordered">
-                        <thead><tr class="bg-light"><th>Name</th><th>Route</th><th>Duration</th><th>Remarks</th><th></th></tr></thead>
+                        <thead class="bg-light"><tr><th>Name</th><th>Route</th><th>Duration</th><th>Remarks</th><th></th></tr></thead>
                         <tbody id="medTableBody"></tbody>
                     </table>
                 </div>
                 <div class="col-12"><label class="fw-bold">Clinical Notes</label><textarea id="t_notes" class="form-control" rows="2"></textarea></div>
-                <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow">SAVE Rx</button>
+                <button type="submit" class="btn btn-primary w-100 fw-bold py-2">SAVE Rx DATA</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- PRINT SECTION -->
+<!-- FINAL PRINT SECTION -->
 <div id="printSection">
     <img src="logo.jpg" class="watermark">
+    
     <div id="printHeader" class="print-header">
-        <div>
-            <img src="logo.jpg" style="height: 65px; float: left; margin-right: 15px;">
-            <div style="float: left;">
+        <div style="display: flex; align-items: center;">
+            <img src="logo.jpg" style="height: 75px; margin-right: 15px;">
+            <div>
                 <h1 class="hosp-name">SRI RAJA RAJESHWARI HOSPITAL</h1>
-                <p class="hosp-addr">SURARAM COLONY, NTR ROAD, OPP: AXIS ATM, HYDERABAD-55</p>
-                <p class="hosp-addr"><i class="fas fa-phone-alt"></i> 9201955976</p>
+                <p style="font-size: 12px; margin: 0; font-weight: bold;">SURARAM COLONY, NTR ROAD, HYDERABAD-55</p>
+                <p style="font-size: 12px; margin: 0; font-weight: bold;">Contact: 9201955976</p>
             </div>
         </div>
         <div class="doc-box">
-            <strong style="font-size: 16px;">DR. M. JAYACHANDER</strong><br>
-            <span>MBBS, M.D. (GENERAL MEDICINE)</span><br>
+            <strong style="font-size: 17px;">DR. M. JAYACHANDER</strong><br>
+            <span style="font-size: 13px;">MBBS, M.D. (GENERAL MEDICINE)</span><br>
             <small class="reg-no-red">REG NO: TSMC/FMR/43070</small>
         </div>
     </div>
-    <div class="p-3">
+
+    <div class="p-4">
         <div id="patientDetails" class="patient-box"></div>
         <div id="vitalsDetails" class="vitals-box"></div>
-        <div id="rxContent" class="mt-2"></div>
+        <div id="rxContent" class="mt-3" style="min-height: 10cm;"></div>
     </div>
+
     <div class="print-footer">
-        <div class="footer-content">
+        <div class="footer-top-area">
             <div class="footer-services">మా ప్రత్యేక సేవలు: బిపి, షుగర్ ,గుండె వ్యాధులు కాలేయ వ్యాధులు (జాండీస్), కిడ్నీ సమస్యలు, నరాల వ్యాధులు (పక్షవాతం) ,వైరల్ ఫీవర్, జీర్ణకోశ వ్యాధులు (అల్సర్), ఊపిరితిత్తుల వ్యాధులు, థైరాయిడ్ మరియు ఫిట్స్ చూడబడును.</div>
             <div class="footer-note-blue">NOTE:ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తప్పక తీసుకురావలెను</div>
             <div class="footer-note-red">NOTE:NOT VALID FOR MEDICO LEGAL PURPOSE</div>
         </div>
-        <div class="footer-store-blue-bg">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div>
+        <div class="footer-store-name">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</div>
     </div>
 </div>
 
@@ -231,8 +231,8 @@
     function render() {
         document.getElementById('patientListBody').innerHTML = patients.slice().reverse().map(p => `
             <tr onclick="select('${p[0]}')" id="row-${p[0]}" style="cursor:pointer">
-                <td><span class="badge bg-secondary p-2">${p[0]}</span></td>
-                <td><strong class="text-dark">${p[2]}</strong></td>
+                <td><span class="badge bg-secondary">${p[0]}</span></td>
+                <td><strong>${p[2]}</strong></td>
                 <td>${p[5]}</td><td>${p[7]||'-'} / ${p[8]||'-'}</td>
                 <td><button class="btn-select-row">SELECT</button></td>
             </tr>
@@ -245,7 +245,7 @@
         document.querySelectorAll('tr').forEach(r => r.classList.remove('selected-row'));
         document.getElementById(`row-${opd}`).classList.add('selected-row');
         document.getElementById('selectionMenu').classList.remove('hidden');
-        document.getElementById('selTitle').innerHTML = `<i class="fas fa-id-card"></i> Patient: ${p[2]} (OPD: ${opd})`;
+        document.getElementById('selTitle').innerText = `Patient: ${p[2]} (OPD: ${opd})`;
     }
 
     function addRow(n='', d='', f='', r='') {
@@ -255,18 +255,19 @@
             <td><input class="form-control m-dur" value="${d}"></td>
             <td><input class="form-control m-freq" value="${f}"></td>
             <td><input class="form-control m-rem" value="${r}"></td>
-            <td><button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()"><i class="fas fa-times"></i></button></td>`;
+            <td><button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()">X</button></td>`;
         document.getElementById('medTableBody').appendChild(tr);
     }
 
-    function printDoc(type, withHeader) {
+    function printDoc(withHeader) {
         const p = patients.find(x => x[0] == currentOpd);
         document.getElementById('printHeader').style.display = withHeader ? 'flex' : 'none';
         document.getElementById('patientDetails').innerHTML = `
-            <div class="patient-left"><strong>OPD No:</strong> ${p[0]}<br><strong>Name:</strong> ${p[2]}<br><strong>Address:</strong> ${p[5]}</div>
-            <div class="patient-right"><strong>Date:</strong> ${p[1]}<br><strong>Age / Sex:</strong> ${p[3]} / ${p[4]}<br><strong>Phone:</strong> ${p[16]||'-'}</div>`;
-        document.getElementById('vitalsDetails').innerHTML = `<span><strong>WT:</strong> ${p[6]||'-'} kg</span><span><strong>BP:</strong> ${p[7]||'-'} mmHg</span><span><strong>Pulse:</strong> ${p[8]||'-'} bpm</span><span><strong>SpO2:</strong> ${p[9]||'-'} %</span><span><strong>Temp:</strong> ${p[10]||'-'} °F</span>`;
-        let rxHtml = `<div class="mt-2"><strong>Chief Complaints:</strong> ${p[11]||'-'}</div><div class="mt-1"><strong>Past History:</strong> ${p[15]||'-'}</div><div class="mt-1"><strong>Investigations:</strong> ${p[12]||'-'}</div><table class="med-table"><thead><tr><th>Medicine Name</th><th>Route</th><th>Duration</th><th>Remarks</th></tr></thead><tbody>${(p[13]||'').split('\n').map(m => { let parts = m.split(' | '); return parts.length > 1 ? `<tr><td>${parts[0]}</td><td>${parts[1]}</td><td>${parts[2]}</td><td>${parts[3]}</td></tr>` : ''; }).join('')}</tbody></table><div class="mt-2"><strong>Clinical Notes/Advice:</strong> ${p[14]||'-'}</div>`;
+            <div><strong>OPD:</strong> ${p[0]}<br><strong>Name:</strong> ${p[2]}<br><strong>Addr:</strong> ${p[5]}</div>
+            <div class="text-end"><strong>Date:</strong> ${p[1]}<br><strong>Age/Sex:</strong> ${p[3]}/${p[4]}<br><strong>PH:</strong> ${p[16]||'-'}</div>`;
+        document.getElementById('vitalsDetails').innerHTML = `<span><strong>WT:</strong> ${p[6]||'-'}kg</span><span><strong>BP:</strong> ${p[7]||'-'}</span><span><strong>PR:</strong> ${p[8]||'-'}</span><span><strong>SpO2:</strong> ${p[9]||'-'}%</span><span><strong>Temp:</strong> ${p[10]||'-'}F</span>`;
+        
+        let rxHtml = `<div><strong>C/C:</strong> ${p[11]||'-'}</div><div><strong>P/H:</strong> ${p[15]||'-'}</div><div><strong>INV:</strong> ${p[12]||'-'}</div><table class="med-table"><thead><tr><th>Medicine</th><th>Route</th><th>Days</th><th>Remarks</th></tr></thead><tbody>${(p[13]||'').split('\n').map(m => { let pts = m.split(' | '); return pts.length > 1 ? `<tr><td>${pts[0]}</td><td>${pts[1]}</td><td>${pts[2]}</td><td>${pts[3]}</td></tr>` : ''; }).join('')}</tbody></table><div class="mt-3"><strong>Clinical Notes:</strong> ${p[14]||'-'}</div>`;
         document.getElementById('rxContent').innerHTML = rxHtml;
         window.print();
     }
@@ -288,7 +289,6 @@
         document.getElementById('t_inv').value = p[12]||''; document.getElementById('t_notes').value = p[14]||'';
         document.getElementById('medTableBody').innerHTML = '';
         if(p[13]) p[13].split('\n').forEach(m => { let pts = m.split(' | '); if(pts.length > 1) addRow(pts[0], pts[1], pts[2], pts[3]); });
-        window.scrollTo({top: document.getElementById('treatmentPanel').offsetTop - 100, behavior: 'smooth'});
     }
 
     document.getElementById('patientForm').onsubmit = async (e) => {
@@ -321,7 +321,7 @@
     };
 
     async function deletePatient() {
-        if(confirm("Delete patient records permanently?")) {
+        if(confirm("Delete permanently?")) {
             await fetch(API, { method: 'POST', body: JSON.stringify({action:"delete", opd:currentOpd})});
             location.reload();
         }
