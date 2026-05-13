@@ -50,6 +50,7 @@
                 print-color-adjust: exact !important;
             }
 
+            /* Watermark - Controlled by JS */
             .watermark { 
                 position: absolute !important; 
                 top: 45% !important; 
@@ -58,7 +59,6 @@
                 width: 450px !important; 
                 opacity: 0.12 !important; 
                 z-index: 0 !important;
-                display: block !important;
                 -webkit-print-color-adjust: exact !important;
             }
 
@@ -78,7 +78,7 @@
             .med-table th { background-color: #333 !important; color: #fff !important; padding: 8px; border: 1px solid #000; -webkit-print-color-adjust: exact !important; }
             .med-table td { border: 1px solid #000; padding: 8px; background: rgba(255,255,255,0.7) !important; }
             
-            /* ADJUSTED SLIM FOOTER */
+            /* FOOTER */
             .print-footer { 
                 position: absolute; bottom: 0; width: 100%; 
                 text-align: center; border-top: 2px solid #000;
@@ -90,10 +90,16 @@
             .footer-blue-bar { 
                 background-color: #0d47a1 !important; 
                 color: white !important;
-                padding: 5px 0; /* Reduced padding for less thickness */
+                padding: 5px 0;
                 -webkit-print-color-adjust: exact !important;
             }
             .footer-store-name { font-weight: 900; font-size: 15px; text-transform: uppercase; margin: 0; letter-spacing: 0.5px; }
+
+            /* PLAIN MODE OVERRIDES */
+            .is-plain .print-footer { display: none !important; }
+            .is-plain .print-header { display: none !important; }
+            .is-plain .watermark { display: none !important; }
+            .is-plain #rxBodyContainer { padding-top: 5cm !important; }
         }
         #printSection { display: none; }
     </style>
@@ -202,13 +208,13 @@
         </div>
     </div>
 
-    <div class="p-4" style="position: relative; z-index: 10;">
+    <div id="rxBodyContainer" class="p-4" style="position: relative; z-index: 10;">
         <div id="patientDetails" class="patient-box"></div>
         <div id="vitalsDetails" class="vitals-box"></div>
         <div id="rxContent" class="mt-3" style="min-height: 10cm;"></div>
     </div>
 
-    <div class="print-footer">
+    <div id="printFooter" class="print-footer">
         <div class="footer-top-area">
             <div class="footer-services">మా ప్రత్యేక సేవలు: బిపి, షుగర్ ,గుండె వ్యాధులు కాలేయ వ్యాధులు (జాండీస్), కిడ్నీ సమస్యలు, నరాల వ్యాధులు (పక్షవాతం) ,వైరల్ ఫీవర్, జీర్ణకోశ వ్యాధులు (అల్సర్), ఊపిరితిత్తుల వ్యాధులు, థైరాయిడ్ మరియు ఫిట్స్ చూడబడును.</div>
             <div style="color: #0d47a1; font-weight: bold; font-size: 13px;">NOTE:ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తప్పక తీసుకురావలెను</div>
@@ -264,7 +270,14 @@
 
     function printDoc(withHeader) {
         const p = patients.find(x => x[0] == currentOpd);
-        document.getElementById('printHeader').style.display = withHeader ? 'flex' : 'none';
+        const section = document.getElementById('printSection');
+        
+        if (!withHeader) {
+            section.classList.add('is-plain');
+        } else {
+            section.classList.remove('is-plain');
+        }
+
         document.getElementById('patientDetails').innerHTML = `
             <div><strong>OPD:</strong> ${p[0]}<br><strong>Name:</strong> ${p[2]}<br><strong>Addr:</strong> ${p[5]}</div>
             <div class="text-end"><strong>Date:</strong> ${p[1]}<br><strong>Age/Sex:</strong> ${p[3]}/${p[4]}<br><strong>Phone:</strong> ${p[16]||'-'}</div>`;
