@@ -13,14 +13,30 @@
         .hidden { display: none; }
         .selected-row { background-color: #fff3cd !important; border: 2px solid #ffc107 !important; }
         .hosp-title { font-size: 24px; font-weight: 900; color: #b71c1c; }
-        @media print { .no-print { display: none !important; } #printSection { display: block !important; } }
+        
+        /* Print Specific Styles */
+        @media print {
+            .no-print { display: none !important; }
+            #printSection { display: block !important; width: 100%; }
+            .print-header { height: 4cm; overflow: hidden; border-bottom: 2px solid #000; margin-bottom: 10px; }
+            .print-footer { height: 4cm; overflow: hidden; border-top: 2px solid #000; position: fixed; bottom: 0; width: 100%; background: white; }
+            .content-area { margin-bottom: 4.5cm; }
+            .telugu-green { color: green !important; font-size: 14px; }
+            .note-blue { color: blue !important; font-size: 12px; }
+            .legal-red { color: red !important; font-size: 12px; font-weight: bold; }
+        }
+        #printSection { display: none; }
     </style>
 </head>
 <body>
 
+<!-- Visible Header -->
 <div class="no-print bg-white border-bottom p-3">
     <div class="container-fluid">
         <div class="row align-items-center">
+            <div class="col-auto">
+                <img src="logo.jpg" alt="Logo" style="height: 80px; width: 80px; object-fit: cover; border-radius: 50%;">
+            </div>
             <div class="col">
                 <div class="hosp-title">SRI RAJA RAJESHWARI HOSPITAL</div>
                 <div class="small fw-bold text-success">Suraram Colony, Hyderabad | 9201955976</div>
@@ -28,7 +44,8 @@
             <div class="col-auto text-end">
                 <div class="p-2 border rounded bg-light">
                     <strong>DR. M. JAYACHANDER</strong><br>
-                    <small>MD (GENERAL MEDICINE)</small>
+                    <small>MD (GENERAL MEDICINE)</small><br>
+                    <small class="text-primary">Reg No: 82515</small>
                 </div>
             </div>
         </div>
@@ -67,12 +84,19 @@
             <div class="col-md-3"><button class="btn btn-warning w-100" onclick="editInfo()">EDIT BASIC INFO</button></div>
             <div class="col-md-3"><button class="btn btn-danger w-100" onclick="deletePatient()">DELETE PATIENT</button></div>
         </div>
+        <hr>
+        <div class="row g-2">
+            <div class="col-md-3"><button class="btn btn-outline-dark w-100 btn-sm" onclick="printDoc('rx', true)">Rx (WITH HEADER)</button></div>
+            <div class="col-md-3"><button class="btn btn-outline-dark w-100 btn-sm" onclick="printDoc('rx', false)">Rx (NO HEADER)</button></div>
+            <div class="col-md-3"><button class="btn btn-outline-dark w-100 btn-sm" onclick="printDoc('reg', true)">REG (WITH HEADER)</button></div>
+            <div class="col-md-3"><button class="btn btn-outline-dark w-100 btn-sm" onclick="printDoc('reg', false)">REG (NO HEADER)</button></div>
+        </div>
     </div>
 
     <!-- Patient List -->
     <div class="card-custom">
         <table class="table table-hover">
-            <thead class="table-dark"><tr><th>OPD</th><th>Name</th><th>Place</th><th>Age/Sex</th><th>Vitals (BP/PR)</th><th>Action</th></tr></thead>
+            <thead class="table-dark"><tr><th>OPD</th><th>Name</th><th>Place</th><th>Age/Sex</th><th>Vitals</th><th>Action</th></tr></thead>
             <tbody id="patientListBody"></tbody>
         </table>
     </div>
@@ -99,8 +123,45 @@
     </div>
 </div>
 
+<!-- PRINT SECTION (HIDDEN ON SCREEN) -->
+<div id="printSection">
+    <div id="printHeaderContainer" class="print-header">
+        <div class="d-flex align-items-center justify-content-between p-2">
+            <div class="d-flex align-items-center">
+                <img src="logo.jpg" style="height:80px; width:80px; margin-right:15px;">
+                <div>
+                    <h3 style="margin:0; color:#b71c1c;">SRI RAJA RAJESHWARI HOSPITAL</h3>
+                    <small>Suraram Colony, Hyderabad | 9201955976</small>
+                </div>
+            </div>
+            <div class="text-end">
+                <h5 style="margin:0;">DR. M. JAYACHANDER</h5>
+                <small>MD (GEN MEDICINE) | Reg: 82515</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-area p-3">
+        <div id="printContent"></div>
+    </div>
+
+    <div class="print-footer p-2 text-center">
+        <div class="telugu-green">
+            మా ప్రత్యేక సేవలు: బిపి, షుగర్, గుండె వ్యాధులు, కాలేయ వ్యాధులు (జాండీస్), కిడ్నీ సమస్యలు, నరాల వ్యాధులు (పక్షవాతం), వైరల్ ఫీవర్, జీర్ణకోశ వ్యాధులు (అల్సర్), ఊపిరితిత్తుల వ్యాధులు, థైరాయిడ్ మరియు ఫిట్స్ చూడబడును.
+        </div>
+        <div style="font-weight:bold; margin-top:5px; border-top:1px solid #ddd;">
+            SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES
+        </div>
+        <div class="note-blue">
+            NOTE: ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తప్పక తీసుకురావలెను
+        </div>
+        <div class="legal-red">
+            NOTE: NOT VALID FOR MEDICO LEGAL PURPOSE
+        </div>
+    </div>
+</div>
+
 <script>
-    // UPDATED DEPLOYMENT URL
     const API = 'https://script.google.com/macros/s/AKfycbyCLWe4Q2uDK1PwpznGxNXHQcMpO-D_HkyY2g8cE5dT5m4eq6uuCeqYWSm6EXkgLo2d/exec';
     let patients = [];
     let currentOpd = null;
@@ -110,9 +171,7 @@
             const r = await fetch(API);
             patients = await r.json();
             render();
-        } catch (err) {
-            console.error("Failed to load patients:", err);
-        }
+        } catch (err) { console.error("Load failed"); }
     }
 
     function render() {
@@ -129,12 +188,36 @@
         currentOpd = opd;
         const p = patients.find(x => x[0] == opd);
         document.querySelectorAll('tr').forEach(r => r.classList.remove('selected-row'));
-        const row = document.getElementById(`row-${opd}`);
-        if (row) row.classList.add('selected-row');
+        document.getElementById(`row-${opd}`).classList.add('selected-row');
         document.getElementById('selectionMenu').classList.remove('hidden');
         document.getElementById('selTitle').innerText = `Selected: ${p[2]} (OPD: ${opd})`;
     }
 
+    function printDoc(type, withHeader) {
+        const p = patients.find(x => x[0] == currentOpd);
+        document.getElementById('printHeaderContainer').style.display = withHeader ? 'block' : 'none';
+        
+        let html = `
+            <div class="row mb-3">
+                <div class="col-6"><strong>OPD No:</strong> ${p[0]}</div>
+                <div class="col-6 text-end"><strong>Date:</strong> ${p[1]}</div>
+                <div class="col-12"><strong>Name:</strong> ${p[2]} | ${p[3]} Yrs / ${p[4]}</div>
+                <div class="col-12"><strong>Vitals:</strong> BP: ${p[7]} | Pulse: ${p[8]} | SpO2: ${p[9]} | Wt: ${p[6]}</div>
+            </div><hr>`;
+
+        if (type === 'rx') {
+            html += `<h5>Diagnosis/Complaints:</h5><p>${p[11] || '-'}</p>
+                     <h5>Prescription:</h5><pre style="font-family:inherit">${p[13] || 'No Medicines Listed'}</pre>
+                     <h5>Advice:</h5><p>${p[14] || '-'}</p>`;
+        } else {
+            html += `<h4>Registration Summary</h4><p>Patient from ${p[5]} successfully registered for consultation.</p>`;
+        }
+
+        document.getElementById('printContent').innerHTML = html;
+        window.print();
+    }
+
+    // Keep existing functions: editInfo, openRx, addRow, deletePatient, form onsubmits from previous version
     function editInfo() {
         const p = patients.find(x => x[0] == currentOpd);
         document.getElementById('f_opd').value = p[0];
@@ -185,72 +268,35 @@
         const opdVal = document.getElementById('f_opd').value;
         const btn = document.getElementById('saveBtn');
         btn.disabled = true; btn.innerText = "Syncing...";
-
         const payload = {
             action: (opdVal === "NEW") ? "register" : "edit_basic",
-            opd: opdVal,
-            date: document.getElementById('f_date').value,
-            name: document.getElementById('f_name').value,
-            age: document.getElementById('f_age').value,
-            sex: document.getElementById('f_sex').value,
-            phone: document.getElementById('f_phone').value,
-            village: document.getElementById('f_village').value,
-            weight: document.getElementById('f_wt').value,
-            bp: document.getElementById('f_bp').value,
-            pr: document.getElementById('f_pr').value,
-            spo2: document.getElementById('f_spo2').value,
+            opd: opdVal, date: document.getElementById('f_date').value, name: document.getElementById('f_name').value,
+            age: document.getElementById('f_age').value, sex: document.getElementById('f_sex').value,
+            phone: document.getElementById('f_phone').value, village: document.getElementById('f_village').value,
+            weight: document.getElementById('f_wt').value, bp: document.getElementById('f_bp').value,
+            pr: document.getElementById('f_pr').value, spo2: document.getElementById('f_spo2').value,
             temp: document.getElementById('f_temp').value
         };
-
-        try {
-            await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
-            alert("Record Synchronized Successfully!");
-            location.reload();
-        } catch(err) { 
-            alert("Error saving. Please check your internet connection or deployment settings."); 
-            btn.disabled = false; 
-            btn.innerText = (opdVal === "NEW") ? "REGISTER" : "UPDATE DETAILS";
-        }
+        try { await fetch(API, { method: 'POST', body: JSON.stringify(payload) }); location.reload(); } catch(err) { alert("Error"); btn.disabled = false; }
     };
 
     document.getElementById('treatmentForm').onsubmit = async (e) => {
         e.preventDefault();
-        const btn = document.getElementById('saveRxBtn');
-        btn.disabled = true; btn.innerText = "Saving Rx...";
-        
         const meds = Array.from(document.querySelectorAll('#medTableBody tr')).map(tr => 
             `${tr.querySelector('.m-name').value} | ${tr.querySelector('.m-dur').value} | ${tr.querySelector('.m-freq').value} | ${tr.querySelector('.m-rem').value}`
         ).join('\n');
-
         const payload = {
-            action: "update",
-            opd: currentOpd,
-            complaints: document.getElementById('t_cc').value,
-            pastHistory: document.getElementById('t_ph').value,
-            investigations: document.getElementById('t_inv').value,
-            notes: document.getElementById('t_notes').value,
-            medications: meds
+            action: "update", opd: currentOpd, complaints: document.getElementById('t_cc').value,
+            pastHistory: document.getElementById('t_ph').value, investigations: document.getElementById('t_inv').value,
+            notes: document.getElementById('t_notes').value, medications: meds
         };
-
-        try {
-            await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
-            alert("Rx Data Saved Successfully!");
-            location.reload();
-        } catch(err) { 
-            alert("Error saving Rx."); 
-            btn.disabled = false;
-            btn.innerText = "SAVE Rx DATA";
-        }
+        try { await fetch(API, { method: 'POST', body: JSON.stringify(payload) }); location.reload(); } catch(err) { alert("Error"); }
     };
 
     async function deletePatient() {
-        if(!confirm("Are you sure you want to permanently delete this patient record?")) return;
-        try {
-            await fetch(API, { method: 'POST', body: JSON.stringify({action: "delete", opd: currentOpd}) });
-            location.reload();
-        } catch (err) {
-            alert("Error deleting record.");
-        }
+        if(!confirm("Delete record?")) return;
+        await fetch(API, { method: 'POST', body: JSON.stringify({action: "delete", opd: currentOpd}) });
+        location.reload();
     }
 
     window.onload = load;
