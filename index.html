@@ -267,17 +267,93 @@
         document.getElementById('tbody').innerHTML = html;
     }
 
-    // UPDATED FUNCTION: Sends OTP directly to 7758864462 via WhatsApp
-    function requestOTP() {
-        // 1. Generate 6-digit Code
-        generatedOTP = Math.floor(100000 + Math.random() * 900000);
+    /* --- ADDED/FIXED CORE FUNCTIONS FOR SELECT, DELETE, WHATSAPP --- */
+
+    function openMenu(id) {
+        selectedP = patients.find(p => String(p.opd_number) === String(id));
+        document.getElementById('menuPatientName').innerText = selectedP.name;
+        document.getElementById('actionModal').style.display = 'block';
+    }
+
+    async function deletePatient(id) {
+        if(!confirm("Are you sure you want to delete this patient permanently?")) return;
         
-        // 2. Prepare WhatsApp Link for the Target Number
+        // Find the button and show loading state
+        const btn = event.target;
+        const originalText = btn.innerText;
+        btn.innerText = "Deleting...";
+        btn.disabled = true;
+
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ type: "DELETE_PATIENT", opd: id })
+        });
+        
+        alert("Patient record deleted.");
+        loadData(); // Refresh the list
+    }
+
+    function sendWhatsApp(id) {
+        const p = patients.find(pat => String(pat.opd_number) === String(id));
+        const message = `*SRR HOSPITAL - Patient Registration*\n\nOPD ID: ${p.opd_number}\nName: ${p.name}\nAge/Sex: ${p.age}/${p.sex}\nPhone: ${p.phone}\nAddress: ${p.address}\n\nThank you for choosing SRR Hospital.`;
+        const encodedMsg = encodeURIComponent(message);
+        
+        // Prepend 91 if not present
+        let phone = p.phone.toString();
+        if(phone.length === 10) phone = "91" + phone;
+        
+        window.open(`https://wa.me/${phone}?text=${encodedMsg}`, '_blank');
+    }
+
+    async function savePatient() {
+        const data = {
+            type: "SAVE_PATIENT",
+            name: document.getElementById('p_name').value,
+            age: document.getElementById('p_age').value,
+            sex: document.getElementById('p_sex').value,
+            phone: document.getElementById('p_phone').value,
+            address: document.getElementById('p_address').value,
+            weight: document.getElementById('p_weight').value,
+            bp: document.getElementById('p_bp').value,
+            pulse: document.getElementById('p_pr').value,
+            spo2: document.getElementById('p_spo2').value,
+            temp: document.getElementById('p_temp').value
+        };
+
+        if(!data.name || !data.phone) return alert("Please enter at least Name and Phone!");
+
+        const btn = document.getElementById('mainActionBtn');
+        btn.innerText = "Processing...";
+        btn.disabled = true;
+
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify(data)
+        });
+
+        alert("Patient Saved Successfully!");
+        location.reload();
+    }
+
+    function aggressiveSearch() {
+        const term = document.getElementById('pSearch').value.toLowerCase();
+        const filtered = patients.filter(p => 
+            p.name.toLowerCase().includes(term) || 
+            p.opd_number.toString().includes(term) ||
+            p.phone.toString().includes(term)
+        );
+        renderTable(filtered);
+    }
+
+    /* --- END CORE FUNCTIONS --- */
+
+    function requestOTP() {
+        generatedOTP = Math.floor(100000 + Math.random() * 900000);
         const targetNumber = "917758864462";
         const message = encodeURIComponent("SRR HOSPITAL SECURE ACCESS\nVerification Code: " + generatedOTP);
         const whatsappUrl = "https://wa.me/" + targetNumber + "?text=" + message;
-
-        // 3. Open WhatsApp in new tab and show validation modal
         window.open(whatsappUrl, '_blank');
         document.getElementById('otpModal').style.display = 'block';
     }
@@ -368,7 +444,6 @@
         let latestP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
         let history = JSON.parse(latestP.lab_bill || "[]");
         let entry = history[idx];
-        
         document.getElementById('billBody').innerHTML = "";
         entry.tests.forEach(t => {
             const tr = document.createElement('tr');
@@ -378,19 +453,17 @@
         document.getElementById('billDiscount').value = entry.disc || 0;
         updateBillTotals();
         document.getElementById('historyModal').style.display = "none";
-        alert("Previous data loaded into billing table. You can now edit and SAVE ONLY to overwrite.");
+        alert("Previous data loaded into billing table.");
     }
 
     function printExistingBill(idx) {
         let latestP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
         let history = JSON.parse(latestP.lab_bill || "[]");
         let entry = history[idx];
-        
         document.getElementById('billSubTotal').innerText = entry.sub;
         document.getElementById('billDiscount').value = entry.disc;
         document.getElementById('billTotal').innerText = entry.paid;
         document.getElementById('billWords').innerText = "Amount in words: " + numberToWords(entry.paid) + " Rupees Only";
-        
         printLabBill(entry.tests, true);
     }
 
@@ -430,22 +503,17 @@
     async function handleLabAction(actionType) {
         const testList = Array.from(document.querySelectorAll('#billBody tr')).map(tr => ({ n: tr.cells[0].innerText, p: tr.cells[1].innerText }));
         if(testList.length === 0) return alert("Please add tests first!");
-
         const sub = document.getElementById('billSubTotal').innerText;
         const disc = document.getElementById('billDiscount').value;
         const paid = document.getElementById('billTotal').innerText;
         const dateStamp = new Date().toLocaleString('en-IN', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
-
         const latestP = patients.find(p => String(p.opd_number) === String(selectedP.opd_number));
         let history = [];
         try { history = JSON.parse(latestP.lab_bill || "[]"); } catch(e){}
         history.push({ date: dateStamp, tests: testList, sub: sub, disc: disc, paid: paid });
-
         const saveBtn = document.getElementById('saveOnlyBtn');
         saveBtn.innerText = "RECORDING...";
-        
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: "SAVE_LAB_BILL", opd: selectedP.opd_number, lab_bill: JSON.stringify(history) }) });
-
         if(actionType === 'SAVE_ONLY') {
             alert("History Recorded!");
             saveBtn.innerText = "SAVE ONLY";
@@ -461,44 +529,11 @@
         const discount = document.getElementById('billDiscount').value;
         const total = document.getElementById('billTotal').innerText;
         const words = document.getElementById('billWords').innerText;
-
-        const headerHTML = withHeader ? `
-            <div class="diag-print-header">
-                <div style="display:flex; align-items:center; width:100%; justify-content:center;">
-                    <img src="logo.jpg" style="width:80px; margin-right:15px;">
-                    <h1 class="diag-hosp-title">SRI RAJA RAJESHWARI DIAGNOSTICS</h1>
-                </div>
-                <div style="font-size:10pt; font-weight:bold; margin-top:5px; color:#1b5e20;">
-                    Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyderabad-500055 | 📞 9201955976
-                </div>
-            </div>` : "";
-        
-        const details = `
-            <div style="border:2.5px solid #000; padding:10px; font-size:13pt; display:grid; grid-template-columns: 1.1fr 0.9fr; font-weight:bold; position:relative; z-index:1;">
-                <div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:18pt; text-transform:uppercase;">${selectedP.name}</span><br>Reff doc: DR.M.JAYACHANDER MBBS,M.D.(GENERAL MEDICINE)</div>
-                <div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}<br>Phone: ${selectedP.phone || ''}</div>
-            </div>`;
-
+        const headerHTML = withHeader ? `<div class="diag-print-header"><div style="display:flex; align-items:center; width:100%; justify-content:center;"><img src="logo.jpg" style="width:80px; margin-right:15px;"><h1 class="diag-hosp-title">SRI RAJA RAJESHWARI DIAGNOSTICS</h1></div><div style="font-size:10pt; font-weight:bold; margin-top:5px; color:#1b5e20;">Suraram Colony, NTR Road, Opp: Ramaleela Maidanam, Hyderabad-500055 | 📞 9201955976</div></div>` : "";
+        const details = `<div style="border:2.5px solid #000; padding:10px; font-size:13pt; display:grid; grid-template-columns: 1.1fr 0.9fr; font-weight:bold; position:relative; z-index:1;"><div>OPD ID: ${selectedP.opd_number}<br>Name: <span style="font-size:18pt; text-transform:uppercase;">${selectedP.name}</span><br>Reff doc: DR.M.JAYACHANDER MBBS,M.D.(GENERAL MEDICINE)</div><div style="text-align:right;">Date: ${new Date().toLocaleDateString()}<br>Age/Sex: ${selectedP.age} / ${selectedP.sex}<br>Phone: ${selectedP.phone || ''}</div></div>`;
         let testRows = testList.map((t, idx) => `<tr><td>${idx+1}</td><td>${t.n}</td><td style="text-align:right;">${t.p}.00</td></tr>`).join('');
         const spaceClass = withHeader ? "" : "no-header-space";
-
-        const labHTML = `
-            <div class="print-page-wrapper ${spaceClass}">
-                ${headerHTML}${details}
-                <h2 style="text-align:center; text-decoration:underline; margin-top:20px;">LABORATORY INVESTIGATION BILL</h2>
-                <table class="med-table" style="margin-top:20px;">
-                    <thead><tr><th>S.No</th><th>Investigation Name</th><th style="text-align:right;">Price (₹)</th></tr></thead>
-                    <tbody>
-                        ${testRows}
-                        <tr style="background:#f9f9f9 !important;"><td colspan="2" style="text-align:right;">Sub Total:</td><td style="text-align:right;">₹ ${subtotal}.00</td></tr>
-                        <tr style="background:#f9f9f9 !important;"><td colspan="2" style="text-align:right;">Discount:</td><td style="text-align:right;">- ₹ ${discount}.00</td></tr>
-                        <tr style="font-size:14pt; font-weight:900; background:#eee !important;"><td colspan="2" style="text-align:right;">NET PAYABLE:</td><td style="text-align:right;">₹ ${total}.00</td></tr>
-                    </tbody>
-                </table>
-                <p style="margin-top:10px; font-weight:bold; font-size:12pt;">${words}</p>
-                <div style="margin-top:100px; text-align:right; font-weight:bold;">(Authorized Signature)</div>
-            </div>`;
-
+        const labHTML = `<div class="print-page-wrapper ${spaceClass}">${headerHTML}${details}<h2 style="text-align:center; text-decoration:underline; margin-top:20px;">LABORATORY INVESTIGATION BILL</h2><table class="med-table" style="margin-top:20px;"><thead><tr><th>S.No</th><th>Investigation Name</th><th style="text-align:right;">Price (₹)</th></tr></thead><tbody>${testRows}<tr style="background:#f9f9f9 !important;"><td colspan="2" style="text-align:right;">Sub Total:</td><td style="text-align:right;">₹ ${subtotal}.00</td></tr><tr style="background:#f9f9f9 !important;"><td colspan="2" style="text-align:right;">Discount:</td><td style="text-align:right;">- ₹ ${discount}.00</td></tr><tr style="font-size:14pt; font-weight:900; background:#eee !important;"><td colspan="2" style="text-align:right;">NET PAYABLE:</td><td style="text-align:right;">₹ ${total}.00</td></tr></tbody></table><p style="margin-top:10px; font-weight:bold; font-size:12pt;">${words}</p><div style="margin-top:100px; text-align:right; font-weight:bold;">(Authorized Signature)</div></div>`;
         document.getElementById('printArea').innerHTML = labHTML;
         window.print();
     }
