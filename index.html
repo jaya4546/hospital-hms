@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary-red: #b71c1c; --accent-gold: #fbc02d; }
+        :root { --primary-red: #b71c1c; --accent-gold: #fbc02d; --lab-blue: #0d47a1; }
         body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; font-weight: 600; }
         .card-custom { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 6px 18px rgba(0,0,0,0.08); margin-bottom: 25px; border: none; }
         .hidden { display: none; }
@@ -31,6 +31,7 @@
         .btn-del { background: linear-gradient(135deg, #e53935, #c62828); color: white; }
         .btn-print { background: linear-gradient(135deg, #43a047, #2e7d32); color: white; }
         .btn-reg { background: linear-gradient(135deg, #673ab7, #512da8); color: white; }
+        .btn-lab { background: linear-gradient(135deg, #0d47a1, #1976d2); color: white; }
 
         .btn-select-row { 
             background: linear-gradient(135deg, #6a11cb, #2575fc); 
@@ -98,8 +99,16 @@
             /* MODE OVERRIDES */
             .is-plain .print-footer, .is-plain .print-header, .is-plain .watermark { display: none !important; }
             .is-plain #rxBodyContainer { padding-top: 5cm !important; }
+            
+            /* Lab Specific Plain Print */
+            .is-lab-plain #rxBodyContainer { padding-top: 5.2cm !important; }
         }
         #printSection { display: none; }
+        
+        .lab-list-container { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 8px; background: #fff; }
+        .lab-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; transition: 0.2s; }
+        .lab-item:hover { background: #f8f9fa; }
+        .total-box { background: #e3f2fd; padding: 15px; border-radius: 8px; border: 2px solid #2196f3; }
     </style>
 </head>
 <body>
@@ -153,6 +162,7 @@
         <!-- Row 1: Actions -->
         <div class="btn-row">
             <button class="btn-giant btn-rx" onclick="openRx()"><i class="fas fa-prescription"></i> Rx PANEL</button>
+            <button class="btn-giant btn-lab" onclick="openLab()"><i class="fas fa-microscope"></i> LAB PANEL</button>
             <button class="btn-giant btn-edit" onclick="editInfo()"><i class="fas fa-edit"></i> EDIT INFO</button>
             <button class="btn-giant btn-del" onclick="deletePatient()"><i class="fas fa-trash-alt"></i> DELETE</button>
         </div>
@@ -177,6 +187,7 @@
         </table>
     </div>
 
+    <!-- TREATMENT PANEL -->
     <div id="treatmentPanel" class="card-custom hidden">
         <form id="treatmentForm">
             <div class="row g-3">
@@ -195,20 +206,57 @@
             </div>
         </form>
     </div>
+
+    <!-- LAB PANEL -->
+    <div id="labPanel" class="card-custom hidden">
+        <div class="row">
+            <div class="col-md-6">
+                <h4 class="text-primary mb-3"><i class="fas fa-flask"></i> Select Investigations</h4>
+                <div class="lab-list-container" id="labChecklist">
+                    <!-- Javascript will populate this -->
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="total-box">
+                    <h4>Billing Summary</h4>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-2"><span>Sub-Total:</span> <span id="labSubTotal">0</span></div>
+                    <div class="d-flex justify-content-between mb-2 align-items-center">
+                        <span>Discount:</span> 
+                        <input type="number" id="labDiscount" class="form-control w-25" value="0" oninput="calculateLabTotal()">
+                    </div>
+                    <div class="d-flex justify-content-between fw-bold text-danger fs-4">
+                        <span>Grand Total:</span> <span id="labGrandTotal">0</span>
+                    </div>
+                    <div class="mt-2 small text-muted">In Words: <span id="labWords" class="fw-bold text-dark">Zero Only</span></div>
+                </div>
+                <div class="mt-3 d-flex flex-wrap gap-2">
+                    <button class="btn btn-success fw-bold" onclick="saveLab()"><i class="fas fa-save"></i> SAVE</button>
+                    <button class="btn btn-info fw-bold text-white" onclick="showPrevLab()"><i class="fas fa-history"></i> PREVIOUS INVESTIGATIONS</button>
+                    <button class="btn btn-primary fw-bold" onclick="printLab(true)"><i class="fas fa-print"></i> PRINT WITH HEADER</button>
+                    <button class="btn btn-secondary fw-bold" onclick="printLab(false)"><i class="fas fa-print"></i> PRINT WITHOUT HEADER</button>
+                </div>
+                <div id="prevLabSection" class="mt-4 hidden border p-3 rounded">
+                    <h6>History</h6>
+                    <div id="prevLabContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div id="printSection">
     <img src="logo.jpg" class="watermark">
     <div id="printHeader" class="print-header">
-        <div style="display: flex; align-items: center;">
+        <div id="headerBranding" style="display: flex; align-items: center;">
             <img src="logo.jpg" style="height: 75px; margin-right: 15px;">
             <div>
-                <h1 class="hosp-name">SRI RAJA RAJESHWARI HOSPITAL</h1>
-                <p style="font-size: 11px; margin: 0; font-weight: bold;">SURARAM COLONY, NTR ROAD OPP:AXIS ATM HYDERABAD TG-500055</p>
+                <h1 class="hosp-name" id="printHospName">SRI RAJA RAJESHWARI HOSPITAL</h1>
+                <p id="printHospAddr" style="font-size: 11px; margin: 0; font-weight: bold;">SURARAM COLONY, NTR ROAD OPP:AXIS ATM HYDERABAD TG-500055</p>
                 <p style="font-size: 11px; margin: 0; font-weight: bold;">Contact: 9201955976</p>
             </div>
         </div>
-        <div class="doc-box">
+        <div class="doc-box" id="headerDocBox">
             <strong style="font-size: 17px; color: #b71c1c;">DR. M. JAYACHANDER</strong><br>
             <span style="font-size: 13px;">MBBS, M.D. (GENERAL MEDICINE)</span><br>
             <small style="color: #d32f2f; font-weight: bold;">REG NO: TSMC/FMR/43070</small>
@@ -238,10 +286,26 @@
     let patients = [];
     let currentOpd = null;
 
+    const labTests = [
+        {name: "Cbp", price: 250}, {name: "Esr", price: 100}, {name: "M.P", price: 250},
+        {name: "Widal test", price: 250}, {name: "Blood group", price: 100}, {name: "Fbs", price: 50},
+        {name: "Plbs", price: 50}, {name: "Rbs", price: 50}, {name: "Hba1c", price: 500},
+        {name: "Bl.urea", price: 250}, {name: "S.Creatinine", price: 250}, {name: "LFT", price: 800},
+        {name: "Lipid profile", price: 500}, {name: "S bilirubin", price: 250}, {name: "CUE", price: 100},
+        {name: "Urine c/s", price: 500}, {name: "Hiv I & II", price: 400}, {name: "RFT", price: 800},
+        {name: "Hbs ag", price: 250}, {name: "VDRL", price: 250}, {name: "Mantoux test", price: 300},
+        {name: "CRP", price: 300}, {name: "Ra factor", price: 300}, {name: "T3,T4,TSH", price: 500},
+        {name: "Testosterone", price: 800}, {name: "Vitamin b12", price: 800}, {name: "25 OH vitamin D (Total)", price: 1200},
+        {name: "Ca 125", price: 800}, {name: "Calcium", price: 300}, {name: "Electrolytes", price: 600},
+        {name: "ECG", price: 300}, {name: "Dengue rapid test", price: 1200}, {name: "Trop –I", price: 800},
+        {name: "S.uric acid", price: 300}, {name: "S.amylase", price: 400}
+    ];
+
     async function load() {
         const r = await fetch(API);
         patients = await r.json();
         render();
+        populateLabList();
     }
 
     function render() {
@@ -262,6 +326,103 @@
         document.getElementById('selectionMenu').classList.remove('hidden');
         const p = patients.find(x => x[0] == opd);
         document.getElementById('selTitle').innerText = `Patient: ${p[2]} (OPD: ${opd})`;
+        document.getElementById('treatmentPanel').classList.add('hidden');
+        document.getElementById('labPanel').classList.add('hidden');
+    }
+
+    function populateLabList() {
+        const container = document.getElementById('labChecklist');
+        container.innerHTML = labTests.map((t, index) => `
+            <div class="lab-item">
+                <div>
+                    <input type="checkbox" class="lab-check" data-index="${index}" onchange="calculateLabTotal()">
+                    <label class="ms-2">${t.name}</label>
+                </div>
+                <span class="text-muted">₹${t.price}</span>
+            </div>
+        `).join('');
+    }
+
+    function calculateLabTotal() {
+        let subtotal = 0;
+        document.querySelectorAll('.lab-check:checked').forEach(cb => {
+            subtotal += labTests[cb.dataset.index].price;
+        });
+        const disc = parseFloat(document.getElementById('labDiscount').value) || 0;
+        const grand = subtotal - disc;
+        document.getElementById('labSubTotal').innerText = subtotal;
+        document.getElementById('labGrandTotal').innerText = grand;
+        document.getElementById('labWords').innerText = numberToWords(grand) + " Only";
+    }
+
+    function numberToWords(num) {
+        if (num === 0) return "Zero";
+        const a = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+        const b = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+        const g = (n) => {
+            if (n < 20) return a[n];
+            return b[Math.floor(n/10)] + (n%10 !== 0 ? " " + a[n%10] : "");
+        };
+        if (num < 100) return g(num);
+        if (num < 1000) return a[Math.floor(num/100)] + " Hundred " + (num%100 !== 0 ? g(num%100) : "");
+        return num.toString(); // Fallback for very large numbers
+    }
+
+    function openLab() {
+        document.getElementById('labPanel').classList.remove('hidden');
+        document.getElementById('treatmentPanel').classList.add('hidden');
+        document.getElementById('prevLabSection').classList.add('hidden');
+    }
+
+    async function saveLab() {
+        const p = patients.find(x => x[0] == currentOpd);
+        const selected = Array.from(document.querySelectorAll('.lab-check:checked')).map(cb => labTests[cb.dataset.index].name).join(', ');
+        const total = document.getElementById('labGrandTotal').innerText;
+        const entry = `Date: ${new Date().toLocaleDateString()} | Tests: ${selected} | Total: ${total}`;
+        
+        // Using existing update logic but appending to the notes or history field
+        const newHistory = (p[17] || "") + entry + "\n"; // Assuming index 17 for Lab History
+        
+        const payload = { action: "update_lab_history", opd: currentOpd, labHistory: newHistory };
+        await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
+        alert("Lab Billing Saved!");
+        location.reload();
+    }
+
+    function showPrevLab() {
+        const p = patients.find(x => x[0] == currentOpd);
+        document.getElementById('prevLabSection').classList.remove('hidden');
+        document.getElementById('prevLabContent').innerHTML = (p[17] || "No history found").replace(/\n/g, '<br>');
+    }
+
+    function printLab(withHeader) {
+        const p = patients.find(x => x[0] == currentOpd);
+        const selected = Array.from(document.querySelectorAll('.lab-check:checked')).map(cb => labTests[cb.dataset.index]);
+        const section = document.getElementById('printSection');
+        
+        // Setup Lab Branding
+        document.getElementById('printHospName').innerText = "SRI RAJA RAJESHWARI DIAGNOSTICS";
+        document.getElementById('printHospAddr').innerText = "SURARAM COLONY, NTR ROAD, OPP: AXIS ATM HYDERABAD, TG-500055";
+        document.getElementById('headerDocBox').style.display = "none";
+
+        if (!withHeader) section.className = 'is-lab-plain';
+        else section.className = '';
+
+        document.getElementById('patientDetails').innerHTML = `
+            <div><strong>OPD:</strong> ${p[0]}<br><strong>Name:</strong> ${p[2]}<br><strong>Addr:</strong> ${p[5]}</div>
+            <div class="text-end"><strong>Date:</strong> ${new Date().toLocaleDateString()}<br><strong>Age/Sex:</strong> ${p[3]}/${p[4]}</div>`;
+        
+        document.getElementById('vitalsDetails').innerHTML = "BILL SUMMARY / INVESTIGATION LIST";
+
+        let html = `<table class="med-table"><thead><tr><th>Test Name</th><th class="text-end">Price</th></tr></thead><tbody>`;
+        selected.forEach(s => { html += `<tr><td>${s.name}</td><td class="text-end">${s.price}</td></tr>`; });
+        html += `<tr><td class="text-end fw-bold">Discount:</td><td class="text-end">-${document.getElementById('labDiscount').value}</td></tr>`;
+        html += `<tr><td class="text-end fw-bold">Grand Total:</td><td class="text-end fw-bold">₹ ${document.getElementById('labGrandTotal').innerText}</td></tr>`;
+        html += `</tbody></table><p class="mt-2"><strong>Amount in words:</strong> ${document.getElementById('labWords').innerText}</p>`;
+        
+        document.getElementById('rxContent').innerHTML = html;
+        window.print();
+        location.reload(); // Reset branding
     }
 
     function addRow(n='', d='', f='', r='') {
@@ -279,6 +440,11 @@
         const p = patients.find(x => x[0] == currentOpd);
         const section = document.getElementById('printSection');
         
+        // Restore Hospital Branding
+        document.getElementById('printHospName').innerText = "SRI RAJA RAJESHWARI HOSPITAL";
+        document.getElementById('printHospAddr').innerText = "SURARAM COLONY, NTR ROAD OPP:AXIS ATM HYDERABAD TG-500055";
+        document.getElementById('headerDocBox').style.display = "block";
+
         if (!withHeader) section.classList.add('is-plain');
         else section.classList.remove('is-plain');
 
@@ -301,9 +467,8 @@
                 </table>
                 <div class="mt-3"><strong>Clinical Notes:</strong> ${p[14]||'-'}</div>`;
         } else {
-            document.getElementById('rxContent').innerHTML = ""; // No Rx for Registration print
+            document.getElementById('rxContent').innerHTML = "";
         }
-        
         window.print();
     }
 
@@ -320,6 +485,7 @@
     function openRx() {
         const p = patients.find(x => x[0] == currentOpd);
         document.getElementById('treatmentPanel').classList.remove('hidden');
+        document.getElementById('labPanel').classList.add('hidden');
         document.getElementById('t_cc').value = p[11]||''; document.getElementById('t_ph').value = p[15]||'';
         document.getElementById('t_inv').value = p[12]||''; document.getElementById('t_notes').value = p[14]||'';
         document.getElementById('medTableBody').innerHTML = '';
