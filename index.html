@@ -435,7 +435,10 @@
     }
 
     async function saveLab() {
-        const p = patients.find(x => x[0] == currentOpd);
+        const pIndex = patients.findIndex(x => x[0] == currentOpd);
+        if(pIndex === -1) return;
+        
+        const p = patients[pIndex];
         const selected = Array.from(document.querySelectorAll('.lab-check:checked')).map(cb => labTests[cb.dataset.index].name).join(', ');
         const total = document.getElementById('labGrandTotal').innerText;
         const disc = document.getElementById('labDiscount').value;
@@ -444,35 +447,38 @@
         if(!selected) return alert("Select at least one test");
 
         const entry = `[${new Date().toLocaleDateString()}] Tests: ${selected} | SubTotal: ${sub} | Discount: ${disc} | Paid: ${total}`;
-        let history = (p[17] || "") + entry + "\n";
         
-        // RECTIFIED: Use URLSearchParams for more reliable Google Script POST
+        // AGGRESSIVE LOCAL CACHE UPDATE
+        let currentHistory = p[17] || "";
+        let newHistory = currentHistory + entry + "\n";
+        p[17] = newHistory; // Force update local data immediately
+
+        // AGGRESSIVE DATABASE PUSH
         const payload = new URLSearchParams();
         payload.append('action', 'update_lab_history');
         payload.append('opd', currentOpd);
-        payload.append('labHistory', history);
+        payload.append('labHistory', newHistory);
 
         try {
-            // Using mode 'no-cors' and text body to bypass CORS fetch errors
             await fetch(API, { 
                 method: 'POST', 
-                mode: 'no-cors',
+                mode: 'no-cors', 
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: payload 
             });
             
-            p[17] = history; 
-            alert("Lab Record Saved!");
+            alert("Lab Record Saved Successfully!");
             showPrevLab();
         } catch(e) {
-            alert("Error saving: " + e.message);
+            alert("Network issue, but local record updated temporarily.");
         }
     }
 
     function showPrevLab() {
         const p = patients.find(x => x[0] == currentOpd);
         document.getElementById('prevLabSection').classList.remove('hidden');
-        document.getElementById('prevLabContent').innerHTML = (p[17] || "No history found").trim().replace(/\n/g, '<hr>');
+        const historyText = p[17] ? p[17].trim() : "No history found";
+        document.getElementById('prevLabContent').innerHTML = historyText.replace(/\n/g, '<hr>');
     }
 
     function printLab(withHeader) {
