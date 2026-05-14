@@ -21,8 +21,8 @@
         .ui-doc-box { border: 2px solid var(--accent-gold); background: #fffde7; padding: 12px; border-radius: 10px; text-align: right; line-height: 1.3; }
 
         /* Search Bar Style */
-        .search-container { position: relative; max-width: 400px; margin: 10px auto; }
-        .search-input { border: 2px solid var(--primary-red); border-radius: 25px; padding: 10px 20px 10px 45px; width: 100%; font-weight: bold; }
+        .search-container { position: relative; max-width: 100%; margin-bottom: 15px; }
+        .search-input { border: 2px solid var(--primary-red); border-radius: 8px; padding: 10px 20px 10px 45px; width: 100%; font-weight: bold; }
         .search-icon { position: absolute; left: 15px; top: 13px; color: var(--primary-red); }
 
         /* Selection Menu */
@@ -90,6 +90,15 @@
                 text-align: center; border-top: 2px solid #000;
                 z-index: 20;
             }
+
+            .signature-box {
+                position: absolute;
+                bottom: 120px;
+                right: 30px;
+                text-align: center;
+                z-index: 25;
+            }
+
             .footer-top-area { background-color: white !important; color: black !important; padding: 4px; border-bottom: 1px solid #000; }
             .footer-services { color: #1b5e20 !important; font-weight: bold; font-size: 11px; line-height: 1.2; }
             
@@ -106,12 +115,13 @@
             .is-plain #rxBodyContainer { padding-top: 5cm !important; }
             
             /* Lab Specific Plain Print */
-            .is-lab-plain #rxBodyContainer { padding-top: 5.2cm !important; }
+            .is-lab-plain .print-header, .is-lab-plain .watermark { display: none !important; }
+            .is-lab-plain #rxBodyContainer { padding-top: 5cm !important; }
         }
         #printSection { display: none; }
         
         .lab-list-container { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 8px; background: #fff; }
-        .lab-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; transition: 0.2s; }
+        .lab-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; transition: 0.2s; }
         .lab-item:hover { background: #f8f9fa; }
         .total-box { background: #e3f2fd; padding: 15px; border-radius: 8px; border: 2px solid #2196f3; }
         .add-test-box { background: #f1f8e9; padding: 10px; border-radius: 8px; border: 1px dashed #43a047; margin-bottom: 15px; }
@@ -127,11 +137,6 @@
                 <h1 class="hosp-title-main">SRI RAJA RAJESHWARI HOSPITAL</h1>
                 <p class="hosp-subtitle">SURARAM COLONY, NTR ROAD OPP:AXIS ATM HYDERABAD TG-500055</p>
                 <p class="hosp-subtitle"><i class="fas fa-phone-alt"></i> 9201955976</p>
-                <!-- Search Bar Added Here -->
-                <div class="search-container">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="patientSearch" class="search-input" placeholder="Search Patient Name or Village..." onkeyup="filterPatients()">
-                </div>
             </div>
             <div class="col-md-3">
                 <div class="ui-doc-box">
@@ -169,22 +174,16 @@
 
     <div id="selectionMenu" class="card-custom hidden text-center">
         <h3 id="selTitle" class="mb-4"></h3>
-        
-        <!-- Row 1: Actions -->
         <div class="btn-row">
             <button class="btn-giant btn-rx" onclick="openRx()"><i class="fas fa-prescription"></i> Rx PANEL</button>
             <button class="btn-giant btn-lab" onclick="openLab()"><i class="fas fa-microscope"></i> LAB PANEL</button>
             <button class="btn-giant btn-edit" onclick="editInfo()"><i class="fas fa-edit"></i> EDIT INFO</button>
             <button class="btn-giant btn-del" onclick="deletePatient()"><i class="fas fa-trash-alt"></i> DELETE</button>
         </div>
-
-        <!-- Row 2: Rx Prints -->
         <div class="btn-row">
             <button class="btn-giant btn-print" onclick="printDoc(true, true)"><i class="fas fa-print"></i> PRINT Rx + HEADER</button>
             <button class="btn-giant btn-print" style="background: #333;" onclick="printDoc(false, true)"><i class="fas fa-file-alt"></i> PRINT Rx (PLAIN)</button>
         </div>
-
-        <!-- Row 3: Registration Prints -->
         <div class="btn-row">
             <button class="btn-giant btn-reg" onclick="printDoc(true, false)"><i class="fas fa-id-card"></i> PRINT REG + HEADER</button>
             <button class="btn-giant btn-reg" style="background: #4a148c;" onclick="printDoc(false, false)"><i class="fas fa-id-card"></i> PRINT REG (PLAIN)</button>
@@ -192,6 +191,11 @@
     </div>
 
     <div class="card-custom">
+        <!-- Search Bar Moved Here -->
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="patientSearch" class="search-input" placeholder="Search Patient Name or Village..." onkeyup="filterPatients()">
+        </div>
         <table class="table table-hover">
             <thead class="table-dark"><tr><th>OPD</th><th>Name</th><th>Village</th><th>Vitals</th><th>Action</th></tr></thead>
             <tbody id="patientListBody"></tbody>
@@ -222,7 +226,6 @@
     <div id="labPanel" class="card-custom hidden">
         <div class="row">
             <div class="col-md-6">
-                <!-- Add New Test Section -->
                 <div class="add-test-box">
                     <h6>+ Add New Test to List</h6>
                     <div class="input-group input-group-sm">
@@ -232,9 +235,7 @@
                     </div>
                 </div>
                 <h4 class="text-primary mb-3"><i class="fas fa-flask"></i> Select Investigations</h4>
-                <div class="lab-list-container" id="labChecklist">
-                    <!-- Javascript will populate this -->
-                </div>
+                <div class="lab-list-container" id="labChecklist"></div>
             </div>
             <div class="col-md-6">
                 <div class="total-box">
@@ -288,6 +289,12 @@
         <div id="patientDetails" class="patient-box"></div>
         <div id="vitalsDetails" class="vitals-box"></div>
         <div id="rxContent" class="mt-3" style="min-height: 5cm;"></div>
+    </div>
+
+    <!-- Signature Block -->
+    <div class="signature-box" id="sigBlock">
+        <div style="font-weight: 900; font-size: 14px;">DR. M. JAYACHANDER</div>
+        <div style="font-size: 11px;">MBBS, M.D. (GENERAL MEDICINE)</div>
     </div>
 
     <div id="printFooter" class="print-footer">
@@ -365,13 +372,25 @@
         const container = document.getElementById('labChecklist');
         container.innerHTML = labTests.map((t, index) => `
             <div class="lab-item">
-                <div>
+                <div style="flex-grow:1;">
                     <input type="checkbox" class="lab-check" data-index="${index}" onchange="calculateLabTotal()">
                     <label class="ms-2">${t.name}</label>
                 </div>
-                <span class="text-muted">₹${t.price}</span>
+                <div class="d-flex align-items-center">
+                    <span class="text-muted me-2">₹${t.price}</span>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="editTestPrice(${index})"><i class="fas fa-edit"></i></button>
+                </div>
             </div>
         `).join('');
+    }
+
+    function editTestPrice(index) {
+        const newPrice = prompt(`Enter new price for ${labTests[index].name}:`, labTests[index].price);
+        if (newPrice !== null && !isNaN(newPrice)) {
+            labTests[index].price = parseInt(newPrice);
+            populateLabList();
+            calculateLabTotal();
+        }
     }
 
     function addNewTestToList() {
@@ -413,7 +432,6 @@
         document.getElementById('labPanel').classList.remove('hidden');
         document.getElementById('treatmentPanel').classList.add('hidden');
         document.getElementById('prevLabSection').classList.add('hidden');
-        // Reset checkboxes
         document.querySelectorAll('.lab-check').forEach(c => c.checked = false);
         calculateLabTotal();
     }
@@ -429,14 +447,20 @@
 
         const entry = `[${new Date().toLocaleDateString()}] Tests: ${selected} | SubTotal: ${sub} | Discount: ${disc} | Paid: ${total}`;
         
-        // Push locally so it shows in "Previous Investigations" immediately
-        if(!p[17]) p[17] = "";
-        p[17] += entry + "\n";
+        // Persistent Update to Database
+        let history = p[17] || "";
+        history += entry + "\n";
         
-        const payload = { action: "update_lab_history", opd: currentOpd, labHistory: p[17] };
-        await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
-        alert("Lab Record Saved Successfully!");
-        showPrevLab();
+        const payload = { action: "update_lab_history", opd: currentOpd, labHistory: history };
+        
+        try {
+            await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
+            p[17] = history; // Update local cache
+            alert("Lab Record Saved Successfully to Database!");
+            showPrevLab();
+        } catch(e) {
+            alert("Error saving: " + e.message);
+        }
     }
 
     function showPrevLab() {
@@ -453,6 +477,7 @@
         document.getElementById('printHospName').innerText = "SRI RAJA RAJESHWARI DIAGNOSTICS";
         document.getElementById('printHospAddr').innerText = "SURARAM COLONY, NTR ROAD, OPP: AXIS ATM HYDERABAD, TG-500055";
         document.getElementById('headerDocBox').style.display = "none";
+        document.getElementById('sigBlock').style.display = "none";
 
         if (!withHeader) section.className = 'is-lab-plain';
         else section.className = '';
@@ -476,7 +501,6 @@
         
         document.getElementById('rxContent').innerHTML = html;
         window.print();
-        // Return branding to hospital for next use
         document.getElementById('printHospName').innerText = "SRI RAJA RAJESHWARI HOSPITAL";
     }
 
@@ -498,9 +522,10 @@
         document.getElementById('printHospName').innerText = "SRI RAJA RAJESHWARI HOSPITAL";
         document.getElementById('printHospAddr').innerText = "SURARAM COLONY, NTR ROAD OPP:AXIS ATM HYDERABAD TG-500055";
         document.getElementById('headerDocBox').style.display = "block";
+        document.getElementById('sigBlock').style.display = "block";
 
-        if (!withHeader) section.classList.add('is-plain');
-        else section.classList.remove('is-plain');
+        if (!withHeader) section.className = 'is-plain';
+        else section.className = '';
 
         document.getElementById('patientDetails').innerHTML = `
             <div><strong>OPD:</strong> ${p[0]}<br><strong>Name:</strong> ${p[2]}<br><strong>Addr:</strong> ${p[5]}</div>
@@ -522,6 +547,7 @@
                 <div class="mt-3"><strong>Clinical Notes:</strong> ${p[14]||'-'}</div>`;
         } else {
             document.getElementById('rxContent').innerHTML = "";
+            document.getElementById('sigBlock').style.display = "none";
         }
         window.print();
     }
