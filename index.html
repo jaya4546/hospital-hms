@@ -20,6 +20,11 @@
         
         .ui-doc-box { border: 2px solid var(--accent-gold); background: #fffde7; padding: 12px; border-radius: 10px; text-align: right; line-height: 1.3; }
 
+        /* Search Bar Style */
+        .search-container { position: relative; max-width: 400px; margin: 10px auto; }
+        .search-input { border: 2px solid var(--primary-red); border-radius: 25px; padding: 10px 20px 10px 45px; width: 100%; font-weight: bold; }
+        .search-icon { position: absolute; left: 15px; top: 13px; color: var(--primary-red); }
+
         /* Selection Menu */
         #selectionMenu { border: 2px solid var(--primary-red); background: #fdfdfd; }
         .btn-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 10px; }
@@ -109,6 +114,7 @@
         .lab-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; transition: 0.2s; }
         .lab-item:hover { background: #f8f9fa; }
         .total-box { background: #e3f2fd; padding: 15px; border-radius: 8px; border: 2px solid #2196f3; }
+        .add-test-box { background: #f1f8e9; padding: 10px; border-radius: 8px; border: 1px dashed #43a047; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -121,6 +127,11 @@
                 <h1 class="hosp-title-main">SRI RAJA RAJESHWARI HOSPITAL</h1>
                 <p class="hosp-subtitle">SURARAM COLONY, NTR ROAD OPP:AXIS ATM HYDERABAD TG-500055</p>
                 <p class="hosp-subtitle"><i class="fas fa-phone-alt"></i> 9201955976</p>
+                <!-- Search Bar Added Here -->
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="patientSearch" class="search-input" placeholder="Search Patient Name or Village..." onkeyup="filterPatients()">
+                </div>
             </div>
             <div class="col-md-3">
                 <div class="ui-doc-box">
@@ -211,6 +222,15 @@
     <div id="labPanel" class="card-custom hidden">
         <div class="row">
             <div class="col-md-6">
+                <!-- Add New Test Section -->
+                <div class="add-test-box">
+                    <h6>+ Add New Test to List</h6>
+                    <div class="input-group input-group-sm">
+                        <input type="text" id="newTestName" class="form-control" placeholder="Test Name">
+                        <input type="number" id="newTestPrice" class="form-control" placeholder="Price">
+                        <button class="btn btn-success" onclick="addNewTestToList()">ADD</button>
+                    </div>
+                </div>
                 <h4 class="text-primary mb-3"><i class="fas fa-flask"></i> Select Investigations</h4>
                 <div class="lab-list-container" id="labChecklist">
                     <!-- Javascript will populate this -->
@@ -236,8 +256,9 @@
                     <button class="btn btn-primary fw-bold" onclick="printLab(true)"><i class="fas fa-print"></i> PRINT WITH HEADER</button>
                     <button class="btn btn-secondary fw-bold" onclick="printLab(false)"><i class="fas fa-print"></i> PRINT WITHOUT HEADER</button>
                 </div>
-                <div id="prevLabSection" class="mt-4 hidden border p-3 rounded">
-                    <h6>History</h6>
+                <div id="prevLabSection" class="mt-4 hidden border p-3 rounded bg-light">
+                    <h6>History (Saved Bills)</h6>
+                    <hr>
                     <div id="prevLabContent"></div>
                 </div>
             </div>
@@ -286,7 +307,7 @@
     let patients = [];
     let currentOpd = null;
 
-    const labTests = [
+    let labTests = [
         {name: "Cbp", price: 250}, {name: "Esr", price: 100}, {name: "M.P", price: 250},
         {name: "Widal test", price: 250}, {name: "Blood group", price: 100}, {name: "Fbs", price: 50},
         {name: "Plbs", price: 50}, {name: "Rbs", price: 50}, {name: "Hba1c", price: 500},
@@ -309,14 +330,24 @@
     }
 
     function render() {
-        document.getElementById('patientListBody').innerHTML = patients.slice().reverse().map(p => `
-            <tr onclick="select('${p[0]}')" id="row-${p[0]}" style="cursor:pointer">
+        const body = document.getElementById('patientListBody');
+        body.innerHTML = patients.slice().reverse().map(p => `
+            <tr onclick="select('${p[0]}')" id="row-${p[0]}" class="patient-row" data-name="${p[2].toLowerCase()}" data-village="${p[5].toLowerCase()}">
                 <td><span class="badge bg-secondary">${p[0]}</span></td>
                 <td><strong>${p[2]}</strong></td>
                 <td>${p[5]}</td><td>${p[7]||'-'} / ${p[8]||'-'}</td>
                 <td><button class="btn-select-row">SELECT</button></td>
             </tr>
         `).join('');
+    }
+
+    function filterPatients() {
+        const query = document.getElementById('patientSearch').value.toLowerCase();
+        document.querySelectorAll('.patient-row').forEach(row => {
+            const name = row.getAttribute('data-name');
+            const village = row.getAttribute('data-village');
+            row.style.display = (name.includes(query) || village.includes(query)) ? '' : 'none';
+        });
     }
 
     function select(opd) {
@@ -343,6 +374,16 @@
         `).join('');
     }
 
+    function addNewTestToList() {
+        const name = document.getElementById('newTestName').value;
+        const price = parseInt(document.getElementById('newTestPrice').value);
+        if(!name || !price) return alert("Enter both name and price");
+        labTests.push({name: name, price: price});
+        populateLabList();
+        document.getElementById('newTestName').value = '';
+        document.getElementById('newTestPrice').value = '';
+    }
+
     function calculateLabTotal() {
         let subtotal = 0;
         document.querySelectorAll('.lab-check:checked').forEach(cb => {
@@ -365,34 +406,43 @@
         };
         if (num < 100) return g(num);
         if (num < 1000) return a[Math.floor(num/100)] + " Hundred " + (num%100 !== 0 ? g(num%100) : "");
-        return num.toString(); // Fallback for very large numbers
+        return num.toString();
     }
 
     function openLab() {
         document.getElementById('labPanel').classList.remove('hidden');
         document.getElementById('treatmentPanel').classList.add('hidden');
         document.getElementById('prevLabSection').classList.add('hidden');
+        // Reset checkboxes
+        document.querySelectorAll('.lab-check').forEach(c => c.checked = false);
+        calculateLabTotal();
     }
 
     async function saveLab() {
         const p = patients.find(x => x[0] == currentOpd);
         const selected = Array.from(document.querySelectorAll('.lab-check:checked')).map(cb => labTests[cb.dataset.index].name).join(', ');
         const total = document.getElementById('labGrandTotal').innerText;
-        const entry = `Date: ${new Date().toLocaleDateString()} | Tests: ${selected} | Total: ${total}`;
+        const disc = document.getElementById('labDiscount').value;
+        const sub = document.getElementById('labSubTotal').innerText;
         
-        // Using existing update logic but appending to the notes or history field
-        const newHistory = (p[17] || "") + entry + "\n"; // Assuming index 17 for Lab History
+        if(!selected) return alert("Select at least one test");
+
+        const entry = `[${new Date().toLocaleDateString()}] Tests: ${selected} | SubTotal: ${sub} | Discount: ${disc} | Paid: ${total}`;
         
-        const payload = { action: "update_lab_history", opd: currentOpd, labHistory: newHistory };
+        // Push locally so it shows in "Previous Investigations" immediately
+        if(!p[17]) p[17] = "";
+        p[17] += entry + "\n";
+        
+        const payload = { action: "update_lab_history", opd: currentOpd, labHistory: p[17] };
         await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
-        alert("Lab Billing Saved!");
-        location.reload();
+        alert("Lab Record Saved Successfully!");
+        showPrevLab();
     }
 
     function showPrevLab() {
         const p = patients.find(x => x[0] == currentOpd);
         document.getElementById('prevLabSection').classList.remove('hidden');
-        document.getElementById('prevLabContent').innerHTML = (p[17] || "No history found").replace(/\n/g, '<br>');
+        document.getElementById('prevLabContent').innerHTML = (p[17] || "No history found").trim().replace(/\n/g, '<hr>');
     }
 
     function printLab(withHeader) {
@@ -400,7 +450,6 @@
         const selected = Array.from(document.querySelectorAll('.lab-check:checked')).map(cb => labTests[cb.dataset.index]);
         const section = document.getElementById('printSection');
         
-        // Setup Lab Branding
         document.getElementById('printHospName').innerText = "SRI RAJA RAJESHWARI DIAGNOSTICS";
         document.getElementById('printHospAddr').innerText = "SURARAM COLONY, NTR ROAD, OPP: AXIS ATM HYDERABAD, TG-500055";
         document.getElementById('headerDocBox').style.display = "none";
@@ -410,19 +459,25 @@
 
         document.getElementById('patientDetails').innerHTML = `
             <div><strong>OPD:</strong> ${p[0]}<br><strong>Name:</strong> ${p[2]}<br><strong>Addr:</strong> ${p[5]}</div>
-            <div class="text-end"><strong>Date:</strong> ${new Date().toLocaleDateString()}<br><strong>Age/Sex:</strong> ${p[3]}/${p[4]}</div>`;
+            <div class="text-end">
+                <strong>Date:</strong> ${new Date().toLocaleDateString()}<br>
+                <strong>Age/Sex:</strong> ${p[3]}/${p[4]}<br>
+                <strong>Phone:</strong> ${p[16]||'-'}
+            </div>`;
         
         document.getElementById('vitalsDetails').innerHTML = "BILL SUMMARY / INVESTIGATION LIST";
 
         let html = `<table class="med-table"><thead><tr><th>Test Name</th><th class="text-end">Price</th></tr></thead><tbody>`;
         selected.forEach(s => { html += `<tr><td>${s.name}</td><td class="text-end">${s.price}</td></tr>`; });
+        html += `<tr><td class="text-end fw-bold">Sub-Total:</td><td class="text-end">₹ ${document.getElementById('labSubTotal').innerText}</td></tr>`;
         html += `<tr><td class="text-end fw-bold">Discount:</td><td class="text-end">-${document.getElementById('labDiscount').value}</td></tr>`;
         html += `<tr><td class="text-end fw-bold">Grand Total:</td><td class="text-end fw-bold">₹ ${document.getElementById('labGrandTotal').innerText}</td></tr>`;
         html += `</tbody></table><p class="mt-2"><strong>Amount in words:</strong> ${document.getElementById('labWords').innerText}</p>`;
         
         document.getElementById('rxContent').innerHTML = html;
         window.print();
-        location.reload(); // Reset branding
+        // Return branding to hospital for next use
+        document.getElementById('printHospName').innerText = "SRI RAJA RAJESHWARI HOSPITAL";
     }
 
     function addRow(n='', d='', f='', r='') {
@@ -440,7 +495,6 @@
         const p = patients.find(x => x[0] == currentOpd);
         const section = document.getElementById('printSection');
         
-        // Restore Hospital Branding
         document.getElementById('printHospName').innerText = "SRI RAJA RAJESHWARI HOSPITAL";
         document.getElementById('printHospAddr').innerText = "SURARAM COLONY, NTR ROAD OPP:AXIS ATM HYDERABAD TG-500055";
         document.getElementById('headerDocBox').style.display = "block";
