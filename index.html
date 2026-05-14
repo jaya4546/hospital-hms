@@ -191,7 +191,6 @@
     </div>
 
     <div class="card-custom">
-        <!-- Search Bar Moved Here -->
         <div class="search-container">
             <i class="fas fa-search search-icon"></i>
             <input type="text" id="patientSearch" class="search-input" placeholder="Search Patient Name or Village..." onkeyup="filterPatients()">
@@ -291,7 +290,6 @@
         <div id="rxContent" class="mt-3" style="min-height: 5cm;"></div>
     </div>
 
-    <!-- Signature Block -->
     <div class="signature-box" id="sigBlock">
         <div style="font-weight: 900; font-size: 14px;">DR. M. JAYACHANDER</div>
         <div style="font-size: 11px;">MBBS, M.D. (GENERAL MEDICINE)</div>
@@ -446,17 +444,25 @@
         if(!selected) return alert("Select at least one test");
 
         const entry = `[${new Date().toLocaleDateString()}] Tests: ${selected} | SubTotal: ${sub} | Discount: ${disc} | Paid: ${total}`;
+        let history = (p[17] || "") + entry + "\n";
         
-        // Persistent Update to Database
-        let history = p[17] || "";
-        history += entry + "\n";
-        
-        const payload = { action: "update_lab_history", opd: currentOpd, labHistory: history };
-        
+        // RECTIFIED: Use URLSearchParams for more reliable Google Script POST
+        const payload = new URLSearchParams();
+        payload.append('action', 'update_lab_history');
+        payload.append('opd', currentOpd);
+        payload.append('labHistory', history);
+
         try {
-            await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
-            p[17] = history; // Update local cache
-            alert("Lab Record Saved Successfully to Database!");
+            // Using mode 'no-cors' and text body to bypass CORS fetch errors
+            await fetch(API, { 
+                method: 'POST', 
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: payload 
+            });
+            
+            p[17] = history; 
+            alert("Lab Record Saved!");
             showPrevLab();
         } catch(e) {
             alert("Error saving: " + e.message);
