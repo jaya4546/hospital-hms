@@ -11,7 +11,7 @@
   </style>
   <script>
     // Integrated Live Google Apps Script Web App API Endpoint Link
-    const GOOGLE_API_ENDPOINT = "https://script.google.com/macros/s/AKfycbyyKMppS-Kg3BVFSImUZnBrLhRXI-UI0qJtRw25HyNhdEjRxLMMUP-APUhstB1j6xbTfg/exec";
+    const GOOGLE_API_ENDPOINT = "https://script.google.com/macros/s/AKfycby5Juc_yZoUD0fYtS1VB6NYUmv-Ju3NMQ5icq8RrZApgElC_S6gWHt657xcsGbXXWH8vQ/exec";
 
     // Application Global State Registries
     let patients = [];
@@ -46,9 +46,13 @@
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({ action: actionName, payload: dataPayload })
         });
-        return await response.json();
+        const result = await response.json();
+        if(!result.success) {
+          console.error("Cloud action returned error status: ", result.error);
+        }
+        return result;
       } catch (err) {
-        console.error("Cloud framework syncing failure: ", err);
+        console.error("Cloud framework syncing failure critical link drop: ", err);
         return { success: false, localFallback: true };
       }
     }
@@ -58,14 +62,12 @@
       console.log("Downloading server log state frames...");
       const res = await executeRemoteDatabaseAction("getAllData", {});
       if(res && res.success) {
-        // Build Local Runtime Variables Array structures out of the mapped columns from Google Spreadsheet
         if(res.patients) {
-          patients = res.patients.map(r => ({ name: r[0], age: r[1], gender: r[2], contact: r[3], address: r[4] }));
+          patients = res.patients.filter(r => r[0]).map(r => ({ name: r[0], age: r[1], gender: r[2], contact: r[3], address: r[4] }));
         }
         
-        // RECTIFIED: Maps columns exactly from the Google Sheet arrays back to Stock objects
         if(res.stock) {
-          stock = res.stock.map((r, i) => ({ 
+          stock = res.stock.filter(r => r[1]).map((r, i) => ({ 
             sNo: r[0] || (i + 1), 
             name: r[1], 
             company: r[2], 
@@ -82,13 +84,17 @@
         }
         
         if(res.invoices) {
-          invoices = res.invoices.map(r => ({ invoiceId: r[0], patientName: r[1], grandTotal: parseFloat(r[2]) || 0, netProfit: parseFloat(r[3]) || 0, date: r[4], items: JSON.parse(r[5] || "[]") }));
+          invoices = res.invoices.filter(r => r[0]).map(r => ({ invoiceId: r[0], patientName: r[1], grandTotal: parseFloat(r[2]) || 0, netProfit: parseFloat(r[3]) || 0, date: r[4], items: JSON.parse(r[5] || "[]") }));
+          if (invoices.length > 0) {
+            const lastId = invoices[invoices.length - 1].invoiceId;
+            const numericPart = parseInt(lastId.replace("INV-", ""));
+            if (!isNaN(numericPart)) invoiceSequence = numericPart + 1;
+          }
         }
         if(res.labCatalogue) {
-          labCatalogue = res.labCatalogue.map(r => ({ name: r[0], price: parseFloat(r[2]) || 0 }));
+          labCatalogue = res.labCatalogue.filter(r => r[0]).map(r => ({ name: r[0], price: parseFloat(r[2]) || 0 }));
         }
         
-        // Re-render UI loops cleanly without touching HTML structures
         renderPatientsUI();
         renderStockUI();
         renderHistoricalInvoicesUI();
@@ -116,14 +122,16 @@
         const oldName = patients[parseInt(indexField)].name;
         patients[parseInt(indexField)] = pData;
         document.getElementById('p_edit_index').value = "";
+        renderPatientsUI();
+        syncFormSelectorElements();
         await executeRemoteDatabaseAction("updatePatient", { oldName: oldName, updatedData: pData });
       } else {
         patients.push(pData);
+        renderPatientsUI();
+        syncFormSelectorElements();
         await executeRemoteDatabaseAction("savePatient", pData);
       }
       document.getElementById('patientRegistrationForm').reset();
-      renderPatientsUI();
-      syncFormSelectorElements();
     }
 
     function renderPatientsUI() {
@@ -183,7 +191,6 @@
 
       if(!name || !qty || !mrp) return alert("Verify core fields.");
 
-      // RECTIFIED: Ensured keys match backend expectations cleanly
       const item = { 
         sNo: stock.length + 1, 
         name: name, 
@@ -203,7 +210,6 @@
       renderStockUI();
       syncFormSelectorElements();
       
-      // Fires sync operation to remote backend 
       await executeRemoteDatabaseAction("saveStockItem", item);
       document.getElementById('stockAdditionForm').reset();
     }
@@ -335,20 +341,19 @@
         grandTotal: finalAmount, discountAmount: calculatedDiscountTotal, netProfit: profitYield, date: new Date().toISOString().split('T')[0]
       };
 
-      // Real-time local stock quantity deduction engine
-      activeInvoiceCart.forEach(item => {
+      // Real-time stock execution sequence
+      for (let item of activeInvoiceCart) {
         if(item.mode === "Full Strip") {
           stock[item.stockIndex].qty -= item.quantity;
-          // Synchronizes structural stock deduction change to Spreadsheet right away
-          executeRemoteDatabaseAction("updateStockQty", { name: stock[item.stockIndex].name, newQty: stock[item.stockIndex].qty });
+          await executeRemoteDatabaseAction("updateStockQty", { name: stock[item.stockIndex].name, newQty: stock[item.stockIndex].qty });
         }
-      });
+      }
 
       invoices.push(billRecord);
-      await executeRemoteDatabaseAction("saveInvoice", billRecord);
-
       renderStockUI();
       renderHistoricalInvoicesUI();
+      
+      await executeRemoteDatabaseAction("saveInvoice", billRecord);
 
       if(actionType === 'print') triggerHardwareThermalPrinter(billRecord);
 
@@ -405,36 +410,42 @@
     async function deleteHistoricalBill(index) {
       if(confirm("Deleting this document will restore transaction quantities to stock records automatically. Proceed?")) {
         const targetBill = invoices[index];
-        targetBill.items.forEach(async (item) => {
+        for (let item of targetBill.items) {
           if(item.mode === "Full Strip") {
-            stock[item.stockIndex].qty += item.quantity;
-            await executeRemoteDatabaseAction("updateStockQty", { name: stock[item.stockIndex].name, newQty: stock[item.stockIndex].qty });
+            const currentItem = stock.find(s => s.name === item.productName);
+            if(currentItem) {
+              currentItem.qty += item.quantity;
+              await executeRemoteDatabaseAction("updateStockQty", { name: currentItem.name, newQty: currentItem.qty });
+            }
           }
-        });
-        await executeRemoteDatabaseAction("deleteInvoice", { invoiceId: targetBill.invoiceId });
+        }
         invoices.splice(index, 1);
         renderStockUI();
         renderHistoricalInvoicesUI();
+        await executeRemoteDatabaseAction("deleteInvoice", { invoiceId: targetBill.invoiceId });
       }
     }
 
     async function modifyHistoricalBill(idx) {
       const inv = invoices[idx];
       if(confirm("Load invoice profile back into workspace terminal? Stocks levels will update dynamically upon adjustment re-saving.")) {
-        inv.items.forEach(async (item) => {
+        for (let item of inv.items) {
           if(item.mode === "Full Strip") {
-            stock[item.stockIndex].qty += item.quantity;
-            await executeRemoteDatabaseAction("updateStockQty", { name: stock[item.stockIndex].name, newQty: stock[item.stockIndex].qty });
+            const currentItem = stock.find(s => s.name === item.productName);
+            if(currentItem) {
+              currentItem.qty += item.quantity;
+              await executeRemoteDatabaseAction("updateStockQty", { name: currentItem.name, newQty: currentItem.qty });
+            }
           }
-        });
+        }
         activeInvoiceCart = inv.items;
         document.getElementById('billingPatientSelect').value = inv.patientName;
         navigateToTab('counter');
         renderActiveInvoiceCartUI();
-        await executeRemoteDatabaseAction("deleteInvoice", { invoiceId: inv.invoiceId });
         invoices.splice(idx, 1);
         renderStockUI();
         renderHistoricalInvoicesUI();
+        await executeRemoteDatabaseAction("deleteInvoice", { invoiceId: inv.invoiceId });
       }
     }
 
@@ -486,10 +497,9 @@
       document.getElementById('labConfigTestName').value = '';
       document.getElementById('labConfigTestPrice').value = '';
       
-      await executeRemoteDatabaseAction("saveLabCatalogue", { catalogue: labCatalogue });
-      
       renderLabMasterCatalogueUI();
       syncFormSelectorElements();
+      await executeRemoteDatabaseAction("saveLabCatalogue", { catalogue: labCatalogue });
     }
 
     async function editMasterLabCatalogueTestRecord(idx) {
@@ -500,9 +510,9 @@
       if(isNaN(updatedPrice) || updatedPrice <= 0) return;
 
       labCatalogue[idx] = { name: updatedTitle, price: updatedPrice };
-      await executeRemoteDatabaseAction("saveLabCatalogue", { catalogue: labCatalogue });
       renderLabMasterCatalogueUI();
       syncFormSelectorElements();
+      await executeRemoteDatabaseAction("saveLabCatalogue", { catalogue: labCatalogue });
     }
 
     function renderLabMasterCatalogueUI() {
@@ -678,7 +688,7 @@
 
     window.onload = function() {
       syncFormSelectorElements();
-      fetchInitialData(); // Start cross-device persistent layer sync engine immediately
+      fetchInitialData(); 
     };
   </script>
 </head>
