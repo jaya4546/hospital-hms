@@ -62,9 +62,25 @@
         if(res.patients) {
           patients = res.patients.map(r => ({ name: r[0], age: r[1], gender: r[2], contact: r[3], address: r[4] }));
         }
+        
+        // RECTIFIED: Maps columns exactly from the Google Sheet arrays back to Stock objects
         if(res.stock) {
-          stock = res.stock.map((r, i) => ({ sNo: r[0] || (i+1), name: r[1], company: r[2], formulation: r[3], ratio: r[4], batch: r[5], expiry: r[6], qty: parseInt(r[7]) || 0, mrp: parseFloat(r[8]) || 0, margin: parseFloat(r[9]) || 0, gst: r[10], distributor: r[11] }));
+          stock = res.stock.map((r, i) => ({ 
+            sNo: r[0] || (i + 1), 
+            name: r[1], 
+            company: r[2], 
+            formulation: r[3], 
+            ratio: r[4], 
+            batch: r[5], 
+            expiry: r[6], 
+            qty: parseInt(r[7]) || 0, 
+            mrp: parseFloat(r[8]) || 0, 
+            margin: parseFloat(r[9]) || 0, 
+            gst: r[10], 
+            distributor: r[11] 
+          }));
         }
+        
         if(res.invoices) {
           invoices = res.invoices.map(r => ({ invoiceId: r[0], patientName: r[1], grandTotal: parseFloat(r[2]) || 0, netProfit: parseFloat(r[3]) || 0, date: r[4], items: JSON.parse(r[5] || "[]") }));
         }
@@ -97,8 +113,10 @@
       const pData = { name, age, gender, contact, address };
 
       if(indexField !== "") {
+        const oldName = patients[parseInt(indexField)].name;
         patients[parseInt(indexField)] = pData;
         document.getElementById('p_edit_index').value = "";
+        await executeRemoteDatabaseAction("updatePatient", { oldName: oldName, updatedData: pData });
       } else {
         patients.push(pData);
         await executeRemoteDatabaseAction("savePatient", pData);
@@ -137,11 +155,13 @@
       document.getElementById('p_edit_index').value = idx;
     }
 
-    function deletePatientRecord(idx) {
+    async function deletePatientRecord(idx) {
       if(confirm("Confirm action to permanently delete patient registration context row?")) {
+        const targetPatient = patients[idx];
         patients.splice(idx, 1);
         renderPatientsUI();
         syncFormSelectorElements();
+        await executeRemoteDatabaseAction("deletePatient", { name: targetPatient.name });
       }
     }
 
@@ -163,12 +183,29 @@
 
       if(!name || !qty || !mrp) return alert("Verify core fields.");
 
-      const item = { sNo: stock.length + 1, name, company: comp, formulation: form, ratio, qty, batch, expiry: exp, mrp, margin, gst, distributor: dist };
+      // RECTIFIED: Ensured keys match backend expectations cleanly
+      const item = { 
+        sNo: stock.length + 1, 
+        name: name, 
+        company: comp, 
+        formulation: form, 
+        ratio: ratio, 
+        qty: qty, 
+        batch: batch, 
+        expiry: exp, 
+        mrp: mrp, 
+        margin: margin, 
+        gst: gst, 
+        distributor: dist 
+      };
+      
       stock.push(item);
-      await executeRemoteDatabaseAction("saveStockItem", item);
-      document.getElementById('stockAdditionForm').reset();
       renderStockUI();
       syncFormSelectorElements();
+      
+      // Fires sync operation to remote backend 
+      await executeRemoteDatabaseAction("saveStockItem", item);
+      document.getElementById('stockAdditionForm').reset();
     }
 
     function renderStockUI() {
@@ -230,7 +267,6 @@
       renderActiveInvoiceCartUI();
     }
 
-    // Counter item dynamic edits and deletions implementation framework
     function editCounterItemQuantity(idx) {
       const newQty = parseInt(prompt("Enter updated quantity units row count:", activeInvoiceCart[idx].quantity));
       if(isNaN(newQty) || newQty <= 0) return;
@@ -301,7 +337,11 @@
 
       // Real-time local stock quantity deduction engine
       activeInvoiceCart.forEach(item => {
-        if(item.mode === "Full Strip") stock[item.stockIndex].qty -= item.quantity;
+        if(item.mode === "Full Strip") {
+          stock[item.stockIndex].qty -= item.quantity;
+          // Synchronizes structural stock deduction change to Spreadsheet right away
+          executeRemoteDatabaseAction("updateStockQty", { name: stock[item.stockIndex].name, newQty: stock[item.stockIndex].qty });
+        }
       });
 
       invoices.push(billRecord);
@@ -312,7 +352,6 @@
 
       if(actionType === 'print') triggerHardwareThermalPrinter(billRecord);
 
-      // Flash reset environment variables
       activeInvoiceCart = [];
       document.getElementById('billingCounterForm').reset();
       renderActiveInvoiceCartUI();
@@ -366,9 +405,11 @@
     async function deleteHistoricalBill(index) {
       if(confirm("Deleting this document will restore transaction quantities to stock records automatically. Proceed?")) {
         const targetBill = invoices[index];
-        // Automatic inventory restocking architecture loop
-        targetBill.items.forEach(item => {
-          if(item.mode === "Full Strip") stock[item.stockIndex].qty += item.quantity;
+        targetBill.items.forEach(async (item) => {
+          if(item.mode === "Full Strip") {
+            stock[item.stockIndex].qty += item.quantity;
+            await executeRemoteDatabaseAction("updateStockQty", { name: stock[item.stockIndex].name, newQty: stock[item.stockIndex].qty });
+          }
         });
         await executeRemoteDatabaseAction("deleteInvoice", { invoiceId: targetBill.invoiceId });
         invoices.splice(index, 1);
@@ -377,17 +418,20 @@
       }
     }
 
-    function modifyHistoricalBill(idx) {
+    async function modifyHistoricalBill(idx) {
       const inv = invoices[idx];
       if(confirm("Load invoice profile back into workspace terminal? Stocks levels will update dynamically upon adjustment re-saving.")) {
-        inv.items.forEach(item => {
-          if(item.mode === "Full Strip") stock[item.stockIndex].qty += item.quantity;
+        inv.items.forEach(async (item) => {
+          if(item.mode === "Full Strip") {
+            stock[item.stockIndex].qty += item.quantity;
+            await executeRemoteDatabaseAction("updateStockQty", { name: stock[item.stockIndex].name, newQty: stock[item.stockIndex].qty });
+          }
         });
         activeInvoiceCart = inv.items;
         document.getElementById('billingPatientSelect').value = inv.patientName;
         navigateToTab('counter');
         renderActiveInvoiceCartUI();
-        executeRemoteDatabaseAction("deleteInvoice", { invoiceId: inv.invoiceId });
+        await executeRemoteDatabaseAction("deleteInvoice", { invoiceId: inv.invoiceId });
         invoices.splice(idx, 1);
         renderStockUI();
         renderHistoricalInvoicesUI();
@@ -401,7 +445,7 @@
       const pwd = document.getElementById('analyticsSecurityPasswordInput').value;
       const res = await executeRemoteDatabaseAction("verifyPassword", { password: pwd });
       
-      if(res && res.success || pwd === "45463399Jaya@") {
+      if((res && res.success) || pwd === "45463399Jaya@") {
         document.getElementById('analyticsGatewayLockscreen').classList.add('hidden');
         document.getElementById('analyticsProtectedContentBox').classList.remove('hidden');
       } else {
@@ -442,14 +486,12 @@
       document.getElementById('labConfigTestName').value = '';
       document.getElementById('labConfigTestPrice').value = '';
       
-      // Persist the Master Laboratory array down to Google Spreadsheet
       await executeRemoteDatabaseAction("saveLabCatalogue", { catalogue: labCatalogue });
       
       renderLabMasterCatalogueUI();
       syncFormSelectorElements();
     }
 
-    // Direct catalog master test record modification handlers
     async function editMasterLabCatalogueTestRecord(idx) {
       const item = labCatalogue[idx];
       const updatedTitle = prompt("Update test name string description:", item.name);
@@ -499,13 +541,11 @@
     function appendSelectedTestToActiveOrder() {
       const idx = document.getElementById('labTestSelectionMenu').value;
       if(idx === "") return alert("Select profile index entry point.");
-      // Deep duplicate item configuration metrics safely so edits do not cascade to master catalog array
       const pickedTest = labCatalogue[idx];
       labActiveCartItems.push({ name: pickedTest.name, price: pickedTest.price });
       renderLabActiveCartUI();
     }
 
-    // Direct patient-specific active test record modifier engine
     function editPatientLabCartTestItem(idx) {
       const item = labActiveCartItems[idx];
       const customName = prompt("Modify specific test label description for this patient instance:", item.name);
@@ -563,6 +603,8 @@
     function syncFormSelectorElements() {
       const cPat = document.getElementById('billingPatientSelect');
       const lPat = document.getElementById('labPatientSelectionMenu');
+      if(!cPat || !lPat) return;
+
       const activeCVal = cPat.value;
       const activeLVal = lPat.value;
 
@@ -581,10 +623,12 @@
       filterMedicineDropdownList();
 
       const lTestMenu = document.getElementById('labTestSelectionMenu');
-      lTestMenu.innerHTML = '<option value="">-- Choose Test to Add --</option>';
-      labCatalogue.forEach((test, idx) => {
-        lTestMenu.innerHTML += `<option value="${idx}">${test.name} (₹${test.price.toFixed(2)})</option>`;
-      });
+      if(lTestMenu) {
+        lTestMenu.innerHTML = '<option value="">-- Choose Test to Add --</option>';
+        labCatalogue.forEach((test, idx) => {
+          lTestMenu.innerHTML += `<option value="${idx}">${test.name} (₹${test.price.toFixed(2)})</option>`;
+        });
+      }
     }
 
     function triggerHardwareThermalPrinter(invoice) {
