@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Shree Raja Rajeshwari Pharmacy</title>
+  <!-- Tailwind CSS Engine UI Blueprint Layer -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .tab-view { display: none; }
@@ -57,50 +58,96 @@
       }
     }
 
-    // Dynamic Remote Database Synchronization Initial Loading Call Engine
+    // Resilient Dynamic Remote Database Synchronization Initial Loading Call Engine
     async function fetchInitialData() {
       console.log("Downloading server log state frames...");
       const res = await executeRemoteDatabaseAction("getAllData", {});
       if(res && res.success) {
-        if(res.patients) {
-          patients = res.patients.filter(r => r[0]).map(r => ({ name: r[0], age: r[1], gender: r[2], contact: r[3], address: r[4] }));
-        }
-        
-        if(res.stock) {
-          stock = res.stock.filter(r => r[1]).map((r, i) => ({ 
-            sNo: r[0] || (i + 1), 
-            name: r[1], 
-            company: r[2], 
-            formulation: r[3], 
-            ratio: r[4], 
-            batch: r[5], 
-            expiry: r[6], 
-            qty: parseInt(r[7]) || 0, 
-            mrp: parseFloat(r[8]) || 0, 
-            margin: parseFloat(r[9]) || 0, 
-            gst: r[10], 
-            distributor: r[11] 
-          }));
-        }
-        
-        if(res.invoices) {
-          invoices = res.invoices.filter(r => r[0]).map(r => ({ invoiceId: r[0], patientName: r[1], grandTotal: parseFloat(r[2]) || 0, netProfit: parseFloat(r[3]) || 0, date: r[4], items: JSON.parse(r[5] || "[]") }));
-          if (invoices.length > 0) {
-            const lastId = invoices[invoices.length - 1].invoiceId;
-            const numericPart = parseInt(lastId.replace("INV-", ""));
-            if (!isNaN(numericPart)) invoiceSequence = numericPart + 1;
+        try {
+          // Robust Patient Mapping
+          if(res.patients && Array.isArray(res.patients)) {
+            patients = res.patients
+              .filter(r => r && (r[0] || r[3])) // Keep row if name or contact exists
+              .map(r => ({
+                name: r[0] ? String(r[0]).trim() : "Unknown Patient",
+                age: r[1] !== undefined ? r[1] : "",
+                gender: r[2] || "Male",
+                contact: r[3] ? String(r[3]).trim() : "",
+                address: r[4] || ""
+              }));
           }
-        }
-        if(res.labCatalogue) {
-          labCatalogue = res.labCatalogue.filter(r => r[0]).map(r => ({ name: r[0], price: parseFloat(r[2]) || 0 }));
+          
+          // Robust Stock Mapping
+          if(res.stock && Array.isArray(res.stock)) {
+            stock = res.stock
+              .filter(r => r && r[1]) // Ensure item has a name
+              .map((r, i) => ({ 
+                sNo: r[0] || (i + 1), 
+                name: String(r[1]).trim(), 
+                company: r[2] || "", 
+                formulation: r[3] || "Tablet or Capsule", 
+                ratio: r[4] || "1*10", 
+                batch: r[5] || "N/A", 
+                expiry: r[6] || "", 
+                qty: parseInt(r[7]) || 0, 
+                mrp: parseFloat(r[8]) || 0, 
+                margin: parseFloat(r[9]) || 0, 
+                gst: r[10] || "0", 
+                distributor: r[11] || "" 
+              }));
+          }
+          
+          // Robust Invoice Mapping
+          if(res.invoices && Array.isArray(res.invoices)) {
+            invoices = res.invoices
+              .filter(r => r && r[0]) // Ensure invoice ID exists
+              .map(r => {
+                let parsedItems = [];
+                try {
+                  parsedItems = JSON.parse(r[5] || "[]");
+                } catch(e) {
+                  console.error("Error parsing items JSON for invoice: ", r[0]);
+                }
+                return { 
+                  invoiceId: String(r[0]), 
+                  patientName: r[1] || "Unknown", 
+                  grandTotal: parseFloat(r[2]) || 0, 
+                  netProfit: parseFloat(r[3]) || 0, 
+                  date: r[4] || "", 
+                  items: parsedItems 
+                };
+              });
+
+            if (invoices.length > 0) {
+              const lastId = invoices[invoices.length - 1].invoiceId;
+              const numericPart = parseInt(lastId.replace("INV-", ""));
+              if (!isNaN(numericPart)) invoiceSequence = numericPart + 1;
+            }
+          }
+
+          // Robust Lab Catalogue Mapping
+          if(res.labCatalogue && Array.isArray(res.labCatalogue)) {
+            labCatalogue = res.labCatalogue
+              .filter(r => r && r[0])
+              .map(r => ({ 
+                name: String(r[0]).trim(), 
+                price: parseFloat(r[2]) || parseFloat(r[1]) || 0 
+              }));
+          }
+        } catch (parsingError) {
+          console.error("Error while structuralizing local data array profiles: ", parsingError);
         }
         
+        // Push parsed array data states safely to viewport templates
         renderPatientsUI();
         renderStockUI();
         renderHistoricalInvoicesUI();
         renderLabMasterCatalogueUI();
         syncFormSelectorElements();
         console.log("Local system data mapping successfully synchronized across device boundaries.");
+      } else {
+        console.warn("Server structure returned unsuccessful response flags. Forcing layout sync init.");
+        syncFormSelectorElements();
       }
     }
 
@@ -136,6 +183,7 @@
 
     function renderPatientsUI() {
       const tbody = document.getElementById('patientTableBody');
+      if (!tbody) return;
       tbody.innerHTML = '';
       patients.forEach((p, index) => {
         tbody.innerHTML += `
@@ -216,6 +264,7 @@
 
     function renderStockUI() {
       const tbody = document.getElementById('stockTableBody');
+      if (!tbody) return;
       tbody.innerHTML = '';
       stock.forEach(i => {
         tbody.innerHTML += `
@@ -239,6 +288,7 @@
     function filterMedicineDropdownList() {
       const criteria = document.getElementById('billingMedicineSearch').value.toLowerCase();
       const selector = document.getElementById('billingMedicineSelect');
+      if (!selector) return;
       selector.innerHTML = '';
       stock.forEach((item, index) => {
         if(item.name.toLowerCase().includes(criteria)) {
@@ -292,6 +342,7 @@
 
     function renderActiveInvoiceCartUI() {
       const tbody = document.getElementById('activeInvoiceItemsTable');
+      if (!tbody) return;
       tbody.innerHTML = '';
       activeInvoiceCart.forEach((i, idx) => {
         tbody.innerHTML += `
@@ -368,6 +419,7 @@
     // -----------------------------------------------------------------
     function renderHistoricalInvoicesUI() {
       const tbody = document.getElementById('historicalInvoicesTableBody');
+      if (!tbody) return;
       tbody.innerHTML = '';
       invoices.forEach((inv, index) => {
         tbody.innerHTML += `
@@ -388,6 +440,7 @@
       const idQuery = document.getElementById('searchInvoiceIdInput').value.toLowerCase();
       const nameQuery = document.getElementById('searchInvoiceNameInput').value.toLowerCase();
       const tbody = document.getElementById('historicalInvoicesTableBody');
+      if (!tbody) return;
       tbody.innerHTML = '';
 
       invoices.forEach((inv, index) => {
@@ -517,6 +570,7 @@
 
     function renderLabMasterCatalogueUI() {
       const container = document.getElementById('labMasterCatalogueListWrapper');
+      if (!container) return;
       container.innerHTML = '';
       labCatalogue.forEach((t, idx) => {
         container.innerHTML += `
@@ -533,6 +587,7 @@
     function filterLabCatalogueList() {
       const text = document.getElementById('labCatalogueFilterSearchInput').value.toLowerCase();
       const container = document.getElementById('labMasterCatalogueListWrapper');
+      if (!container) return;
       container.innerHTML = '';
       labCatalogue.forEach((t, idx) => {
         if(t.name.toLowerCase().includes(text)) {
@@ -577,6 +632,7 @@
 
     function renderLabActiveCartUI() {
       const wrapper = document.getElementById('labSelectedActiveTestsWrapper');
+      if (!wrapper) return;
       wrapper.innerHTML = '';
       let subTotal = 0;
       labActiveCartItems.forEach((t, idx) => {
@@ -621,11 +677,13 @@
       cPat.innerHTML = '<option value="">-- Choose Registered Patient --</option>';
       lPat.innerHTML = '<option value="">-- Choose Patient Context --</option>';
       
-      patients.forEach(p => {
-        const optionString = `<option value="${p.name}">${p.name} (Age: ${p.age})</option>`;
-        cPat.innerHTML += optionString;
-        lPat.innerHTML += optionString;
-      });
+      if(patients && patients.length > 0) {
+        patients.forEach(p => {
+          const optionString = `<option value="${p.name}">${p.name} (Age: ${p.age})</option>`;
+          cPat.innerHTML += optionString;
+          lPat.innerHTML += optionString;
+        });
+      }
 
       cPat.value = activeCVal;
       lPat.value = activeLVal;
@@ -635,9 +693,11 @@
       const lTestMenu = document.getElementById('labTestSelectionMenu');
       if(lTestMenu) {
         lTestMenu.innerHTML = '<option value="">-- Choose Test to Add --</option>';
-        labCatalogue.forEach((test, idx) => {
-          lTestMenu.innerHTML += `<option value="${idx}">${test.name} (₹${test.price.toFixed(2)})</option>`;
-        });
+        if(labCatalogue && labCatalogue.length > 0) {
+          labCatalogue.forEach((test, idx) => {
+            lTestMenu.innerHTML += `<option value="${idx}">${test.name} (₹${test.price.toFixed(2)})</option>`;
+          });
+        }
       }
     }
 
@@ -694,6 +754,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased">
 
+  <!-- Header Branding Component Layer -->
   <header class="bg-teal-800 text-white shadow-md py-4 px-6">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left">
       <div>
@@ -707,6 +768,7 @@
   </header>
 
   <main class="max-w-7xl mx-auto my-6 px-4">
+    <!-- Component-Driven Functional Navigation Tabs System -->
     <nav class="flex flex-wrap border-b border-slate-200 bg-white shadow-sm rounded-t-xl overflow-hidden mb-6">
       <button onclick="navigateToTab('counter')" id="btn-counter" class="tab-navigation-btn px-6 py-3.5 text-sm font-semibold text-teal-600 border-b-2 border-teal-600 active">Counter Medicine</button>
       <button onclick="navigateToTab('stock')" id="btn-stock" class="tab-navigation-btn px-6 py-3.5 text-sm font-semibold text-gray-500 hover:text-teal-600">Medicine Stock</button>
@@ -716,6 +778,7 @@
       <button onclick="navigateToTab('laboratory')" id="btn-laboratory" class="tab-navigation-btn px-6 py-3.5 text-sm font-semibold text-gray-500 hover:text-teal-600">Laboratory</button>
     </nav>
 
+    <!-- TAB 1: COUNTER MEDICINE MODULE VIEW -->
     <section id="counter" class="tab-view active bg-white p-6 rounded-xl shadow-sm border border-slate-100">
       <h2 class="text-xl font-bold text-slate-900 mb-4 pb-2 border-b">Point of Sale Terminal</h2>
       <form id="billingCounterForm" class="space-y-4" onsubmit="event.preventDefault();">
@@ -782,6 +845,7 @@
       </div>
     </section>
 
+    <!-- TAB 2: MEDICINE STOCK MODULE VIEW -->
     <section id="stock" class="tab-view bg-white p-6 rounded-xl shadow-sm border border-slate-100">
       <h2 class="text-xl font-bold text-slate-900 mb-4 pb-2 border-b">Inventory Management Desk</h2>
       <form id="stockAdditionForm" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" onsubmit="event.preventDefault();">
@@ -819,6 +883,7 @@
       </div>
     </section>
 
+    <!-- TAB 3: PATIENT REGISTER MODULE VIEW -->
     <section id="patients" class="tab-view bg-white p-6 rounded-xl shadow-sm border border-slate-100">
       <h2 class="text-xl font-bold text-slate-900 mb-4 pb-2 border-b">System Patient Directory</h2>
       <form id="patientRegistrationForm" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" onsubmit="event.preventDefault();">
@@ -835,6 +900,7 @@
       </div>
     </section>
 
+    <!-- TAB 4: ANALYTICS & REPORTS MODULE VIEW -->
     <section id="analytics" class="tab-view bg-white p-6 rounded-xl shadow-sm border border-slate-100">
       <h2 class="text-xl font-bold text-slate-900 mb-4 pb-2 border-b">Analytical Reports Office</h2>
       <div id="analyticsGatewayLockscreen" class="max-w-md mx-auto text-center py-12">
@@ -855,6 +921,7 @@
       </div>
     </section>
 
+    <!-- TAB 5: PREVIOUS BILLING MODULE VIEW -->
     <section id="billing" class="tab-view bg-white p-6 rounded-xl shadow-sm border border-slate-100">
       <h2 class="text-xl font-bold text-slate-900 mb-4 pb-2 border-b">Historical Ledger Log Sheets</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -864,6 +931,7 @@
       <div class="overflow-x-auto border rounded-xl"><table class="w-full text-left border-collapse"><thead class="bg-slate-50 border-b text-xs font-bold uppercase text-slate-600"><tr><th class="p-3">Invoice Id</th><th class="p-3">Patient Account Reference</th><th class="p-3">Gross Total Paid</th><th class="p-3">Operations Management</th></tr></thead><tbody id="historicalInvoicesTableBody"></tbody></table></div>
     </section>
 
+    <!-- TAB 6: LABORATORY DIAGNOSTICS MODULE VIEW -->
     <section id="laboratory" class="tab-view bg-white p-6 rounded-xl shadow-sm border border-slate-100">
       <h2 class="text-xl font-bold text-slate-900 mb-4 pb-2 border-b">Laboratory Diagnostic Profile Panel</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
