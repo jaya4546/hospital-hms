@@ -1,964 +1,658 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shree Raja Rajeshwari Pharmacy</title>
-  <!-- Tailwind CSS Engine UI Blueprint Layer -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    .tab-view { display: none; }
-    .tab-view.active { display: block; }
-  </style>
-  <script>
-    // Integrated Live Google Apps Script Web App API Endpoint Link
-    const GOOGLE_API_ENDPOINT = "https://script.google.com/macros/s/AKfycby5Juc_yZoUD0fYtS1VB6NYUmv-Ju3NMQ5icq8RrZApgElC_S6gWHt657xcsGbXXWH8vQ/exec";
-
-    // Application Global State Registries
-    let patients = [];
-    let stock = [];
-    let invoices = [];
-    let labCatalogue = [];
-    let activeInvoiceCart = [];
-    let labActiveCartItems = [];
-    let invoiceSequence = 20001;
-
-    // View Routing Management Engine
-    function navigateToTab(targetId) {
-      document.querySelectorAll('.tab-view').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.tab-navigation-btn').forEach(el => {
-        el.classList.remove('text-teal-600', 'border-teal-600', 'border-b-2', 'active');
-        el.classList.add('text-gray-500');
-      });
-      document.getElementById(targetId).classList.add('active');
-      const activeBtn = document.getElementById('btn-' + targetId);
-      if(activeBtn) {
-        activeBtn.classList.remove('text-gray-500');
-        activeBtn.classList.add('text-teal-600', 'border-teal-600', 'border-b-2', 'active');
-      }
-    }
-
-    // High-level Cloud Synchronization Bridge Engine
-    async function executeRemoteDatabaseAction(actionName, dataPayload) {
-      try {
-        const response = await fetch(GOOGLE_API_ENDPOINT, {
-          method: "POST",
-          mode: "cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: actionName, payload: dataPayload })
-        });
-        const result = await response.json();
-        if(!result.success) {
-          console.error("Cloud action returned error status: ", result.error);
-        }
-        return result;
-      } catch (err) {
-        console.error("Cloud framework syncing failure critical link drop: ", err);
-        return { success: false, localFallback: true };
-      }
-    }
-
-    // Resilient Dynamic Remote Database Synchronization Initial Loading Call Engine
-    async function fetchInitialData() {
-      console.log("Downloading server log state frames...");
-      const res = await executeRemoteDatabaseAction("getAllData", {});
-      if(res && res.success) {
-        try {
-          // Robust Patient Mapping
-          if(res.patients && Array.isArray(res.patients)) {
-            patients = res.patients
-              .filter(r => r && (r[0] || r[3])) // Keep row if name or contact exists
-              .map(r => ({
-                name: r[0] ? String(r[0]).trim() : "Unknown Patient",
-                age: r[1] !== undefined ? r[1] : "",
-                gender: r[2] || "Male",
-                contact: r[3] ? String(r[3]).trim() : "",
-                address: r[4] || ""
-              }));
-          }
-          
-          // Robust Stock Mapping
-          if(res.stock && Array.isArray(res.stock)) {
-            stock = res.stock
-              .filter(r => r && r[1]) // Ensure item has a name
-              .map((r, i) => ({ 
-                sNo: r[0] || (i + 1), 
-                name: String(r[1]).trim(), 
-                company: r[2] || "", 
-                formulation: r[3] || "Tablet or Capsule", 
-                ratio: r[4] || "1*10", 
-                batch: r[5] || "N/A", 
-                expiry: r[6] || "", 
-                qty: parseInt(r[7]) || 0, 
-                mrp: parseFloat(r[8]) || 0, 
-                margin: parseFloat(r[9]) || 0, 
-                gst: r[10] || "0", 
-                distributor: r[11] || "" 
-              }));
-          }
-          
-          // Robust Invoice Mapping
-          if(res.invoices && Array.isArray(res.invoices)) {
-            invoices = res.invoices
-              .filter(r => r && r[0]) // Ensure invoice ID exists
-              .map(r => {
-                let parsedItems = [];
-                try {
-                  parsedItems = JSON.parse(r[5] || "[]");
-                } catch(e) {
-                  console.error("Error parsing items JSON for invoice: ", r[0]);
-                }
-                return { 
-                  invoiceId: String(r[0]), 
-                  patientName: r[1] || "Unknown", 
-                  grandTotal: parseFloat(r[2]) || 0, 
-                  netProfit: parseFloat(r[3]) || 0, 
-                  date: r[4] || "", 
-                  items: parsedItems 
-                };
-              });
-
-            if (invoices.length > 0) {
-              const lastId = invoices[invoices.length - 1].invoiceId;
-              const numericPart = parseInt(lastId.replace("INV-", ""));
-              if (!isNaN(numericPart)) invoiceSequence = numericPart + 1;
-            }
-          }
-
-          // Robust Lab Catalogue Mapping
-          if(res.labCatalogue && Array.isArray(res.labCatalogue)) {
-            labCatalogue = res.labCatalogue
-              .filter(r => r && r[0])
-              .map(r => ({ 
-                name: String(r[0]).trim(), 
-                price: parseFloat(r[2]) || parseFloat(r[1]) || 0 
-              }));
-          }
-        } catch (parsingError) {
-          console.error("Error while structuralizing local data array profiles: ", parsingError);
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRR Hospital - Professional HMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary-red: #b71c1c; --accent-gold: #fbc02d; --lab-blue: #0d47a1; }
+        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; font-weight: 600; }
+        .card-custom { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 6px 18px rgba(0,0,0,0.08); margin-bottom: 25px; border: none; }
+        .hidden { display: none; }
+        .selected-row { background-color: #fff3cd !important; border: 3px solid var(--accent-gold) !important; }
         
-        // Push parsed array data states safely to viewport templates
-        renderPatientsUI();
-        renderStockUI();
-        renderHistoricalInvoicesUI();
-        renderLabMasterCatalogueUI();
-        syncFormSelectorElements();
-        console.log("Local system data mapping successfully synchronized across device boundaries.");
-      } else {
-        console.warn("Server structure returned unsuccessful response flags. Forcing layout sync init.");
-        syncFormSelectorElements();
-      }
-    }
+        /* Dashboard Header */
+        .dash-header { background: white; padding: 15px; border-bottom: 4px solid var(--primary-red); margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .hosp-title-main { color: var(--primary-red); font-weight: 900; font-size: 32px; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+        .hosp-subtitle { font-size: 15px; font-weight: bold; color: #555; margin: 0; }
+        
+        .ui-doc-box { border: 2px solid var(--accent-gold); background: #fffde7; padding: 12px; border-radius: 10px; text-align: right; line-height: 1.3; }
 
-    // -----------------------------------------------------------------
-    // MODULE: PATIENT REGISTER LOGIC
-    // -----------------------------------------------------------------
-    async function handlePatientSave() {
-      const name = document.getElementById('p_name').value.trim();
-      const age = document.getElementById('p_age').value;
-      const gender = document.getElementById('p_gender').value;
-      const contact = document.getElementById('p_contact').value.trim();
-      const address = document.getElementById('p_address').value.trim();
-      const indexField = document.getElementById('p_edit_index').value;
+        /* Search Bar Style */
+        .search-container { position: relative; max-width: 100%; margin-bottom: 15px; }
+        .search-input { border: 2px solid var(--primary-red); border-radius: 8px; padding: 10px 20px 10px 45px; width: 100%; font-weight: bold; }
+        .search-icon { position: absolute; left: 15px; top: 13px; color: var(--primary-red); }
 
-      if(!name || !age || !contact) return alert("Verify all mandatory parameters.");
-      const pData = { name, age, gender, contact, address };
+        /* Selection Menu */
+        #selectionMenu { border: 2px solid var(--primary-red); background: #fdfdfd; }
+        .btn-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 10px; }
+        .btn-giant { padding: 15px 25px; font-size: 16px; font-weight: 800; text-transform: uppercase; border-radius: 12px; transition: transform 0.2s; border: none; min-width: 220px; }
+        .btn-giant:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        
+        .btn-rx { background: linear-gradient(135deg, #1e88e5, #1565c0); color: white; }
+        .btn-edit { background: linear-gradient(135deg, #ffb300, #f57c00); color: white; }
+        .btn-del { background: linear-gradient(135deg, #e53935, #c62828); color: white; }
+        .btn-print { background: linear-gradient(135deg, #43a047, #2e7d32); color: white; }
+        .btn-reg { background: linear-gradient(135deg, #673ab7, #512da8); color: white; }
+        .btn-lab { background: linear-gradient(135deg, #0d47a1, #1976d2); color: white; }
 
-      if(indexField !== "") {
-        const oldName = patients[parseInt(indexField)].name;
-        patients[parseInt(indexField)] = pData;
-        document.getElementById('p_edit_index').value = "";
-        renderPatientsUI();
-        syncFormSelectorElements();
-        await executeRemoteDatabaseAction("updatePatient", { oldName: oldName, updatedData: pData });
-      } else {
-        patients.push(pData);
-        renderPatientsUI();
-        syncFormSelectorElements();
-        await executeRemoteDatabaseAction("savePatient", pData);
-      }
-      document.getElementById('patientRegistrationForm').reset();
-    }
-
-    function renderPatientsUI() {
-      const tbody = document.getElementById('patientTableBody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-      patients.forEach((p, index) => {
-        tbody.innerHTML += `
-          <tr class="border-b text-sm hover:bg-gray-50">
-            <td class="p-3 font-semibold">${p.name}</td>
-            <td class="p-3">${p.age}</td>
-            <td class="p-3">${p.gender}</td>
-            <td class="p-3">${p.contact}</td>
-            <td class="p-3 truncate max-w-xs">${p.address}</td>
-            <td class="p-3 flex space-x-3">
-              <button onclick="editPatientRecord(${index})" class="text-blue-600 font-medium hover:underline">Edit Info</button>
-              <button onclick="deletePatientRecord(${index})" class="text-red-600 font-medium hover:underline">Delete Completely</button>
-            </td>
-          </tr>`;
-      });
-    }
-
-    function editPatientRecord(idx) {
-      const p = patients[idx];
-      document.getElementById('p_name').value = p.name;
-      document.getElementById('p_age').value = p.age;
-      document.getElementById('p_gender').value = p.gender;
-      document.getElementById('p_contact').value = p.contact;
-      document.getElementById('p_address').value = p.address;
-      document.getElementById('p_edit_index').value = idx;
-    }
-
-    async function deletePatientRecord(idx) {
-      if(confirm("Confirm action to permanently delete patient registration context row?")) {
-        const targetPatient = patients[idx];
-        patients.splice(idx, 1);
-        renderPatientsUI();
-        syncFormSelectorElements();
-        await executeRemoteDatabaseAction("deletePatient", { name: targetPatient.name });
-      }
-    }
-
-    // -----------------------------------------------------------------
-    // MODULE: MEDICINE STOCK ENGINE
-    // -----------------------------------------------------------------
-    async function commitNewStockItem() {
-      const name = document.getElementById('m_name').value.trim();
-      const comp = document.getElementById('m_company').value.trim();
-      const form = document.getElementById('m_formulation').value;
-      const ratio = document.getElementById('m_ratio').value;
-      const qty = parseInt(document.getElementById('m_qty').value) || 0;
-      const batch = document.getElementById('m_batch').value.trim();
-      const exp = document.getElementById('m_expiry').value;
-      const mrp = parseFloat(document.getElementById('m_mrp').value) || 0;
-      const margin = parseFloat(document.getElementById('m_margin').value) || 0;
-      const gst = document.getElementById('m_gst').value;
-      const dist = document.getElementById('m_distributor').value.trim();
-
-      if(!name || !qty || !mrp) return alert("Verify core fields.");
-
-      const item = { 
-        sNo: stock.length + 1, 
-        name: name, 
-        company: comp, 
-        formulation: form, 
-        ratio: ratio, 
-        qty: qty, 
-        batch: batch, 
-        expiry: exp, 
-        mrp: mrp, 
-        margin: margin, 
-        gst: gst, 
-        distributor: dist 
-      };
-      
-      stock.push(item);
-      renderStockUI();
-      syncFormSelectorElements();
-      
-      await executeRemoteDatabaseAction("saveStockItem", item);
-      document.getElementById('stockAdditionForm').reset();
-    }
-
-    function renderStockUI() {
-      const tbody = document.getElementById('stockTableBody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-      stock.forEach(i => {
-        tbody.innerHTML += `
-          <tr class="border-b text-xs hover:bg-gray-50">
-            <td class="p-2 font-bold">${i.sNo}</td>
-            <td class="p-2 font-medium text-gray-900">${i.name}</td>
-            <td class="p-2">${i.company}</td>
-            <td class="p-2 text-gray-500">${i.formulation}</td>
-            <td class="p-2 font-mono">${i.ratio}</td>
-            <td class="p-2 font-bold text-center ${i.qty < 5 ? 'text-red-600 bg-red-50' : 'text-gray-800'}">${i.qty}</td>
-            <td class="p-2 font-mono">${i.batch}</td>
-            <td class="p-2">${i.expiry}</td>
-            <td class="p-2 font-semibold">₹${i.mrp.toFixed(2)}</td>
-            <td class="p-2 text-gray-400">₹${i.margin.toFixed(2)}</td>
-            <td class="p-2">${i.gst}%</td>
-            <td class="p-2 truncate max-w-[100px]">${i.distributor}</td>
-          </tr>`;
-      });
-    }
-
-    function filterMedicineDropdownList() {
-      const criteria = document.getElementById('billingMedicineSearch').value.toLowerCase();
-      const selector = document.getElementById('billingMedicineSelect');
-      if (!selector) return;
-      selector.innerHTML = '';
-      stock.forEach((item, index) => {
-        if(item.name.toLowerCase().includes(criteria)) {
-          selector.innerHTML += `<option value="${index}">${item.name} [Batch: ${item.batch} | Stock: ${item.qty}]</option>`;
+        .btn-select-row { 
+            background: linear-gradient(135deg, #6a11cb, #2575fc); 
+            color: white; font-weight: bold; border: none; border-radius: 20px; 
+            padding: 5px 20px; transition: 0.3s;
         }
-      });
-    }
 
-    // -----------------------------------------------------------------
-    // MODULE: BILLING COUNTER FLUID LAYOUT CALCULATORS
-    // -----------------------------------------------------------------
-    function appendProductToActiveInvoice() {
-      const index = document.getElementById('billingMedicineSelect').value;
-      const unitMode = document.getElementById('billingUnitMode').value;
-      const qtyToSell = parseInt(document.getElementById('billingUnitsToSell').value) || 0;
-
-      if(index === "" || qtyToSell <= 0) return alert("Select standard item quantity parameters.");
-      const medicine = stock[index];
-
-      if(unitMode === "Full Strip" && medicine.qty < qtyToSell) return alert("Physical real-time medicine quantity threshold violated.");
-
-      const packingFactor = parseInt(medicine.ratio.split('*')[1]) || 10;
-      const finalUnitPrice = (unitMode === "Full Strip") ? medicine.mrp : (medicine.mrp / packingFactor);
-      const marginBasis = (unitMode === "Full Strip") ? medicine.margin : (medicine.margin / packingFactor);
-      const computedRowGross = finalUnitPrice * qtyToSell;
-
-      activeInvoiceCart.push({
-        stockIndex: index, productName: medicine.name, mode: unitMode, quantity: qtyToSell,
-        unitPrice: finalUnitPrice, marginCost: marginBasis, rowTotal: computedRowGross
-      });
-
-      renderActiveInvoiceCartUI();
-    }
-
-    function editCounterItemQuantity(idx) {
-      const newQty = parseInt(prompt("Enter updated quantity units row count:", activeInvoiceCart[idx].quantity));
-      if(isNaN(newQty) || newQty <= 0) return;
-      
-      const item = activeInvoiceCart[idx];
-      item.quantity = newQty;
-      item.rowTotal = item.unitPrice * newQty;
-      renderActiveInvoiceCartUI();
-    }
-
-    function removeCounterItemAccidentalEntry(idx) {
-      if(confirm("Remove this medicine entry row completely from active list tab context?")) {
-        activeInvoiceCart.splice(idx, 1);
-        renderActiveInvoiceCartUI();
-      }
-    }
-
-    function renderActiveInvoiceCartUI() {
-      const tbody = document.getElementById('activeInvoiceItemsTable');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-      activeInvoiceCart.forEach((i, idx) => {
-        tbody.innerHTML += `
-          <tr class="border-b text-sm">
-            <td class="p-2 font-medium">${i.productName}</td>
-            <td class="p-2 text-gray-500">${i.mode}</td>
-            <td class="p-2 font-bold">${i.quantity}</td>
-            <td class="p-2">₹${i.unitPrice.toFixed(2)}</td>
-            <td class="p-2 font-semibold text-right">₹${i.rowTotal.toFixed(2)}</td>
-            <td class="p-2 text-center">
-              <button onclick="editCounterItemQuantity(${idx})" class="text-blue-600 font-semibold hover:underline mr-2">Edit</button>
-              <button onclick="removeCounterItemAccidentalEntry(${idx})" class="text-red-600 font-semibold hover:underline">Remove</button>
-            </td>
-          </tr>`;
-      });
-      calculateBillTotals();
-    }
-
-    function calculateBillTotals() {
-      let gross = activeInvoiceCart.reduce((acc, obj) => acc + obj.rowTotal, 0);
-      const discPercent = parseFloat(document.getElementById('billDiscountPercent').value) || 0;
-      const discCash = parseFloat(document.getElementById('billDiscountCash').value) || 0;
-
-      let netAmount = gross - (gross * (discPercent / 100));
-      netAmount -= discCash;
-      if(netAmount < 0) netAmount = 0;
-
-      document.getElementById('billGrandTotalDisplay').innerText = netAmount.toFixed(2);
-    }
-
-    async function processBillExecution(actionType) {
-      const clientName = document.getElementById('billingPatientSelect').value;
-      if(!clientName || activeInvoiceCart.length === 0) return alert("Verify client parameter components.");
-
-      const finalAmount = parseFloat(document.getElementById('billGrandTotalDisplay').innerText);
-      let gross = activeInvoiceCart.reduce((acc, obj) => acc + obj.rowTotal, 0);
-      let calculatedDiscountTotal = gross - finalAmount;
-      if(calculatedDiscountTotal < 0) calculatedDiscountTotal = 0;
-
-      const invId = "INV-" + invoiceSequence++;
-
-      const purchaseCostBasis = activeInvoiceCart.reduce((sum, item) => sum + (item.marginCost * item.quantity), 0);
-      const profitYield = finalAmount - purchaseCostBasis;
-
-      const billRecord = {
-        invoiceId: invId, patientName: clientName, items: [...activeInvoiceCart],
-        grandTotal: finalAmount, discountAmount: calculatedDiscountTotal, netProfit: profitYield, date: new Date().toISOString().split('T')[0]
-      };
-
-      // Real-time stock execution sequence
-      for (let item of activeInvoiceCart) {
-        if(item.mode === "Full Strip") {
-          stock[item.stockIndex].qty -= item.quantity;
-          await executeRemoteDatabaseAction("updateStockQty", { name: stock[item.stockIndex].name, newQty: stock[item.stockIndex].qty });
-        }
-      }
-
-      invoices.push(billRecord);
-      renderStockUI();
-      renderHistoricalInvoicesUI();
-      
-      await executeRemoteDatabaseAction("saveInvoice", billRecord);
-
-      if(actionType === 'print') triggerHardwareThermalPrinter(billRecord);
-
-      activeInvoiceCart = [];
-      document.getElementById('billingCounterForm').reset();
-      renderActiveInvoiceCartUI();
-      alert("Invoice sequence completed cleanly.");
-    }
-
-    // -----------------------------------------------------------------
-    // MODULE: PREVIOUS BILLING SYSTEM W/ REVERSIBLE INVENTORY
-    // -----------------------------------------------------------------
-    function renderHistoricalInvoicesUI() {
-      const tbody = document.getElementById('historicalInvoicesTableBody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-      invoices.forEach((inv, index) => {
-        tbody.innerHTML += `
-          <tr class="border-b text-sm hover:bg-gray-50">
-            <td class="p-3 font-mono font-bold text-teal-700">${inv.invoiceId}</td>
-            <td class="p-3 font-medium">${inv.patientName}</td>
-            <td class="p-3 font-semibold">₹${inv.grandTotal.toFixed(2)}</td>
-            <td class="p-3 flex space-x-3">
-              <button onclick="modifyHistoricalBill(${index})" class="text-blue-600 font-medium hover:underline">Modify</button>
-              <button onclick="deleteHistoricalBill(${index})" class="text-red-600 font-medium hover:underline">Delete</button>
-              <button onclick="printHistoricalBill(${index})" class="text-emerald-600 font-medium hover:underline">Print</button>
-            </td>
-          </tr>`;
-      });
-    }
-
-    function searchInvoicesLog() {
-      const idQuery = document.getElementById('searchInvoiceIdInput').value.toLowerCase();
-      const nameQuery = document.getElementById('searchInvoiceNameInput').value.toLowerCase();
-      const tbody = document.getElementById('historicalInvoicesTableBody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-
-      invoices.forEach((inv, index) => {
-        if(inv.invoiceId.toLowerCase().includes(idQuery) && inv.patientName.toLowerCase().includes(nameQuery)) {
-          tbody.innerHTML += `
-            <tr class="border-b text-sm hover:bg-gray-50">
-              <td class="p-3 font-mono font-bold text-teal-700">${inv.invoiceId}</td>
-              <td class="p-3 font-medium">${inv.patientName}</td>
-              <td class="p-3 font-semibold">₹${inv.grandTotal.toFixed(2)}</td>
-              <td class="p-3 flex space-x-3">
-                <button onclick="modifyHistoricalBill(${index})" class="text-blue-600 font-medium hover:underline">Modify</button>
-                <button onclick="deleteHistoricalBill(${index})" class="text-red-600 font-medium hover:underline">Delete</button>
-                <button onclick="printHistoricalBill(${index})" class="text-emerald-600 font-medium hover:underline">Print</button>
-              </td>
-            </tr>`;
-        }
-      });
-    }
-
-    async function deleteHistoricalBill(index) {
-      if(confirm("Deleting this document will restore transaction quantities to stock records automatically. Proceed?")) {
-        const targetBill = invoices[index];
-        for (let item of targetBill.items) {
-          if(item.mode === "Full Strip") {
-            const currentItem = stock.find(s => s.name === item.productName);
-            if(currentItem) {
-              currentItem.qty += item.quantity;
-              await executeRemoteDatabaseAction("updateStockQty", { name: currentItem.name, newQty: currentItem.qty });
+        /* PRINT STYLES */
+        @media print {
+            @page { size: A4; margin: 0; }
+            .no-print { display: none !important; }
+            
+            #printSection { 
+                display: block !important; 
+                position: relative; 
+                min-height: 29.7cm; 
+                background: white !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
-          }
-        }
-        invoices.splice(index, 1);
-        renderStockUI();
-        renderHistoricalInvoicesUI();
-        await executeRemoteDatabaseAction("deleteInvoice", { invoiceId: targetBill.invoiceId });
-      }
-    }
 
-    async function modifyHistoricalBill(idx) {
-      const inv = invoices[idx];
-      if(confirm("Load invoice profile back into workspace terminal? Stocks levels will update dynamically upon adjustment re-saving.")) {
-        for (let item of inv.items) {
-          if(item.mode === "Full Strip") {
-            const currentItem = stock.find(s => s.name === item.productName);
-            if(currentItem) {
-              currentItem.qty += item.quantity;
-              await executeRemoteDatabaseAction("updateStockQty", { name: currentItem.name, newQty: currentItem.qty });
+            .watermark { 
+                position: absolute !important; 
+                top: 45% !important; 
+                left: 50% !important; 
+                transform: translate(-50%, -50%) !important; 
+                width: 450px !important; 
+                opacity: 0.12 !important; 
+                z-index: 0 !important;
+                -webkit-print-color-adjust: exact !important;
             }
-          }
+
+            .print-header { height: 3.5cm; border-bottom: 2px solid #000; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 10; }
+            .hosp-name { font-size: 22px; font-weight: 900; color: #b71c1c !important; margin: 0; }
+            
+            .doc-box { 
+                background-color: #fffde7 !important; border: 2px solid #fbc02d; 
+                padding: 10px; border-radius: 10px; text-align: right; 
+                -webkit-print-color-adjust: exact !important;
+            }
+
+            .patient-box { border: 1px solid #000; padding: 10px; margin-top: 5px; font-size: 15px; display: flex; justify-content: space-between; position: relative; z-index: 10; }
+            .vitals-box { background-color: #f1f8e9 !important; border: 1px solid #8bc34a; padding: 8px; margin-top: 5px; font-size: 13px; display: flex; justify-content: space-around; -webkit-print-color-adjust: exact !important; position: relative; z-index: 10; }
+
+            .med-table { width: 100%; border-collapse: collapse; margin-top: 15px; position: relative; z-index: 10; }
+            .med-table th { background-color: #333 !important; color: #fff !important; padding: 8px; border: 1px solid #000; -webkit-print-color-adjust: exact !important; }
+            .med-table td { border: 1px solid #000; padding: 8px; background: rgba(255,255,255,0.7) !important; }
+            
+            .print-footer { 
+                position: absolute; bottom: 0; width: 100%; 
+                text-align: center; border-top: 2px solid #000;
+                z-index: 20;
+            }
+
+            .signature-box {
+                position: absolute;
+                bottom: 120px;
+                right: 30px;
+                text-align: center;
+                z-index: 25;
+            }
+
+            .footer-top-area { background-color: white !important; color: black !important; padding: 4px; border-bottom: 1px solid #000; }
+            .footer-services { color: #1b5e20 !important; font-weight: bold; font-size: 11px; line-height: 1.2; }
+            
+            .footer-blue-bar { 
+                background-color: #0d47a1 !important; 
+                color: white !important;
+                padding: 5px 0;
+                -webkit-print-color-adjust: exact !important;
+            }
+            .footer-store-name { font-weight: 900; font-size: 15px; text-transform: uppercase; margin: 0; letter-spacing: 0.5px; }
+
+            /* MODE OVERRIDES */
+            .is-plain .print-footer, .is-plain .print-header, .is-plain .watermark { display: none !important; }
+            .is-plain #rxBodyContainer { padding-top: 5cm !important; }
+            
+            /* Lab Specific Plain Print */
+            .is-lab-plain .print-header, .is-lab-plain .watermark { display: none !important; }
+            .is-lab-plain #rxBodyContainer { padding-top: 5cm !important; }
         }
-        activeInvoiceCart = inv.items;
-        document.getElementById('billingPatientSelect').value = inv.patientName;
-        navigateToTab('counter');
-        renderActiveInvoiceCartUI();
-        invoices.splice(idx, 1);
-        renderStockUI();
-        renderHistoricalInvoicesUI();
-        await executeRemoteDatabaseAction("deleteInvoice", { invoiceId: inv.invoiceId });
-      }
-    }
-
-    // -----------------------------------------------------------------
-    // MODULE: BUSINESS PERFORMANCE ANALYTICS (PROTECTED)
-    // -----------------------------------------------------------------
-    async function requestAnalyticsAccessAuthentication() {
-      const pwd = document.getElementById('analyticsSecurityPasswordInput').value;
-      const res = await executeRemoteDatabaseAction("verifyPassword", { password: pwd });
-      
-      if((res && res.success) || pwd === "45463399Jaya@") {
-        document.getElementById('analyticsGatewayLockscreen').classList.add('hidden');
-        document.getElementById('analyticsProtectedContentBox').classList.remove('hidden');
-      } else {
-        alert("Authentication challenge rejected.");
-      }
-    }
-
-    function runDataRangeReportAnalysis() {
-      const dStart = document.getElementById('analyticsFilterStartDate').value;
-      const dEnd = document.getElementById('analyticsFilterEndDate').value;
-
-      if(!dStart || !dEnd) return alert("Define explicit parameter boundaries.");
-
-      let calculatedSalesTotal = 0;
-      let calculatedProfitTotal = 0;
-
-      invoices.forEach(bill => {
-        if(bill.date >= dStart && bill.date <= dEnd) {
-          calculatedSalesTotal += bill.grandTotal;
-          calculatedProfitTotal += bill.netProfit;
-        }
-      });
-
-      document.getElementById('analyticalSalesSumDisplay').innerText = calculatedSalesTotal.toFixed(2);
-      document.getElementById('analyticalProfitSumDisplay').innerText = calculatedProfitTotal.toFixed(2);
-    }
-
-    // -----------------------------------------------------------------
-    // MODULE: LABORATORY DIAGNOSTICS CONTROL DESK
-    // -----------------------------------------------------------------
-    async function commitNewTestToCatalogue() {
-      const name = document.getElementById('labConfigTestName').value.trim();
-      const price = parseFloat(document.getElementById('labConfigTestPrice').value) || 0;
-
-      if(!name || price <= 0) return alert("Verify matrix pricing standards.");
-      labCatalogue.push({ name, price });
-      
-      document.getElementById('labConfigTestName').value = '';
-      document.getElementById('labConfigTestPrice').value = '';
-      
-      renderLabMasterCatalogueUI();
-      syncFormSelectorElements();
-      await executeRemoteDatabaseAction("saveLabCatalogue", { catalogue: labCatalogue });
-    }
-
-    async function editMasterLabCatalogueTestRecord(idx) {
-      const item = labCatalogue[idx];
-      const updatedTitle = prompt("Update test name string description:", item.name);
-      if(!updatedTitle) return;
-      const updatedPrice = parseFloat(prompt("Update standard matrix price parameter (₹):", item.price));
-      if(isNaN(updatedPrice) || updatedPrice <= 0) return;
-
-      labCatalogue[idx] = { name: updatedTitle, price: updatedPrice };
-      renderLabMasterCatalogueUI();
-      syncFormSelectorElements();
-      await executeRemoteDatabaseAction("saveLabCatalogue", { catalogue: labCatalogue });
-    }
-
-    function renderLabMasterCatalogueUI() {
-      const container = document.getElementById('labMasterCatalogueListWrapper');
-      if (!container) return;
-      container.innerHTML = '';
-      labCatalogue.forEach((t, idx) => {
-        container.innerHTML += `
-          <div class="p-2 border-b text-xs flex justify-between items-center font-medium bg-white">
-            <span>${t.name}</span>
-            <div class="flex items-center space-x-2">
-              <span class="text-teal-700 font-bold mr-1">₹${t.price.toFixed(2)}</span>
-              <button onclick="editMasterLabCatalogueTestRecord(${idx})" class="text-blue-600 font-bold hover:underline">Edit</button>
-            </div>
-          </div>`;
-      });
-    }
-
-    function filterLabCatalogueList() {
-      const text = document.getElementById('labCatalogueFilterSearchInput').value.toLowerCase();
-      const container = document.getElementById('labMasterCatalogueListWrapper');
-      if (!container) return;
-      container.innerHTML = '';
-      labCatalogue.forEach((t, idx) => {
-        if(t.name.toLowerCase().includes(text)) {
-          container.innerHTML += `
-            <div class="p-2 border-b text-xs flex justify-between items-center font-medium bg-white">
-              <span>${t.name}</span>
-              <div class="flex items-center space-x-2">
-                <span class="text-teal-700 font-bold mr-1">₹${t.price.toFixed(2)}</span>
-                <button onclick="editMasterLabCatalogueTestRecord(${idx})" class="text-blue-600 font-bold hover:underline">Edit</button>
-              </div>
-            </div>`;
-        }
-      });
-    }
-
-    function appendSelectedTestToActiveOrder() {
-      const idx = document.getElementById('labTestSelectionMenu').value;
-      if(idx === "") return alert("Select profile index entry point.");
-      const pickedTest = labCatalogue[idx];
-      labActiveCartItems.push({ name: pickedTest.name, price: pickedTest.price });
-      renderLabActiveCartUI();
-    }
-
-    function editPatientLabCartTestItem(idx) {
-      const item = labActiveCartItems[idx];
-      const customName = prompt("Modify specific test label description for this patient instance:", item.name);
-      if(!customName) return;
-      const customPrice = parseFloat(prompt("Modify row pricing for this instance (₹):", item.price));
-      if(isNaN(customPrice) || customPrice < 0) return;
-
-      item.name = customName;
-      item.price = customPrice;
-      renderLabActiveCartUI();
-    }
-
-    function removePatientLabCartTestItem(idx) {
-      if(confirm("Remove this test selection row from current client file?")) {
-        labActiveCartItems.splice(idx, 1);
-        renderLabActiveCartUI();
-      }
-    }
-
-    function renderLabActiveCartUI() {
-      const wrapper = document.getElementById('labSelectedActiveTestsWrapper');
-      if (!wrapper) return;
-      wrapper.innerHTML = '';
-      let subTotal = 0;
-      labActiveCartItems.forEach((t, idx) => {
-        subTotal += t.price;
-        wrapper.innerHTML += `
-          <div class="flex justify-between items-center text-xs py-1.5 border-b bg-gray-50 px-2 rounded my-1">
-            <span class="font-medium">${t.name}</span>
-            <div class="flex items-center space-x-3">
-              <span class="font-bold text-slate-700">₹${t.price.toFixed(2)}</span>
-              <button onclick="editPatientLabCartTestItem(${idx})" class="text-blue-600 font-semibold hover:underline">Modify</button>
-              <button onclick="removePatientLabCartTestItem(${idx})" class="text-red-600 font-semibold hover:underline">Remove</button>
-            </div>
-          </div>`;
-      });
-
-      const cashDisc = parseFloat(document.getElementById('labBillCashDiscountInput').value) || 0;
-      let grand = subTotal - cashDisc;
-      if(grand < 0) grand = 0;
-
-      document.getElementById('labSubTotalDisplay').innerText = "₹" + subTotal.toFixed(2);
-      document.getElementById('labGrandTotalDisplay').innerText = "₹" + grand.toFixed(2);
-    }
-
-    function processAndResetLaboratoryBill() {
-      const client = document.getElementById('labPatientSelectionMenu').value;
-      if(!client || labActiveCartItems.length === 0) return alert("Verify dataset profile components.");
-      alert("Laboratory operational billing file generated.");
-      labActiveCartItems = [];
-      document.getElementById('labBillCashDiscountInput').value = 0;
-      renderLabActiveCartUI();
-    }
-
-    // CENTRAL DATA SYNCHRONIZATION AND CONTEXT MANAGEMENT UTILITIES
-    function syncFormSelectorElements() {
-      const cPat = document.getElementById('billingPatientSelect');
-      const lPat = document.getElementById('labPatientSelectionMenu');
-      if(!cPat || !lPat) return;
-
-      const activeCVal = cPat.value;
-      const activeLVal = lPat.value;
-
-      cPat.innerHTML = '<option value="">-- Choose Registered Patient --</option>';
-      lPat.innerHTML = '<option value="">-- Choose Patient Context --</option>';
-      
-      if(patients && patients.length > 0) {
-        patients.forEach(p => {
-          const optionString = `<option value="${p.name}">${p.name} (Age: ${p.age})</option>`;
-          cPat.innerHTML += optionString;
-          lPat.innerHTML += optionString;
-        });
-      }
-
-      cPat.value = activeCVal;
-      lPat.value = activeLVal;
-
-      filterMedicineDropdownList();
-
-      const lTestMenu = document.getElementById('labTestSelectionMenu');
-      if(lTestMenu) {
-        lTestMenu.innerHTML = '<option value="">-- Choose Test to Add --</option>';
-        if(labCatalogue && labCatalogue.length > 0) {
-          labCatalogue.forEach((test, idx) => {
-            lTestMenu.innerHTML += `<option value="${idx}">${test.name} (₹${test.price.toFixed(2)})</option>`;
-          });
-        }
-      }
-    }
-
-    function triggerHardwareThermalPrinter(invoice) {
-      const printStream = window.open('', '_blank');
-      printStream.document.write(`
-        <html>
-        <head>
-          <title>POS System Printer Receipt Blueprint</title>
-          <style>
-            body { font-family: monospace; padding: 15px; font-size: 12px; line-height: 1.3; color:#000; }
-            .heading { text-align: center; font-weight: bold; }
-            .dashed-line { border-bottom: 1px dashed #000; margin: 8px 0; }
-            table { width: 100%; border-collapse: collapse; }
-            th { text-align: left; border-bottom: 1px solid #000; }
-          </style>
-        </head>
-        <body>
-          <div class="heading">
-            <h3 style="margin:0;">SHREE RAJA RAJESHWARI PHARMACY</h3>
-            <p style="font-size:10px; margin:2px 0;">Suraram colony ntr road opp: Axis atm<br>Hyderabad, Telangana 500055<br>Phone: 9201955976</p>
-          </div>
-          <div class="dashed-line"></div>
-          <p><strong>Invoice ID:</strong> ${invoice.invoiceId}<br><strong>Date:</strong> ${invoice.date}<br><strong>Patient Name:</strong> ${invoice.patientName}</p>
-          <div class="dashed-line"></div>
-          <table>
-            <thead><tr><th>Item</th><th>Qty</th><th>Mode</th><th style="text-align:right">Price</th></tr></thead>
-            <tbody>
-              ${invoice.items.map(i => `<tr><td>${i.productName}</td><td>${i.quantity}</td><td>${i.mode}</td><td style="text-align:right">₹${i.rowTotal.toFixed(2)}</td></tr>`).join('')}
-            </tbody>
-          </table>
-          <div class="dashed-line"></div>
-          <h3 style="text-align:right; margin:5px 0;">Grand Total: ₹${invoice.grandTotal.toFixed(2)}</h3>
-          <div class="dashed-line"></div>
-          <div style="text-align:center; margin-top:15px;"><p>Thank you. Get Well Soon.</p></div>
-        </body>
-        </html>
-      `);
-      printStream.document.close();
-      printStream.focus();
-      printStream.print();
-      printStream.close();
-    }
-
-    function printHistoricalBill(idx) {
-      triggerHardwareThermalPrinter(invoices[idx]);
-    }
-
-    window.onload = function() {
-      syncFormSelectorElements();
-      fetchInitialData(); 
-    };
-  </script>
+        #printSection { display: none; }
+        
+        .lab-list-container { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 8px; background: #fff; }
+        .lab-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; transition: 0.2s; }
+        .lab-item:hover { background: #f8f9fa; }
+        .total-box { background: #e3f2fd; padding: 15px; border-radius: 8px; border: 2px solid #2196f3; }
+        .add-test-box { background: #f1f8e9; padding: 10px; border-radius: 8px; border: 1px dashed #43a047; margin-bottom: 15px; }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+<body>
 
-  <!-- Header Branding Component Layer -->
-  <header class="bg-teal-800 text-white shadow-md py-4 px-6">
-    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left">
-      <div>
-        <h1 class="text-2xl font-black tracking-wider">SHREE RAJA RAJESHWARI PHARMACY</h1>
-        <p class="text-xs text-teal-100 opacity-90 mt-0.5">Suraram colony ntr road opp : Axis atm, Hyderabad, Telangana 500055</p>
-      </div>
-      <div class="mt-2 md:mt-0 font-mono text-sm bg-teal-900 px-4 py-1.5 rounded-full border border-teal-700">
-        📞 Customer Line: 9201955976
-      </div>
+<div class="dash-header no-print">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-md-2"><img src="logo.jpg" style="height: 90px; border-radius: 8px;"></div>
+            <div class="col-md-7 text-center">
+                <h1 class="hosp-title-main">SRI RAJA RAJESHWARI HOSPITAL</h1>
+                <p class="hosp-subtitle">SURARAM COLONY, NTR ROAD OPP:AXIS ATM HYDERABAD TG-500055</p>
+                <p class="hosp-subtitle"><i class="fas fa-phone-alt"></i> 9201955976</p>
+            </div>
+            <div class="col-md-3">
+                <div class="ui-doc-box">
+                    <strong style="font-size: 19px; color: #b71c1c;">DR. M. JAYACHANDER</strong><br>
+                    <span>MBBS, M.D. (GENERAL MEDICINE)</span><br>
+                    <small class="text-primary fw-bold">REG NO: TSMC/FMR/43070</small>
+                </div>
+            </div>
+        </div>
     </div>
-  </header>
+</div>
 
-  <main class="max-w-7xl mx-auto my-6 px-4">
-    <!-- Component-Driven Functional Navigation Tabs System -->
-    <nav class="flex flex-wrap border-b border-slate-200 bg-white shadow-sm rounded-t-xl overflow-hidden mb-6">
-      <button onclick="navigateToTab('counter')" id="btn-counter" class="tab-navigation-btn px-6 py-3.5 text-sm font-semibold text-teal-600 border-b-2 border-teal-600 active">Counter Medicine</button>
-      <button onclick="navigateToTab('stock')" id="btn-stock" class="tab-navigation-btn px-6 py-3.5 text-sm font-semibold text-gray-500 hover:text-teal-600">Medicine Stock</button>
-      <button onclick="navigateToTab('patients')" id="btn-patients" class="tab-navigation-btn px-6 py-3.5 text-sm font-semibold text-gray-500 hover:text-teal-600">Patients Register</button>
-      <button onclick="navigateToTab('analytics')" id="btn-analytics" class="tab-navigation-btn px-6 py-3.5 text-sm font-semibold text-gray-500 hover:text-teal-600">Analytics & Reports</button>
-      <button onclick="navigateToTab('billing')" id="btn-billing" class="tab-navigation-btn px-6 py-3.5 text-sm font-semibold text-gray-500 hover:text-teal-600">Previous Billing</button>
-      <button onclick="navigateToTab('laboratory')" id="btn-laboratory" class="tab-navigation-btn px-6 py-3.5 text-sm font-semibold text-gray-500 hover:text-teal-600">Laboratory</button>
-    </nav>
+<div class="no-print container-fluid">
+    <div class="card-custom">
+        <form id="patientForm">
+            <input type="hidden" id="f_opd" value="NEW">
+            <div class="row g-2">
+                <div class="col-md-2"><label>Date</label><input type="date" id="f_date" class="form-control"></div>
+                <div class="col-md-3"><label>Patient Name</label><input type="text" id="f_name" class="form-control" required></div>
+                <div class="col-md-1"><label>Age</label><input type="number" id="f_age" class="form-control"></div>
+                <div class="col-md-2"><label>Sex</label><select id="f_sex" class="form-select"><option>Male</option><option>Female</option></select></div>
+                <div class="col-md-2"><label>Phone</label><input type="text" id="f_phone" class="form-control"></div>
+                <div class="col-md-2"><label>Village</label><input type="text" id="f_village" class="form-control"></div>
+                <div class="col-md-2"><label>Weight (kg)</label><input type="text" id="f_wt" class="form-control"></div>
+                <div class="col-md-2"><label>BP (mmHg)</label><input type="text" id="f_bp" class="form-control"></div>
+                <div class="col-md-2"><label>Pulse (bpm)</label><input type="text" id="f_pr" class="form-control"></div>
+                <div class="col-md-2"><label>SpO2 (%)</label><input type="text" id="f_spo2" class="form-control"></div>
+                <div class="col-md-2"><label>Temp (°F)</label><input type="text" id="f_temp" class="form-control"></div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-danger w-100 fw-bold py-2">SAVE PATIENT</button>
+                </div>
+            </div>
+        </form>
+    </div>
 
-    <!-- TAB 1: COUNTER MEDICINE MODULE VIEW -->
-    <section id="counter" class="tab-view active bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-      <h2 class="text-xl font-bold text-slate-900 mb-4 pb-2 border-b">Point of Sale Terminal</h2>
-      <form id="billingCounterForm" class="space-y-4" onsubmit="event.preventDefault();">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 tracking-wide">Select Patient Profile Context</label>
-            <select id="billingPatientSelect" class="w-full mt-1 p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white" required></select>
-          </div>
-          <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 tracking-wide">Search Stock Database</label>
-            <input type="text" id="billingMedicineSearch" oninput="filterMedicineDropdownList()" placeholder="Type to filter inventory profiles..." class="w-full mt-1 p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
-            <select id="billingMedicineSelect" size="3" class="w-full mt-1.5 p-2 border border-slate-200 rounded-lg bg-white text-sm"></select>
-          </div>
+    <div id="selectionMenu" class="card-custom hidden text-center">
+        <h3 id="selTitle" class="mb-4"></h3>
+        <div class="btn-row">
+            <button class="btn-giant btn-rx" onclick="openRx()"><i class="fas fa-prescription"></i> Rx PANEL</button>
+            <button class="btn-giant btn-lab" onclick="openLab()"><i class="fas fa-microscope"></i> LAB PANEL</button>
+            <button class="btn-giant btn-edit" onclick="editInfo()"><i class="fas fa-edit"></i> EDIT INFO</button>
+            <button class="btn-giant btn-del" onclick="deletePatient()"><i class="fas fa-trash-alt"></i> DELETE</button>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-          <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 tracking-wide">Billing Unit Selection Mode</label>
-            <select id="billingUnitMode" class="w-full mt-1 p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 bg-white">
-              <option value="Full Strip">Full Strip Mode</option>
-              <option value="Loose Tablet">Loose Tablet Mode</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-bold uppercase text-slate-600 tracking-wide">Number of Units to Sell</label>
-            <input type="number" id="billingUnitsToSell" min="1" class="w-full mt-1 p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500">
-          </div>
-          <button type="button" onclick="appendProductToActiveInvoice()" class="bg-teal-700 text-white font-bold px-6 py-3 rounded-lg hover:bg-teal-800 transition shadow-sm">Add Product Row</button>
+        <div class="btn-row">
+            <button class="btn-giant btn-print" onclick="printDoc(true, true)"><i class="fas fa-print"></i> PRINT Rx + HEADER</button>
+            <button class="btn-giant btn-print" style="background: #333;" onclick="printDoc(false, true)"><i class="fas fa-file-alt"></i> PRINT Rx (PLAIN)</button>
         </div>
-      </form>
+        <div class="btn-row">
+            <button class="btn-giant btn-reg" onclick="printDoc(true, false)"><i class="fas fa-id-card"></i> PRINT REG + HEADER</button>
+            <button class="btn-giant btn-reg" style="background: #4a148c;" onclick="printDoc(false, false)"><i class="fas fa-id-card"></i> PRINT REG (PLAIN)</button>
+        </div>
+    </div>
 
-      <div class="mt-6 border rounded-xl overflow-hidden shadow-inner">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase text-slate-600">
-              <th class="p-3">Product Name</th>
-              <th class="p-3">Mode</th>
-              <th class="p-3">Qty</th>
-              <th class="p-3">Unit Rate</th>
-              <th class="p-3 text-right">Total Price</th>
-              <th class="p-3 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="activeInvoiceItemsTable"></tbody>
+    <div class="card-custom">
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="patientSearch" class="search-input" placeholder="Search Patient Name or Village..." onkeyup="filterPatients()">
+        </div>
+        <table class="table table-hover">
+            <thead class="table-dark"><tr><th>OPD</th><th>Name</th><th>Village</th><th>Vitals</th><th>Action</th></tr></thead>
+            <tbody id="patientListBody"></tbody>
         </table>
-      </div>
+    </div>
 
-      <div class="mt-4 bg-slate-50 p-4 border rounded-xl grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-        <div>
-          <label class="block text-xs font-bold uppercase text-slate-600">Discount Ratio (%)</label>
-          <input type="number" id="billDiscountPercent" value="0" oninput="calculateBillTotals()" class="w-full mt-1 p-2 border rounded-lg bg-white">
-        </div>
-        <div>
-          <label class="block text-xs font-bold uppercase text-slate-600">Discount Value (Cash ₹)</label>
-          <input type="number" id="billDiscountCash" value="0" oninput="calculateBillTotals()" class="w-full mt-1 p-2 border rounded-lg bg-white">
-        </div>
-        <div class="text-right">
-          <p class="text-xs font-bold uppercase text-slate-500">Settlement Grand Total</p>
-          <p class="text-3xl font-black text-slate-900 mt-1">₹<span id="billGrandTotalDisplay">0.00</span></p>
-        </div>
-      </div>
-      <div class="mt-6 flex justify-end space-x-3">
-        <button onclick="processBillExecution('save')" class="bg-slate-800 text-white font-semibold px-6 py-3 rounded-lg hover:bg-slate-900 shadow">Save Record</button>
-        <button onclick="processBillExecution('print')" class="bg-emerald-600 text-white font-bold px-6 py-3 rounded-lg hover:bg-emerald-700 shadow">Save & Print Bill</button>
-      </div>
-    </section>
+    <!-- TREATMENT PANEL -->
+    <div id="treatmentPanel" class="card-custom hidden">
+        <form id="treatmentForm">
+            <div class="row g-3">
+                <div class="col-md-6"><label class="fw-bold">Chief Complaints</label><textarea id="t_cc" class="form-control" rows="2"></textarea></div>
+                <div class="col-md-6"><label class="fw-bold">Past History</label><textarea id="t_ph" class="form-control" rows="2"></textarea></div>
+                <div class="col-12"><label class="fw-bold">Investigations</label><textarea id="t_inv" class="form-control" rows="2"></textarea></div>
+                <div class="col-12">
+                    <button type="button" class="btn btn-success btn-sm mb-2" onclick="addRow()">+ Add Medicine</button>
+                    <table class="table table-bordered">
+                        <thead class="bg-light"><tr><th>Name</th><th>Route</th><th>Duration</th><th>Remarks</th><th></th></tr></thead>
+                        <tbody id="medTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="col-12"><label class="fw-bold">Clinical Notes</label><textarea id="t_notes" class="form-control" rows="2"></textarea></div>
+                <button type="submit" class="btn btn-primary w-100 fw-bold py-2">SAVE Rx DATA</button>
+            </div>
+        </form>
+    </div>
 
-    <!-- TAB 2: MEDICINE STOCK MODULE VIEW -->
-    <section id="stock" class="tab-view bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-      <h2 class="text-xl font-bold text-slate-900 mb-4 pb-2 border-b">Inventory Management Desk</h2>
-      <form id="stockAdditionForm" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" onsubmit="event.preventDefault();">
-        <div><label class="block text-xs font-bold text-slate-600 uppercase">Product Name</label><input type="text" id="m_name" class="w-full mt-1 p-2 border rounded-lg" required></div>
-        <div><label class="block text-xs font-bold text-slate-600 uppercase">Manufacturer Company</label><input type="text" id="m_company" class="w-full mt-1 p-2 border rounded-lg"></div>
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase">Formulation Category</label>
-          <select id="m_formulation" class="w-full mt-1 p-2 border rounded-lg bg-white">
-            <option value="Tablet or Capsule">Tablet or Capsule</option>
-            <option value="Vial or Ampoule">Vial or Ampoule</option>
-            <option value="Liquid Syrup or Suspension Bottle">Liquid Syrup or Suspension Bottle</option>
-          </select>
+    <!-- LAB PANEL -->
+    <div id="labPanel" class="card-custom hidden">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="add-test-box">
+                    <h6>+ Add New Test to List</h6>
+                    <div class="input-group input-group-sm">
+                        <input type="text" id="newTestName" class="form-control" placeholder="Test Name">
+                        <input type="number" id="newTestPrice" class="form-control" placeholder="Price">
+                        <button class="btn btn-success" onclick="addNewTestToList()">ADD</button>
+                    </div>
+                </div>
+                <h4 class="text-primary mb-3"><i class="fas fa-flask"></i> Select Investigations</h4>
+                <div class="lab-list-container" id="labChecklist"></div>
+            </div>
+            <div class="col-md-6">
+                <div class="total-box">
+                    <h4>Billing Summary</h4>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-2"><span>Sub-Total:</span> <span id="labSubTotal">0</span></div>
+                    <div class="d-flex justify-content-between mb-2 align-items-center">
+                        <span>Discount:</span> 
+                        <input type="number" id="labDiscount" class="form-control w-25" value="0" oninput="calculateLabTotal()">
+                    </div>
+                    <div class="d-flex justify-content-between fw-bold text-danger fs-4">
+                        <span>Grand Total:</span> <span id="labGrandTotal">0</span>
+                    </div>
+                    <div class="mt-2 small text-muted">In Words: <span id="labWords" class="fw-bold text-dark">Zero Only</span></div>
+                </div>
+                <div class="mt-3 d-flex flex-wrap gap-2">
+                    <button class="btn btn-success fw-bold" onclick="saveLab()"><i class="fas fa-save"></i> SAVE</button>
+                    <button class="btn btn-info fw-bold text-white" onclick="showPrevLab()"><i class="fas fa-history"></i> PREVIOUS INVESTIGATIONS</button>
+                    <button class="btn btn-primary fw-bold" onclick="printLab(true)"><i class="fas fa-print"></i> PRINT WITH HEADER</button>
+                    <button class="btn btn-secondary fw-bold" onclick="printLab(false)"><i class="fas fa-print"></i> PRINT WITHOUT HEADER</button>
+                </div>
+                <div id="prevLabSection" class="mt-4 hidden border p-3 rounded bg-light">
+                    <h6>History (Saved Bills)</h6>
+                    <hr>
+                    <div id="prevLabContent"></div>
+                </div>
+            </div>
         </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase">Packing Layout Ratio</label>
-          <select id="m_ratio" class="w-full mt-1 p-2 border rounded-lg bg-white">
-            <option value="1*10">1 into 10 Layout</option>
-            <option value="1*15">1 into 15 Layout</option>
-            <option value="1*20">1 into 20 Layout</option>
-            <option value="1*25">1 into 25 Layout</option>
-            <option value="1*30">1 into 30 Layout</option>
-          </select>
-        </div>
-        <div><label class="block text-xs font-bold text-slate-600 uppercase">Stock Quantity (Strips Count)</label><input type="number" id="m_qty" class="w-full mt-1 p-2 border rounded-lg" required></div>
-        <div><label class="block text-xs font-bold text-slate-600 uppercase">Batch Identifier Code</label><input type="text" id="m_batch" class="w-full mt-1 p-2 border rounded-lg"></div>
-        <div><label class="block text-xs font-bold text-slate-600 uppercase">Expiry Date Matrix</label><input type="month" id="m_expiry" class="w-full mt-1 p-2 border rounded-lg"></div>
-        <div><label class="block text-xs font-bold text-slate-600 uppercase">MRP Pricing Matrix (₹)</label><input type="number" step="0.01" id="m_mrp" class="w-full mt-1 p-2 border rounded-lg" required></div>
-        <div><label class="block text-xs font-bold text-slate-600 uppercase">Margin Cost Price Base (₹)</label><input type="number" step="0.01" id="m_margin" class="w-full mt-1 p-2 border rounded-lg" required></div>
-        <div><label class="block text-xs font-bold text-slate-600 uppercase">GST Bracket (%)</label><input type="number" id="m_gst" class="w-full mt-1 p-2 border rounded-lg"></div>
-        <div><label class="block text-xs font-bold text-slate-600 uppercase">Distributor Agency Source Link</label><input type="text" id="m_distributor" class="w-full mt-1 p-2 border rounded-lg"></div>
-        <div class="flex items-end"><button type="button" onclick="commitNewStockItem()" class="w-full bg-teal-700 text-white font-bold p-2.5 rounded-lg hover:bg-teal-800 shadow-sm">Commit Entry Row</button></div>
-      </form>
-      <div class="overflow-x-auto border rounded-xl shadow-inner">
-        <table class="w-full text-left border-collapse"><thead class="bg-slate-50 border-b text-xs font-bold uppercase text-slate-600"><tr><th class="p-2">S.No</th><th class="p-2">Product</th><th class="p-2">Manufacturer</th><th class="p-2">Category</th><th class="p-2">Ratio</th><th class="p-2">Strips</th><th class="p-2">Batch</th><th class="p-2">Expiry</th><th class="p-2">MRP</th><th class="p-2">Margin</th><th class="p-2">GST</th><th class="p-2">Source</th></tr></thead><tbody id="stockTableBody"></tbody></table>
-      </div>
-    </section>
+    </div>
+</div>
 
-    <!-- TAB 3: PATIENT REGISTER MODULE VIEW -->
-    <section id="patients" class="tab-view bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-      <h2 class="text-xl font-bold text-slate-900 mb-4 pb-2 border-b">System Patient Directory</h2>
-      <form id="patientRegistrationForm" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" onsubmit="event.preventDefault();">
-        <input type="hidden" id="p_edit_index">
-        <div><label class="block text-xs font-bold text-slate-600 uppercase">Patient Full Name</label><input type="text" id="p_name" class="w-full mt-1 p-2.5 border rounded-lg shadow-sm" required></div>
-        <div><label class="block text-xs font-bold text-slate-600 uppercase">Age</label><input type="number" id="p_age" class="w-full mt-1 p-2.5 border rounded-lg shadow-sm" required></div>
-        <div><label class="block text-xs font-bold text-slate-600 uppercase">Gender Context</label><select id="p_gender" class="w-full mt-1 p-2.5 border rounded-lg bg-white shadow-sm"><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></div>
-        <div><label class="block text-xs font-bold text-slate-600 uppercase">Contact Number</label><input type="tel" id="p_contact" class="w-full mt-1 p-2.5 border rounded-lg shadow-sm" required></div>
-        <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-600 uppercase">Residential Address Mapping</label><textarea id="p_address" rows="2" class="w-full mt-1 p-2.5 border rounded-lg shadow-sm"></textarea></div>
-        <div class="md:col-span-2 flex justify-end"><button type="button" onclick="handlePatientSave()" class="bg-teal-700 text-white font-bold px-6 py-2.5 rounded-lg hover:bg-teal-800 shadow">Save Patient Entry</button></div>
-      </form>
-      <div class="overflow-x-auto border rounded-xl shadow-inner">
-        <table class="w-full text-left border-collapse"><thead class="bg-slate-50 border-b text-xs font-bold uppercase text-slate-600"><tr><th class="p-3">Patient Name</th><th class="p-3">Age</th><th class="p-3">Gender</th><th class="p-3">Contact</th><th class="p-3">Address Location</th><th class="p-3">Administrative Modifications</th></tr></thead><tbody id="patientTableBody"></tbody></table>
-      </div>
-    </section>
+<div id="printSection">
+    <img src="logo.jpg" class="watermark">
+    <div id="printHeader" class="print-header">
+        <div id="headerBranding" style="display: flex; align-items: center;">
+            <img src="logo.jpg" style="height: 75px; margin-right: 15px;">
+            <div>
+                <h1 class="hosp-name" id="printHospName">SRI RAJA RAJESHWARI HOSPITAL</h1>
+                <p id="printHospAddr" style="font-size: 11px; margin: 0; font-weight: bold;">SURARAM COLONY, NTR ROAD OPP:AXIS ATM HYDERABAD TG-500055</p>
+                <p style="font-size: 11px; margin: 0; font-weight: bold;">Contact: 9201955976</p>
+            </div>
+        </div>
+        <div class="doc-box" id="headerDocBox">
+            <strong style="font-size: 17px; color: #b71c1c;">DR. M. JAYACHANDER</strong><br>
+            <span style="font-size: 13px;">MBBS, M.D. (GENERAL MEDICINE)</span><br>
+            <small style="color: #d32f2f; font-weight: bold;">REG NO: TSMC/FMR/43070</small>
+        </div>
+    </div>
 
-    <!-- TAB 4: ANALYTICS & REPORTS MODULE VIEW -->
-    <section id="analytics" class="tab-view bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-      <h2 class="text-xl font-bold text-slate-900 mb-4 pb-2 border-b">Analytical Reports Office</h2>
-      <div id="analyticsGatewayLockscreen" class="max-w-md mx-auto text-center py-12">
-        <div class="p-3 bg-teal-50 text-teal-700 rounded-full inline-block mb-3">🔒</div>
-        <p class="text-sm font-semibold text-slate-600 mb-4">Financial metrics require authorization credentials.</p>
-        <div class="flex gap-2"><input type="password" id="analyticsSecurityPasswordInput" placeholder="Security PIN Required" class="p-2.5 border rounded-lg w-full text-center"><button onclick="requestAnalyticsAccessAuthentication()" class="bg-teal-700 text-white font-bold px-5 py-2.5 rounded-lg hover:bg-teal-800 transition">Unlock</button></div>
-      </div>
-      <div id="analyticsProtectedContentBox" class="hidden space-y-6">
-        <div class="flex flex-wrap gap-4 items-end bg-slate-50 p-4 border rounded-xl shadow-inner">
-          <div><label class="block text-xs font-bold uppercase text-slate-600">Start Boundary Date</label><input type="date" id="analyticsFilterStartDate" class="mt-1 p-2 border rounded-lg bg-white text-sm"></div>
-          <div><label class="block text-xs font-bold uppercase text-slate-600">End Boundary Date</label><input type="date" id="analyticsFilterEndDate" class="mt-1 p-2 border rounded-lg bg-white text-sm"></div>
-          <button onclick="runDataRangeReportAnalysis()" class="bg-teal-700 text-white font-bold px-5 py-2 rounded-lg hover:bg-teal-800 text-sm shadow-sm">Execute Audit</button>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="bg-emerald-50 border border-emerald-100 p-6 rounded-2xl text-center"><h3 class="text-xs uppercase font-extrabold tracking-wider text-emerald-800">Aggregated Sales Gross</h3><p class="text-4xl font-black text-emerald-900 mt-1">₹<span id="analyticalSalesSumDisplay">0.00</span></p></div>
-          <div class="bg-indigo-50 border border-indigo-100 p-6 rounded-2xl text-center"><h3 class="text-xs uppercase font-extrabold tracking-wider text-indigo-800">Net Business Profit Margin</h3><p class="text-4xl font-black text-indigo-900 mt-1">₹<span id="analyticalProfitSumDisplay">0.00</span></p></div>
-        </div>
-      </div>
-    </section>
+    <div id="rxBodyContainer" class="p-4" style="position: relative; z-index: 10;">
+        <div id="patientDetails" class="patient-box"></div>
+        <div id="vitalsDetails" class="vitals-box"></div>
+        <div id="rxContent" class="mt-3" style="min-height: 5cm;"></div>
+    </div>
 
-    <!-- TAB 5: PREVIOUS BILLING MODULE VIEW -->
-    <section id="billing" class="tab-view bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-      <h2 class="text-xl font-bold text-slate-900 mb-4 pb-2 border-b">Historical Ledger Log Sheets</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <input type="text" id="searchInvoiceIdInput" oninput="searchInvoicesLog()" placeholder="Filter by invoice numerical string..." class="p-2.5 border rounded-lg text-sm shadow-sm">
-        <input type="text" id="searchInvoiceNameInput" oninput="searchInvoicesLog()" placeholder="Filter by patient name string..." class="p-2.5 border rounded-lg text-sm shadow-sm">
-      </div>
-      <div class="overflow-x-auto border rounded-xl"><table class="w-full text-left border-collapse"><thead class="bg-slate-50 border-b text-xs font-bold uppercase text-slate-600"><tr><th class="p-3">Invoice Id</th><th class="p-3">Patient Account Reference</th><th class="p-3">Gross Total Paid</th><th class="p-3">Operations Management</th></tr></thead><tbody id="historicalInvoicesTableBody"></tbody></table></div>
-    </section>
+    <div class="signature-box" id="sigBlock">
+        <div style="font-weight: 900; font-size: 14px;">DR. M. JAYACHANDER</div>
+        <div style="font-size: 11px;">MBBS, M.D. (GENERAL MEDICINE)</div>
+    </div>
 
-    <!-- TAB 6: LABORATORY DIAGNOSTICS MODULE VIEW -->
-    <section id="laboratory" class="tab-view bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-      <h2 class="text-xl font-bold text-slate-900 mb-4 pb-2 border-b">Laboratory Diagnostic Profile Panel</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-slate-50 p-4 border rounded-xl space-y-3 shadow-inner">
-          <h3 class="font-bold text-slate-700 text-sm">Add Test Offerings to Master Matrix</h3>
-          <input type="text" id="labConfigTestName" placeholder="Test Label (e.g., Blood Sugar)" class="w-full p-2 border rounded-lg bg-white text-sm">
-          <input type="number" id="labConfigTestPrice" placeholder="Standard Cost Price (₹)" class="w-full p-2 border rounded-lg bg-white text-sm">
-          <button onclick="commitNewTestToCatalogue()" class="w-full bg-slate-800 text-white text-xs font-bold py-2 rounded-lg hover:bg-slate-900 shadow-sm">Register Offering Matrix</button>
-          <div class="pt-2"><input type="text" id="labCatalogueFilterSearchInput" oninput="filterLabCatalogueList()" placeholder="Quick filter catalogue..." class="w-full p-2 border rounded-lg text-xs bg-white mb-2"><div id="labMasterCatalogueListWrapper" class="bg-white border rounded-lg max-h-36 overflow-y-auto p-1"></div></div>
+    <div id="printFooter" class="print-footer">
+        <div class="footer-top-area">
+            <div class="footer-services">మా ప్రత్యేక సేవలు: బిపి, షుగర్ ,గుండె వ్యాధులు కాలేయ వ్యాధులు (జాండీస్), కిడ్నీ సమస్యలు, నరాల వ్యాధులు (పక్షవాతం) ,వైరల్ ఫీవర్, జీర్ణకోశ వ్యాధులు (అల్సర్), ఊపిరితిత్తుల వ్యాధులు, థైరాయిడ్ మరియు ఫిట్స్ చూడబడును.</div>
+            <div style="color: #0d47a1; font-weight: bold; font-size: 13px;">NOTE:ప్రతిసారి వచ్చేటప్పుడు ఈ ప్రిస్క్రిప్షన్ ఫైల్ తప్పక తీసుకురావలెను</div>
+            <div style="color: #b71c1c; font-weight: bold; font-size: 13px;">NOTE:NOT VALID FOR MEDICO LEGAL PURPOSE</div>
         </div>
-        <div class="bg-slate-50 p-4 border rounded-xl flex flex-col justify-between shadow-inner">
-          <div class="space-y-3">
-            <h3 class="font-bold text-slate-700 text-sm">Book Lab Diagnostics Request</h3>
-            <select id="labPatientSelectionMenu" class="w-full p-2.5 border rounded-lg bg-white text-sm shadow-sm"></select>
-            <select id="labTestSelectionMenu" class="w-full p-2.5 border rounded-lg bg-white text-sm shadow-sm"></select>
-            <button onclick="appendSelectedTestToActiveOrder()" class="w-full bg-teal-700 text-white text-xs font-bold py-2 rounded-lg hover:bg-teal-800 shadow-sm">Insert to Document Cart</button>
-            <div id="labSelectedActiveTestsWrapper" class="bg-white p-2 border rounded-lg min-h-[70px] space-y-1"></div>
-          </div>
-          <div class="pt-4 border-t mt-4 space-y-2 text-sm">
-            <div class="flex justify-between text-slate-600"><span>Cart Subtotal:</span><span id="labSubTotalDisplay" class="font-mono">₹0.00</span></div>
-            <div class="flex gap-2 items-center"><span class="text-xs text-slate-500 whitespace-nowrap">Discount Value (₹)</span><input type="number" id="labBillCashDiscountInput" value="0" oninput="renderLabActiveCartUI()" class="p-1 border rounded w-full bg-white text-right text-xs"></div>
-            <div class="flex justify-between font-black text-slate-900 text-base"><span>Grand Total Summary:</span><span id="labGrandTotalDisplay">₹0.00</span></div>
-            <button onclick="processAndResetLaboratoryBill()" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded-lg text-xs hover:bg-emerald-700 mt-2 shadow">Save & Print Lab Receipt</button>
-          </div>
+        <div class="footer-blue-bar">
+            <p class="footer-store-name">SRI RAJA RAJESHWARI MEDICAL AND GENERAL STORES</p>
         </div>
-      </div>
-    </section>
-  </main>
+    </div>
+</div>
+
+<script>
+    const API = 'https://script.google.com/macros/s/AKfycbyCLWe4Q2uDK1PwpznGxNXHQcMpO-D_HkyY2g8cE5dT5m4eq6uuCeqYWSm6EXkgLo2d/exec';
+    let patients = [];
+    let currentOpd = null;
+
+    let labTests = [
+        {name: "Cbp", price: 250}, {name: "Esr", price: 100}, {name: "M.P", price: 250},
+        {name: "Widal test", price: 250}, {name: "Blood group", price: 100}, {name: "Fbs", price: 50},
+        {name: "Plbs", price: 50}, {name: "Rbs", price: 50}, {name: "Hba1c", price: 500},
+        {name: "Bl.urea", price: 250}, {name: "S.Creatinine", price: 250}, {name: "LFT", price: 800},
+        {name: "Lipid profile", price: 500}, {name: "S bilirubin", price: 250}, {name: "CUE", price: 100},
+        {name: "Urine c/s", price: 500}, {name: "Hiv I & II", price: 400}, {name: "RFT", price: 800},
+        {name: "Hbs ag", price: 250}, {name: "VDRL", price: 250}, {name: "Mantoux test", price: 300},
+        {name: "CRP", price: 300}, {name: "Ra factor", price: 300}, {name: "T3,T4,TSH", price: 500},
+        {name: "Testosterone", price: 800}, {name: "Vitamin b12", price: 800}, {name: "25 OH vitamin D (Total)", price: 1200},
+        {name: "Ca 125", price: 800}, {name: "Calcium", price: 300}, {name: "Electrolytes", price: 600},
+        {name: "ECG", price: 300}, {name: "Dengue rapid test", price: 1200}, {name: "Trop –I", price: 800},
+        {name: "S.uric acid", price: 300}, {name: "S.amylase", price: 400}
+    ];
+
+    async function load() {
+        try {
+            const r = await fetch(API);
+            patients = await r.json();
+            
+            // AGGRESSIVE RECOVERY: Check local storage for unsynced lab data
+            const backup = localStorage.getItem('srr_lab_backup');
+            if(backup) {
+                const backupData = JSON.parse(backup);
+                backupData.forEach(item => {
+                    const pIdx = patients.findIndex(x => x[0] == item.opd);
+                    if(pIdx !== -1) {
+                        if(!patients[pIdx][17] || !patients[pIdx][17].includes(item.entry)) {
+                            patients[pIdx][17] = (patients[pIdx][17] || "") + item.entry + "\n";
+                        }
+                    }
+                });
+            }
+        } catch (e) {
+            console.error("Load failed, using local cache");
+        }
+        render();
+        populateLabList();
+    }
+
+    function render() {
+        const body = document.getElementById('patientListBody');
+        body.innerHTML = patients.slice().reverse().map(p => `
+            <tr onclick="select('${p[0]}')" id="row-${p[0]}" class="patient-row" data-name="${p[2].toLowerCase()}" data-village="${p[5].toLowerCase()}">
+                <td><span class="badge bg-secondary">${p[0]}</span></td>
+                <td><strong>${p[2]}</strong></td>
+                <td>${p[5]}</td><td>${p[7]||'-'} / ${p[8]||'-'}</td>
+                <td><button class="btn-select-row">SELECT</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function filterPatients() {
+        const query = document.getElementById('patientSearch').value.toLowerCase();
+        document.querySelectorAll('.patient-row').forEach(row => {
+            const name = row.getAttribute('data-name');
+            const village = row.getAttribute('data-village');
+            row.style.display = (name.includes(query) || village.includes(query)) ? '' : 'none';
+        });
+    }
+
+    function select(opd) {
+        currentOpd = opd;
+        document.querySelectorAll('tr').forEach(r => r.classList.remove('selected-row'));
+        document.getElementById(`row-${opd}`).classList.add('selected-row');
+        document.getElementById('selectionMenu').classList.remove('hidden');
+        const p = patients.find(x => x[0] == opd);
+        document.getElementById('selTitle').innerText = `Patient: ${p[2]} (OPD: ${opd})`;
+        document.getElementById('treatmentPanel').classList.add('hidden');
+        document.getElementById('labPanel').classList.add('hidden');
+    }
+
+    function populateLabList() {
+        const container = document.getElementById('labChecklist');
+        container.innerHTML = labTests.map((t, index) => `
+            <div class="lab-item">
+                <div style="flex-grow:1;">
+                    <input type="checkbox" class="lab-check" data-index="${index}" onchange="calculateLabTotal()">
+                    <label class="ms-2">${t.name}</label>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="text-muted me-2">₹${t.price}</span>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="editTestPrice(${index})"><i class="fas fa-edit"></i></button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function editTestPrice(index) {
+        const newPrice = prompt(`Enter new price for ${labTests[index].name}:`, labTests[index].price);
+        if (newPrice !== null && !isNaN(newPrice)) {
+            labTests[index].price = parseInt(newPrice);
+            populateLabList();
+            calculateLabTotal();
+        }
+    }
+
+    function addNewTestToList() {
+        const name = document.getElementById('newTestName').value;
+        const price = parseInt(document.getElementById('newTestPrice').value);
+        if(!name || !price) return alert("Enter both name and price");
+        labTests.push({name: name, price: price});
+        populateLabList();
+        document.getElementById('newTestName').value = '';
+        document.getElementById('newTestPrice').value = '';
+    }
+
+    function calculateLabTotal() {
+        let subtotal = 0;
+        document.querySelectorAll('.lab-check:checked').forEach(cb => {
+            subtotal += labTests[cb.dataset.index].price;
+        });
+        const disc = parseFloat(document.getElementById('labDiscount').value) || 0;
+        const grand = subtotal - disc;
+        document.getElementById('labSubTotal').innerText = subtotal;
+        document.getElementById('labGrandTotal').innerText = grand;
+        document.getElementById('labWords').innerText = numberToWords(grand) + " Only";
+    }
+
+    function numberToWords(num) {
+        if (num === 0) return "Zero";
+        const a = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+        const b = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+        const g = (n) => {
+            if (n < 20) return a[n];
+            return b[Math.floor(n/10)] + (n%10 !== 0 ? " " + a[n%10] : "");
+        };
+        if (num < 100) return g(num);
+        if (num < 1000) return a[Math.floor(num/100)] + " Hundred " + (num%100 !== 0 ? g(num%100) : "");
+        return num.toString();
+    }
+
+    function openLab() {
+        document.getElementById('labPanel').classList.remove('hidden');
+        document.getElementById('treatmentPanel').classList.add('hidden');
+        document.getElementById('prevLabSection').classList.add('hidden');
+        document.querySelectorAll('.lab-check').forEach(c => c.checked = false);
+        calculateLabTotal();
+    }
+
+    async function saveLab() {
+        const pIndex = patients.findIndex(x => x[0] == currentOpd);
+        if(pIndex === -1) return;
+        
+        const p = patients[pIndex];
+        const selected = Array.from(document.querySelectorAll('.lab-check:checked')).map(cb => labTests[cb.dataset.index].name).join(', ');
+        const total = document.getElementById('labGrandTotal').innerText;
+        const disc = document.getElementById('labDiscount').value;
+        const sub = document.getElementById('labSubTotal').innerText;
+        
+        if(!selected) return alert("Select at least one test");
+
+        const entry = `[${new Date().toLocaleString()}] Tests: ${selected} | Total: ${total}`;
+        
+        // STAGE 1: LOCAL APP MEMORY UPDATE
+        p[17] = (p[17] || "") + entry + "\n";
+
+        // STAGE 2: BROWSER HARD-DISK BACKUP (LocalStorage)
+        let localBackup = JSON.parse(localStorage.getItem('srr_lab_backup') || "[]");
+        localBackup.push({ opd: currentOpd, entry: entry });
+        localStorage.setItem('srr_lab_backup', JSON.stringify(localBackup));
+
+        // STAGE 3: AGGRESSIVE GOOGLE SHEET PUSH
+        const form = new FormData();
+        form.append('action', 'update_lab_history');
+        form.append('opd', currentOpd);
+        form.append('labHistory', p[17]);
+
+        // Forced submission using beacon/no-cors to bypass every restriction
+        fetch(API, { 
+            method: 'POST', 
+            mode: 'no-cors', 
+            body: new URLSearchParams(form) 
+        }).then(() => {
+            console.log("Forced Sync Success");
+        });
+
+        alert("Lab Record Saved! (Synchronized with Local Backup)");
+        showPrevLab();
+    }
+
+    function showPrevLab() {
+        const p = patients.find(x => x[0] == currentOpd);
+        document.getElementById('prevLabSection').classList.remove('hidden');
+        
+        // Get from Google or Local Storage
+        let historyText = p[17] ? p[17].trim() : "";
+        
+        // Final sanity check from backup
+        const backup = JSON.parse(localStorage.getItem('srr_lab_backup') || "[]");
+        const extra = backup.filter(b => b.opd == currentOpd).map(b => b.entry).join("\n");
+        
+        let finalHistory = historyText;
+        if(extra && !historyText.includes(extra.split('\n')[0])) {
+            finalHistory = extra + "\n" + historyText;
+        }
+
+        document.getElementById('prevLabContent').innerHTML = finalHistory ? finalHistory.replace(/\n/g, '<hr>') : "No history found";
+    }
+
+    function printLab(withHeader) {
+        const p = patients.find(x => x[0] == currentOpd);
+        const selected = Array.from(document.querySelectorAll('.lab-check:checked')).map(cb => labTests[cb.dataset.index]);
+        const section = document.getElementById('printSection');
+        
+        document.getElementById('printHospName').innerText = "SRI RAJA RAJESHWARI DIAGNOSTICS";
+        document.getElementById('printHospAddr').innerText = "SURARAM COLONY, NTR ROAD, OPP: AXIS ATM HYDERABAD, TG-500055";
+        document.getElementById('headerDocBox').style.display = "none";
+        document.getElementById('sigBlock').style.display = "none";
+
+        if (!withHeader) section.className = 'is-lab-plain';
+        else section.className = '';
+
+        document.getElementById('patientDetails').innerHTML = `
+            <div><strong>OPD:</strong> ${p[0]}<br><strong>Name:</strong> ${p[2]}<br><strong>Addr:</strong> ${p[5]}</div>
+            <div class="text-end">
+                <strong>Date:</strong> ${new Date().toLocaleDateString()}<br>
+                <strong>Age/Sex:</strong> ${p[3]}/${p[4]}<br>
+                <strong>Phone:</strong> ${p[16]||'-'}
+            </div>`;
+        
+        document.getElementById('vitalsDetails').innerHTML = "BILL SUMMARY / INVESTIGATION LIST";
+
+        let html = `<table class="med-table"><thead><tr><th>Test Name</th><th class="text-end">Price</th></tr></thead><tbody>`;
+        selected.forEach(s => { html += `<tr><td>${s.name}</td><td class="text-end">${s.price}</td></tr>`; });
+        html += `<tr><td class="text-end fw-bold">Sub-Total:</td><td class="text-end">₹ ${document.getElementById('labSubTotal').innerText}</td></tr>`;
+        html += `<tr><td class="text-end fw-bold">Discount:</td><td class="text-end">-${document.getElementById('labDiscount').value}</td></tr>`;
+        html += `<tr><td class="text-end fw-bold">Grand Total:</td><td class="text-end fw-bold">₹ ${document.getElementById('labGrandTotal').innerText}</td></tr>`;
+        html += `</tbody></table><p class="mt-2"><strong>Amount in words:</strong> ${document.getElementById('labWords').innerText}</p>`;
+        
+        document.getElementById('rxContent').innerHTML = html;
+        window.print();
+        document.getElementById('printHospName').innerText = "SRI RAJA RAJESHWARI HOSPITAL";
+    }
+
+    function addRow(n='', d='', f='', r='') {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><input class="form-control m-name" value="${n}"></td>
+            <td><input class="form-control m-dur" value="${d}"></td>
+            <td><input class="form-control m-freq" value="${f}"></td>
+            <td><input class="form-control m-rem" value="${r}"></td>
+            <td><button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()">X</button></td>`;
+        document.getElementById('medTableBody').appendChild(tr);
+    }
+
+    function printDoc(withHeader, includeRx) {
+        const p = patients.find(x => x[0] == currentOpd);
+        const section = document.getElementById('printSection');
+        
+        document.getElementById('printHospName').innerText = "SRI RAJA RAJESHWARI HOSPITAL";
+        document.getElementById('printHospAddr').innerText = "SURARAM COLONY, NTR ROAD OPP:AXIS ATM HYDERABAD TG-500055";
+        document.getElementById('headerDocBox').style.display = "block";
+        document.getElementById('sigBlock').style.display = "block";
+
+        if (!withHeader) section.className = 'is-plain';
+        else section.className = '';
+
+        document.getElementById('patientDetails').innerHTML = `
+            <div><strong>OPD:</strong> ${p[0]}<br><strong>Name:</strong> ${p[2]}<br><strong>Addr:</strong> ${p[5]}</div>
+            <div class="text-end"><strong>Date:</strong> ${p[1]}<br><strong>Age/Sex:</strong> ${p[3]}/${p[4]}<br><strong>Phone:</strong> ${p[16]||'-'}</div>`;
+        document.getElementById('vitalsDetails').innerHTML = `<span><strong>WT:</strong> ${p[6]||'-'}kg</span><span><strong>BP:</strong> ${p[7]||'-'}</span><span><strong>PR:</strong> ${p[8]||'-'}</span><span><strong>SpO2:</strong> ${p[9]||'-'}%</span><span><strong>Temp:</strong> ${p[10]||'-'}F</span>`;
+        
+        if (includeRx) {
+            document.getElementById('rxContent').innerHTML = `
+                <div class="mb-2"><strong>Chief Complaints:</strong> ${p[11]||'-'}</div>
+                <div class="mb-2"><strong>Past History:</strong> ${p[15]||'-'}</div>
+                <div class="mb-2"><strong>Investigations:</strong> ${p[12]||'-'}</div>
+                <table class="med-table">
+                    <thead><tr><th>Medicine</th><th>Route</th><th>Days</th><th>Remarks</th></tr></thead>
+                    <tbody>${(p[13]||'').split('\n').map(m => { 
+                        let pts = m.split(' | '); 
+                        return pts.length > 1 ? `<tr><td>${pts[0]}</td><td>${pts[1]}</td><td>${pts[2]}</td><td>${pts[3]}</td></tr>` : ''; 
+                    }).join('')}</tbody>
+                </table>
+                <div class="mt-3"><strong>Clinical Notes:</strong> ${p[14]||'-'}</div>`;
+        } else {
+            document.getElementById('rxContent').innerHTML = "";
+            document.getElementById('sigBlock').style.display = "none";
+        }
+        window.print();
+    }
+
+    function editInfo() {
+        const p = patients.find(x => x[0] == currentOpd);
+        document.getElementById('f_opd').value = p[0]; document.getElementById('f_name').value = p[2];
+        document.getElementById('f_age').value = p[3]; document.getElementById('f_sex').value = p[4];
+        document.getElementById('f_phone').value = p[16]||''; document.getElementById('f_village').value = p[5];
+        document.getElementById('f_wt').value = p[6]||''; document.getElementById('f_bp').value = p[7]||'';
+        document.getElementById('f_pr').value = p[8]||''; document.getElementById('f_spo2').value = p[9]||'';
+        document.getElementById('f_temp').value = p[10]||''; window.scrollTo(0,0);
+    }
+
+    function openRx() {
+        const p = patients.find(x => x[0] == currentOpd);
+        document.getElementById('treatmentPanel').classList.remove('hidden');
+        document.getElementById('labPanel').classList.add('hidden');
+        document.getElementById('t_cc').value = p[11]||''; document.getElementById('t_ph').value = p[15]||'';
+        document.getElementById('t_inv').value = p[12]||''; document.getElementById('t_notes').value = p[14]||'';
+        document.getElementById('medTableBody').innerHTML = '';
+        if(p[13]) p[13].split('\n').forEach(m => { let pts = m.split(' | '); if(pts.length > 1) addRow(pts[0], pts[1], pts[2], pts[3]); });
+    }
+
+    document.getElementById('patientForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const payload = {
+            action: document.getElementById('f_opd').value === "NEW" ? "register" : "edit_basic",
+            opd: document.getElementById('f_opd').value, date: document.getElementById('f_date').value,
+            name: document.getElementById('f_name').value, age: document.getElementById('f_age').value,
+            sex: document.getElementById('f_sex').value, phone: document.getElementById('f_phone').value,
+            village: document.getElementById('f_village').value, weight: document.getElementById('f_wt').value,
+            bp: document.getElementById('f_bp').value, pr: document.getElementById('f_pr').value,
+            spo2: document.getElementById('f_spo2').value, temp: document.getElementById('f_temp').value
+        };
+        await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
+        location.reload();
+    };
+
+    document.getElementById('treatmentForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const meds = Array.from(document.querySelectorAll('#medTableBody tr')).map(tr => 
+            `${tr.querySelector('.m-name').value} | ${tr.querySelector('.m-dur').value} | ${tr.querySelector('.m-freq').value} | ${tr.querySelector('.m-rem').value}`
+        ).join('\n');
+        const payload = {
+            action: "update", opd: currentOpd, complaints: document.getElementById('t_cc').value,
+            pastHistory: document.getElementById('t_ph').value, investigations: document.getElementById('t_inv').value,
+            notes: document.getElementById('t_notes').value, medications: meds
+        };
+        await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
+        location.reload();
+    };
+
+    async function deletePatient() {
+        if(confirm("Delete permanently?")) {
+            await fetch(API, { method: 'POST', body: JSON.stringify({action:"delete", opd:currentOpd})});
+            location.reload();
+        }
+    }
+
+    window.onload = load;
+    document.getElementById('f_date').valueAsDate = new Date();
+</script>
 </body>
 </html>
